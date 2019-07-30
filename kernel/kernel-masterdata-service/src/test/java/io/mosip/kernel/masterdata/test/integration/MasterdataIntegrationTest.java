@@ -140,7 +140,6 @@ import io.mosip.kernel.masterdata.entity.Zone;
 import io.mosip.kernel.masterdata.entity.id.CodeAndLanguageCodeID;
 import io.mosip.kernel.masterdata.entity.id.CodeLangCodeAndRsnCatCodeID;
 import io.mosip.kernel.masterdata.entity.id.GenderID;
-import io.mosip.kernel.masterdata.entity.id.HolidayID;
 import io.mosip.kernel.masterdata.entity.id.RegistrationCenterDeviceID;
 import io.mosip.kernel.masterdata.entity.id.RegistrationCenterMachineDeviceHistoryID;
 import io.mosip.kernel.masterdata.entity.id.RegistrationCenterMachineDeviceID;
@@ -1484,16 +1483,24 @@ public class MasterdataIntegrationTest {
 		holiday = new Holiday();
 
 		holiday = new Holiday();
-		holiday.setHolidayId(new HolidayID("KAR", date, "eng", "Diwali"));
-		holiday.setId(1);
+		// holiday.setHolidayId(new HolidayID("KAR", date, "eng", "Diwali"));
+		holiday.setLocationCode("KAR");
+		holiday.setHolidayDate(date);
+		holiday.setLangCode("eng");
+		holiday.setHolidayName("Diwali");
+		holiday.setHolidayId(1);
 		holiday.setCreatedBy("John");
 		holiday.setCreatedDateTime(specificDate);
 		holiday.setHolidayDesc("Diwali");
 		holiday.setIsActive(true);
 
 		Holiday holiday2 = new Holiday();
-		holiday2.setHolidayId(new HolidayID("KAH", date, "eng", "Durga Puja"));
-		holiday2.setId(1);
+		// holiday2.setHolidayId(new HolidayID("KAH", date, "eng", "Durga Puja"));
+		holiday2.setLocationCode("KAH");
+		holiday2.setHolidayDate(date);
+		holiday2.setLangCode("eng");
+		holiday2.setHolidayName("Durga Puja");
+		holiday2.setHolidayId(1);
 		holiday2.setCreatedBy("John");
 		holiday2.setCreatedDateTime(specificDate);
 		holiday2.setHolidayDesc("Diwali");
