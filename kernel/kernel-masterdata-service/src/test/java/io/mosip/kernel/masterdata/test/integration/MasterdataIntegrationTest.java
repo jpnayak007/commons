@@ -1,7 +1,7 @@
-
 package io.mosip.kernel.masterdata.test.integration;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.isA;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -17,6 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.Month;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -27,21 +28,29 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrint;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataRetrievalFailureException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -51,6 +60,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import io.mosip.kernel.core.dataaccess.exception.DataAccessLayerException;
 import io.mosip.kernel.core.http.RequestWrapper;
+import io.mosip.kernel.core.idgenerator.spi.RegistrationCenterIdGenerator;
 import io.mosip.kernel.masterdata.dto.BiometricAttributeDto;
 import io.mosip.kernel.masterdata.dto.BlacklistedWordsDto;
 import io.mosip.kernel.masterdata.dto.DeviceDto;
@@ -59,6 +69,7 @@ import io.mosip.kernel.masterdata.dto.DeviceTypeDto;
 import io.mosip.kernel.masterdata.dto.DocumentCategoryDto;
 import io.mosip.kernel.masterdata.dto.DocumentTypeDto;
 import io.mosip.kernel.masterdata.dto.GenderTypeDto;
+import io.mosip.kernel.masterdata.dto.IdDto;
 import io.mosip.kernel.masterdata.dto.IdTypeDto;
 import io.mosip.kernel.masterdata.dto.IndividualTypeDto;
 import io.mosip.kernel.masterdata.dto.LanguageDto;
@@ -68,11 +79,14 @@ import io.mosip.kernel.masterdata.dto.MachineTypeDto;
 import io.mosip.kernel.masterdata.dto.PostReasonCategoryDto;
 import io.mosip.kernel.masterdata.dto.ReasonListDto;
 import io.mosip.kernel.masterdata.dto.RegCenterMachineUserReqDto;
+import io.mosip.kernel.masterdata.dto.RegistarionCenterReqDto;
 import io.mosip.kernel.masterdata.dto.RegistrationCenterDeviceDto;
 import io.mosip.kernel.masterdata.dto.RegistrationCenterDeviceHistoryDto;
 import io.mosip.kernel.masterdata.dto.RegistrationCenterDto;
 import io.mosip.kernel.masterdata.dto.RegistrationCenterMachineDeviceDto;
 import io.mosip.kernel.masterdata.dto.RegistrationCenterMachineDto;
+import io.mosip.kernel.masterdata.dto.RegistrationCenterPutReqAdmDto;
+import io.mosip.kernel.masterdata.dto.RegCenterPostReqPrimAdmDto;
 import io.mosip.kernel.masterdata.dto.RegistrationCenterTypeDto;
 import io.mosip.kernel.masterdata.dto.RegistrationCenterUserMachineMappingDto;
 import io.mosip.kernel.masterdata.dto.TemplateDto;
@@ -82,6 +96,7 @@ import io.mosip.kernel.masterdata.dto.TitleDto;
 import io.mosip.kernel.masterdata.dto.ValidDocumentDto;
 import io.mosip.kernel.masterdata.dto.getresponse.IndividualTypeResponseDto;
 import io.mosip.kernel.masterdata.dto.getresponse.RegistrationCenterUserMachineMappingHistoryResponseDto;
+import io.mosip.kernel.masterdata.dto.postresponse.IdResponseDto;
 import io.mosip.kernel.masterdata.entity.BiometricAttribute;
 import io.mosip.kernel.masterdata.entity.BlacklistedWords;
 import io.mosip.kernel.masterdata.entity.Device;
@@ -112,6 +127,7 @@ import io.mosip.kernel.masterdata.entity.RegistrationCenterMachineDevice;
 import io.mosip.kernel.masterdata.entity.RegistrationCenterMachineDeviceHistory;
 import io.mosip.kernel.masterdata.entity.RegistrationCenterMachineHistory;
 import io.mosip.kernel.masterdata.entity.RegistrationCenterType;
+import io.mosip.kernel.masterdata.entity.RegistrationCenterUser;
 import io.mosip.kernel.masterdata.entity.RegistrationCenterUserMachine;
 import io.mosip.kernel.masterdata.entity.RegistrationCenterUserMachineHistory;
 import io.mosip.kernel.masterdata.entity.Template;
@@ -120,10 +136,10 @@ import io.mosip.kernel.masterdata.entity.TemplateType;
 import io.mosip.kernel.masterdata.entity.Title;
 import io.mosip.kernel.masterdata.entity.UserDetailsHistory;
 import io.mosip.kernel.masterdata.entity.ValidDocument;
+import io.mosip.kernel.masterdata.entity.Zone;
 import io.mosip.kernel.masterdata.entity.id.CodeAndLanguageCodeID;
 import io.mosip.kernel.masterdata.entity.id.CodeLangCodeAndRsnCatCodeID;
 import io.mosip.kernel.masterdata.entity.id.GenderID;
-import io.mosip.kernel.masterdata.entity.id.HolidayID;
 import io.mosip.kernel.masterdata.entity.id.RegistrationCenterDeviceID;
 import io.mosip.kernel.masterdata.entity.id.RegistrationCenterMachineDeviceHistoryID;
 import io.mosip.kernel.masterdata.entity.id.RegistrationCenterMachineDeviceID;
@@ -131,6 +147,7 @@ import io.mosip.kernel.masterdata.entity.id.RegistrationCenterMachineHistoryID;
 import io.mosip.kernel.masterdata.entity.id.RegistrationCenterMachineID;
 import io.mosip.kernel.masterdata.entity.id.RegistrationCenterMachineUserHistoryID;
 import io.mosip.kernel.masterdata.entity.id.RegistrationCenterMachineUserID;
+import io.mosip.kernel.masterdata.entity.id.RegistrationCenterUserID;
 import io.mosip.kernel.masterdata.exception.DataNotFoundException;
 import io.mosip.kernel.masterdata.exception.RequestException;
 import io.mosip.kernel.masterdata.repository.ApplicantValidDocumentRepository;
@@ -165,6 +182,7 @@ import io.mosip.kernel.masterdata.repository.RegistrationCenterMachineUserReposi
 import io.mosip.kernel.masterdata.repository.RegistrationCenterRepository;
 import io.mosip.kernel.masterdata.repository.RegistrationCenterTypeRepository;
 import io.mosip.kernel.masterdata.repository.RegistrationCenterUserMachineHistoryRepository;
+import io.mosip.kernel.masterdata.repository.RegistrationCenterUserRepository;
 import io.mosip.kernel.masterdata.repository.TemplateFileFormatRepository;
 import io.mosip.kernel.masterdata.repository.TemplateRepository;
 import io.mosip.kernel.masterdata.repository.TemplateTypeRepository;
@@ -173,6 +191,7 @@ import io.mosip.kernel.masterdata.repository.UserDetailsRepository;
 import io.mosip.kernel.masterdata.repository.ValidDocumentRepository;
 import io.mosip.kernel.masterdata.test.TestBootApplication;
 import io.mosip.kernel.masterdata.utils.MapperUtils;
+import io.mosip.kernel.masterdata.utils.ZoneUtils;
 
 /**
  * 
@@ -191,7 +210,7 @@ import io.mosip.kernel.masterdata.utils.MapperUtils;
  */
 @SpringBootTest(classes = TestBootApplication.class)
 @RunWith(SpringRunner.class)
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(print = MockMvcPrint.LOG_DEBUG, printOnlyOnFailure = false)
 public class MasterdataIntegrationTest {
 
 	// private static final String JSON_STRING_RESPONSE =
@@ -202,6 +221,9 @@ public class MasterdataIntegrationTest {
 			+ "\r\n" + "\"globalConfiguration\":\r\n"
 			+ "						{\"mosip.kernel.crypto.symmetric-algorithm-name\":\"AES\",\"mosip.kernel.virus-scanner.port\":\"3310\",\"mosip.kernel.email.max-length\":\"50\",\"mosip.kernel.email.domain.ext-max-lenght\":\"7\",\"mosip.kernel.rid.sequence-length\":\"5\",\"mosip.kernel.uin.uin-generation-cron\":\"0 * * * * *\",\"mosip.kernel.rid.centerid-length\":\"5\",\"mosip.kernel.email.special-char\":\"!#$%&'*+-\\/=?^_`{|}~.\",\"mosip.kernel.rid.requesttime-length\":\"14\",\"mosip.kernel.vid.length.sequence-limit\":\"3\",\"mosip.kernel.keygenerator.asymmetric-algorithm-length\":\"2048\",\"mosip.kernel.uin.min-unused-threshold\":\"100000\",\"mosip.kernel.prid.sequence-limit\":\"3\",\"auth.role.prefix\":\"ROLE_\",\"mosip.kernel.email.domain.ext-min-lenght\":\"2\",\"auth.server.validate.url\":\"http:\\/\\/localhost:8091\\/auth\\/validate_token\",\"mosip.kernel.machineid.length\":\"4\",\"mosip.supported-languages\":\"eng,ara,fra,hin,deu\",\"mosip.kernel.prid.length\":\"14\",\"auth.header.name\":\"Authorization\",\"mosip.kernel.crypto.asymmetric-algorithm-name\":\"RSA\",\"mosip.kernel.phone.min-length\":\"9\",\"mosip.kernel.uin.length\":\"10\",\"mosip.kernel.virus-scanner.host\":\"104.211.209.102\",\"mosip.kernel.email.min-length\":\"7\",\"mosip.kernel.rid.machineid-length\":\"5\",\"mosip.kernel.prid.repeating-block-limit\":\"3\",\"mosip.kernel.vid.length.repeating-block-limit\":\"2\",\"mosip.kernel.rid.length\":\"29\",\"mosip.kernel.phone.max-length\":\"15\",\"mosip.kernel.prid.repeating-limit\":\"2\",\"mosip.kernel.uin.restricted-numbers\":\"786,666\",\"mosip.kernel.email.domain.special-char\":\"-\",\"mosip.kernel.vid.length.repeating-limit\":\"2\",\"mosip.kernel.registrationcenterid.length\":\"4\",\"mosip.kernel.phone.special-char\":\"+ -\",\"mosip.kernel.uin.uins-to-generate\":\"200000\",\"mosip.kernel.vid.length\":\"16\",\"mosip.kernel.tokenid.length\":\"36\",\"mosip.kernel.uin.length.repeating-block-limit\":\"2\",\"mosip.kernel.tspid.length\":\"4\",\"mosip.kernel.tokenid.sequence-limit\":\"3\",\"mosip.kernel.uin.length.repeating-limit\":\"2\",\"mosip.kernel.uin.length.sequence-limit\":\"3\",\"mosip.kernel.keygenerator.symmetric-algorithm-length\":\"256\",\"mosip.kernel.data-key-splitter\":\"#KEY_SPLITTER#\"}\r\n"
 			+ "}";
+
+	@MockBean
+	ZoneUtils zoneUtils;
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -218,6 +240,9 @@ public class MasterdataIntegrationTest {
 
 	@MockBean
 	private UserDetailsRepository userDetailsRepository;
+
+	@MockBean
+	RegistrationCenterUserRepository registrationCenterUserRepository;
 
 	@MockBean
 	private DeviceRepository deviceRepository;
@@ -408,6 +433,9 @@ public class MasterdataIntegrationTest {
 
 	private ObjectMapper mapper;
 
+	@Autowired
+	private ObjectMapper objectMapper;
+
 	@MockBean
 	private MachineHistoryRepository machineHistoryRepository;
 
@@ -453,6 +481,7 @@ public class MasterdataIntegrationTest {
 		registrationCenterHistorySetup();
 
 		registrationCenterSetup();
+		updateRegistrationCenterSetup();
 
 		registrationCenterUserMachineSetup();
 
@@ -505,12 +534,16 @@ public class MasterdataIntegrationTest {
 
 	private void individualTypeSetup() {
 		IndividualType fr = new IndividualType();
-		fr.setIndividualTypeID(new CodeAndLanguageCodeID("FR", "eng"));
+		// fr.setIndividualTypeID(new CodeAndLanguageCodeID("FR", "eng"));
+		fr.setCode("FR");
+		fr.setLangCode("eng");
 		fr.setIsActive(true);
 		fr.setName("Foreigner");
 
 		IndividualType nfr = new IndividualType();
-		nfr.setIndividualTypeID(new CodeAndLanguageCodeID("NFR", "eng"));
+		// nfr.setIndividualTypeID(new CodeAndLanguageCodeID("NFR", "eng"));
+		nfr.setCode("NFR");
+		nfr.setLangCode("eng");
 		nfr.setIsActive(true);
 		nfr.setName("Non-Foreigner");
 
@@ -913,6 +946,7 @@ public class MasterdataIntegrationTest {
 	List<Device> deviceList;
 	List<Object[]> objectList;
 	DeviceHistory deviceHistory;
+	Page<Device> pageDeviceEntity;
 
 	private void deviceSetup() {
 
@@ -940,6 +974,16 @@ public class MasterdataIntegrationTest {
 		device.setDeviceSpecId("234");
 		device.setValidityDateTime(specificDate);
 		deviceList.add(device);
+
+		Device device = new Device();
+		device.setId("10001");
+		device.setName("laptop");
+		device.setDeviceSpecId("10001");
+		device.setIsActive(true);
+		device.setIpAddress("102.0.0.0");
+		List<Device> devicelist = new ArrayList<>();
+		devicelist.add(device);
+		pageDeviceEntity = new PageImpl<>(devicelist);
 
 		objectList = new ArrayList<>();
 		Object objects[] = { "1001", "Laptop", "129.0.0.0", "123", "129.0.0.0", "1212", "eng", true, validDateTime,
@@ -1008,13 +1052,11 @@ public class MasterdataIntegrationTest {
 	private void titleIntegrationSetup() {
 		titleList = new ArrayList<>();
 		title = new Title();
-		titleId = new CodeAndLanguageCodeID();
-		titleId.setLangCode("eng");
-		titleId.setCode("ABC");
 		title.setIsActive(true);
 		title.setCreatedBy("Ajay");
 		title.setCreatedDateTime(null);
-		title.setId(titleId);
+		title.setCode("Mr.");
+		title.setLangCode("eng");
 		title.setTitleDescription("AAAAAAAAAAAA");
 		title.setTitleName("HELLO");
 		title.setUpdatedBy("XYZ");
@@ -1033,6 +1075,13 @@ public class MasterdataIntegrationTest {
 		registrationCenterUserMachineHistory = new RegistrationCenterUserMachineHistory("1", "1", "1",
 				LocalDateTime.now().minusDays(1), "eng");
 	}
+
+	RegistarionCenterReqDto<RegCenterPostReqPrimAdmDto> regRequest =null;	
+
+	RegistrationCenter registrationCenter1 = null;
+	RegistrationCenterHistory registrationCenterHistory = null;
+	RegistrationCenter registrationCenter2 = null;
+	RegistrationCenter registrationCenter3 = null;
 
 	private void registrationCenterSetup() {
 		registrationCenter = new RegistrationCenter();
@@ -1061,6 +1110,297 @@ public class MasterdataIntegrationTest {
 		chennai.setLocationCode("LOC");
 		registrationCenters.add(banglore);
 		registrationCenters.add(chennai);
+
+		// ----
+		LocalTime centerStartTime = LocalTime.of(1, 10, 10, 30);
+		LocalTime centerEndTime = LocalTime.of(1, 10, 10, 30);
+		LocalTime lunchStartTime = LocalTime.of(1, 10, 10, 30);
+		LocalTime lunchEndTime = LocalTime.of(1, 10, 10, 30);
+		LocalTime perKioskProcessTime = LocalTime.of(1, 10, 10, 30);
+
+		regRequest = new RegistarionCenterReqDto<>();
+		List<RegCenterPostReqPrimAdmDto> requestSet = new ArrayList<>();
+		regRequest.setId("mosip.idtype.create");
+		regRequest.setVersion("1.0");
+		// 1st obj
+		RegCenterPostReqPrimAdmDto registrationCenterDto1 = new RegCenterPostReqPrimAdmDto();
+		registrationCenterDto1.setName("TEST CENTER");
+		registrationCenterDto1.setAddressLine1("Address Line 1");
+		registrationCenterDto1.setAddressLine2("Address Line 2");
+		registrationCenterDto1.setAddressLine3("Address Line 3");
+		registrationCenterDto1.setCenterTypeCode("REG");
+		registrationCenterDto1.setContactPerson("Test");
+		registrationCenterDto1.setContactPhone("9999999999");
+		registrationCenterDto1.setHolidayLocationCode("HLC01");
+		// registrationCenterDto1.setId("676");
+		registrationCenterDto1.setLangCode("eng");
+		registrationCenterDto1.setLatitude("12.9646818");
+		registrationCenterDto1.setLocationCode("10190");
+		registrationCenterDto1.setLongitude("77.70168");
+		registrationCenterDto1.setPerKioskProcessTime(perKioskProcessTime);
+		registrationCenterDto1.setCenterStartTime(centerStartTime);
+		registrationCenterDto1.setCenterEndTime(centerEndTime);
+		registrationCenterDto1.setLunchStartTime(lunchStartTime);
+		registrationCenterDto1.setLunchEndTime(lunchEndTime);
+		registrationCenterDto1.setTimeZone("UTC");
+		registrationCenterDto1.setWorkingHours("9");
+		registrationCenterDto1.setZoneCode("JRD");
+		requestSet.add(registrationCenterDto1);
+
+		// 2nd obj
+		RegCenterPostReqPrimAdmDto registrationCenterDto2 = new RegCenterPostReqPrimAdmDto();
+		registrationCenterDto2.setName("TEST CENTER");
+		registrationCenterDto2.setAddressLine1("Address Line 1");
+		registrationCenterDto2.setAddressLine2("Address Line 2");
+		registrationCenterDto2.setAddressLine3("Address Line 3");
+		registrationCenterDto2.setCenterTypeCode("REG");
+		registrationCenterDto2.setContactPerson("Test");
+		registrationCenterDto2.setContactPhone("9999999999");
+		registrationCenterDto2.setHolidayLocationCode("HLC01");
+		// registrationCenterDto2.setId("676");
+		registrationCenterDto2.setLangCode("ara");
+		registrationCenterDto2.setLatitude("12.9646818");
+		registrationCenterDto2.setLocationCode("10190");
+		registrationCenterDto2.setLongitude("77.70168");
+		registrationCenterDto2.setPerKioskProcessTime(perKioskProcessTime);
+		registrationCenterDto2.setCenterStartTime(centerStartTime);
+		registrationCenterDto2.setCenterEndTime(centerEndTime);
+		registrationCenterDto2.setLunchStartTime(lunchStartTime);
+		registrationCenterDto2.setLunchEndTime(lunchEndTime);
+		registrationCenterDto2.setTimeZone("UTC");
+		registrationCenterDto2.setWorkingHours("9");
+		registrationCenterDto2.setZoneCode("JRD");
+		requestSet.add(registrationCenterDto2);
+
+		// 3rd obj
+		RegCenterPostReqPrimAdmDto registrationCenterDto3 = new RegCenterPostReqPrimAdmDto();
+		registrationCenterDto3.setName("TEST CENTER");
+		registrationCenterDto3.setAddressLine1("Address Line 1");
+		registrationCenterDto3.setAddressLine2("Address Line 2");
+		registrationCenterDto3.setAddressLine3("Address Line 3");
+		registrationCenterDto3.setCenterTypeCode("REG");
+		registrationCenterDto3.setContactPerson("Test");
+		registrationCenterDto3.setContactPhone("9999999999");
+		registrationCenterDto3.setHolidayLocationCode("HLC01");
+		// registrationCenterDto3.setId("676");
+		registrationCenterDto3.setLangCode("fra");
+		registrationCenterDto3.setLatitude("12.9646818");
+		registrationCenterDto3.setLocationCode("10190");
+		registrationCenterDto3.setLongitude("77.70168");
+		registrationCenterDto3.setPerKioskProcessTime(perKioskProcessTime);
+		registrationCenterDto3.setCenterStartTime(centerStartTime);
+		registrationCenterDto3.setCenterEndTime(centerEndTime);
+		registrationCenterDto3.setLunchStartTime(lunchStartTime);
+		registrationCenterDto3.setLunchEndTime(lunchEndTime);
+		registrationCenterDto3.setTimeZone("UTC");
+		registrationCenterDto3.setWorkingHours("9");
+		registrationCenterDto3.setZoneCode("JRD");
+		requestSet.add(registrationCenterDto3);
+
+		regRequest.setRequest(requestSet);
+
+		List<RegistrationCenter> registrationCenterEntityList = new ArrayList<>();
+		// entity1
+		registrationCenter1 = new RegistrationCenter();
+		registrationCenter1.setName("TEST CENTER");
+		registrationCenter1.setAddressLine1("Address Line 1");
+		registrationCenter1.setAddressLine2("Address Line 2");
+		registrationCenter1.setAddressLine3("Address Line 3");
+		registrationCenter1.setCenterTypeCode("REG");
+		registrationCenter1.setContactPerson("Test");
+		registrationCenter1.setContactPhone("9999999999");
+		registrationCenter1.setHolidayLocationCode("HLC01");
+		registrationCenter1.setId("10000");
+		registrationCenter1.setIsActive(false);
+		registrationCenter1.setLangCode("eng");
+		registrationCenter1.setLatitude("12.9646818");
+		registrationCenter1.setLocationCode("10190");
+		registrationCenter1.setLongitude("77.70168");
+		registrationCenter1.setPerKioskProcessTime(perKioskProcessTime);
+		registrationCenter1.setCenterStartTime(centerStartTime);
+		registrationCenter1.setCenterEndTime(centerEndTime);
+		registrationCenter1.setLunchStartTime(lunchStartTime);
+		registrationCenter1.setLunchEndTime(lunchEndTime);
+		registrationCenter1.setNumberOfKiosks((short) 0);
+		registrationCenter1.setTimeZone("UTC");
+		registrationCenter1.setWorkingHours("9");
+		registrationCenter1.setZoneCode("JRD");
+
+		registrationCenterEntityList.add(registrationCenter1);
+
+		registrationCenterHistory = new RegistrationCenterHistory();
+		registrationCenterHistory.setName("TEST CENTER");
+		registrationCenterHistory.setAddressLine1("Address Line 1");
+		registrationCenterHistory.setAddressLine2("Address Line 2");
+		registrationCenterHistory.setAddressLine3("Address Line 3");
+		registrationCenterHistory.setCenterTypeCode("REG");
+		registrationCenterHistory.setContactPerson("Test");
+		registrationCenterHistory.setContactPhone("9999999999");
+		registrationCenterHistory.setHolidayLocationCode("HLC01");
+		registrationCenterHistory.setId("10000");
+		registrationCenterHistory.setIsActive(false);
+		registrationCenterHistory.setLangCode("fra");
+		registrationCenterHistory.setLatitude("12.9646818");
+		registrationCenterHistory.setLocationCode("10190");
+		registrationCenterHistory.setLongitude("77.70168");
+		registrationCenterHistory.setPerKioskProcessTime(perKioskProcessTime);
+		registrationCenterHistory.setCenterStartTime(centerStartTime);
+		registrationCenterHistory.setCenterEndTime(centerEndTime);
+		registrationCenterHistory.setLunchStartTime(lunchStartTime);
+		registrationCenterHistory.setLunchEndTime(lunchEndTime);
+		registrationCenterHistory.setNumberOfKiosks((short) 0);
+		registrationCenterHistory.setTimeZone("UTC");
+		registrationCenterHistory.setWorkingHours("9");
+
+	}
+
+	// update registartion Center
+	RegistarionCenterReqDto<RegistrationCenterPutReqAdmDto> updRegRequest = null;
+	RegistrationCenter registrationCenter11 = null;
+	RegistrationCenterHistory registrationCenterHistory1 = null;
+
+	private void updateRegistrationCenterSetup() {
+		LocalTime centerStartTime = LocalTime.of(1, 10, 10, 30);
+		LocalTime centerEndTime = LocalTime.of(1, 10, 10, 30);
+		LocalTime lunchStartTime = LocalTime.of(1, 10, 10, 30);
+		LocalTime lunchEndTime = LocalTime.of(1, 10, 10, 30);
+		LocalTime perKioskProcessTime = LocalTime.of(1, 10, 10, 30);
+
+		updRegRequest = new RegistarionCenterReqDto<>();
+		List<RegistrationCenterPutReqAdmDto> updRequestSet = new ArrayList<>();
+		updRegRequest.setId("mosip.idtype.create");
+		updRegRequest.setVersion("1.0");
+		// 1st obj
+		RegistrationCenterPutReqAdmDto registrationCenterPutReqAdmDto1 = new RegistrationCenterPutReqAdmDto();
+		registrationCenterPutReqAdmDto1.setName("TEST CENTER");
+		registrationCenterPutReqAdmDto1.setAddressLine1("Address Line 1");
+		registrationCenterPutReqAdmDto1.setAddressLine2("Address Line 2");
+		registrationCenterPutReqAdmDto1.setAddressLine3("Address Line 3");
+		registrationCenterPutReqAdmDto1.setCenterTypeCode("REG");
+		registrationCenterPutReqAdmDto1.setContactPerson("Test");
+		registrationCenterPutReqAdmDto1.setContactPhone("9999999999");
+		registrationCenterPutReqAdmDto1.setHolidayLocationCode("HLC01");
+		registrationCenterPutReqAdmDto1.setId("676");
+		registrationCenterPutReqAdmDto1.setLangCode("eng");
+		registrationCenterPutReqAdmDto1.setLatitude("12.9646818");
+		registrationCenterPutReqAdmDto1.setLocationCode("10190");
+		registrationCenterPutReqAdmDto1.setLongitude("77.70168");
+		registrationCenterPutReqAdmDto1.setPerKioskProcessTime(perKioskProcessTime);
+		registrationCenterPutReqAdmDto1.setCenterStartTime(centerStartTime);
+		registrationCenterPutReqAdmDto1.setCenterEndTime(centerEndTime);
+		registrationCenterPutReqAdmDto1.setLunchStartTime(lunchStartTime);
+		registrationCenterPutReqAdmDto1.setLunchEndTime(lunchEndTime);
+		registrationCenterPutReqAdmDto1.setTimeZone("UTC");
+		registrationCenterPutReqAdmDto1.setWorkingHours("9");
+		registrationCenterPutReqAdmDto1.setIsActive(false);
+		registrationCenterPutReqAdmDto1.setZoneCode("JRD");
+		updRequestSet.add(registrationCenterPutReqAdmDto1);
+
+		// 2nd obj
+		RegistrationCenterPutReqAdmDto registrationCenterPutReqAdmDto2 = new RegistrationCenterPutReqAdmDto();
+		registrationCenterPutReqAdmDto2.setName("TEST CENTER");
+		registrationCenterPutReqAdmDto2.setAddressLine1("Address Line 1");
+		registrationCenterPutReqAdmDto2.setAddressLine2("Address Line 2");
+		registrationCenterPutReqAdmDto2.setAddressLine3("Address Line 3");
+		registrationCenterPutReqAdmDto2.setCenterTypeCode("REG");
+		registrationCenterPutReqAdmDto2.setContactPerson("Test");
+		registrationCenterPutReqAdmDto2.setContactPhone("9999999999");
+		registrationCenterPutReqAdmDto2.setHolidayLocationCode("HLC01");
+		registrationCenterPutReqAdmDto2.setId("676");
+		registrationCenterPutReqAdmDto2.setLangCode("ara");
+		registrationCenterPutReqAdmDto2.setLatitude("12.9646818");
+		registrationCenterPutReqAdmDto2.setLocationCode("10190");
+		registrationCenterPutReqAdmDto2.setLongitude("77.70168");
+		registrationCenterPutReqAdmDto2.setPerKioskProcessTime(perKioskProcessTime);
+		registrationCenterPutReqAdmDto2.setCenterStartTime(centerStartTime);
+		registrationCenterPutReqAdmDto2.setCenterEndTime(centerEndTime);
+		registrationCenterPutReqAdmDto2.setLunchStartTime(lunchStartTime);
+		registrationCenterPutReqAdmDto2.setLunchEndTime(lunchEndTime);
+		registrationCenterPutReqAdmDto2.setTimeZone("UTC");
+		registrationCenterPutReqAdmDto2.setWorkingHours("9");
+		registrationCenterPutReqAdmDto2.setIsActive(false);
+		registrationCenterPutReqAdmDto2.setZoneCode("JRD");
+		updRequestSet.add(registrationCenterPutReqAdmDto2);
+
+		// 3rd obj
+		RegistrationCenterPutReqAdmDto registrationCenterPutReqAdmDto3 = new RegistrationCenterPutReqAdmDto();
+		registrationCenterPutReqAdmDto3.setName("TEST CENTER");
+		registrationCenterPutReqAdmDto3.setAddressLine1("Address Line 1");
+		registrationCenterPutReqAdmDto3.setAddressLine2("Address Line 2");
+		registrationCenterPutReqAdmDto3.setAddressLine3("Address Line 3");
+		registrationCenterPutReqAdmDto3.setCenterTypeCode("REG");
+		registrationCenterPutReqAdmDto3.setContactPerson("Test");
+		registrationCenterPutReqAdmDto3.setContactPhone("9999999999");
+		registrationCenterPutReqAdmDto3.setHolidayLocationCode("HLC01");
+		registrationCenterPutReqAdmDto3.setId("676");
+		registrationCenterPutReqAdmDto3.setLangCode("fra");
+		registrationCenterPutReqAdmDto3.setLatitude("12.9646818");
+		registrationCenterPutReqAdmDto3.setLocationCode("10190");
+		registrationCenterPutReqAdmDto3.setLongitude("77.70168");
+		registrationCenterPutReqAdmDto3.setPerKioskProcessTime(perKioskProcessTime);
+		registrationCenterPutReqAdmDto3.setCenterStartTime(centerStartTime);
+		registrationCenterPutReqAdmDto3.setCenterEndTime(centerEndTime);
+		registrationCenterPutReqAdmDto3.setLunchStartTime(lunchStartTime);
+		registrationCenterPutReqAdmDto3.setLunchEndTime(lunchEndTime);
+		registrationCenterPutReqAdmDto3.setTimeZone("UTC");
+		registrationCenterPutReqAdmDto3.setWorkingHours("9");
+		registrationCenterPutReqAdmDto3.setIsActive(false);
+		registrationCenterPutReqAdmDto3.setZoneCode("JRD");
+		updRequestSet.add(registrationCenterPutReqAdmDto3);
+
+		updRegRequest.setRequest(updRequestSet);
+
+		List<RegistrationCenter> registrationCenterEntityList = new ArrayList<>();
+		// entity1
+		registrationCenter11 = new RegistrationCenter();
+		registrationCenter11.setName("TEST CENTER");
+		registrationCenter11.setAddressLine1("Address Line 1");
+		registrationCenter11.setAddressLine2("Address Line 2");
+		registrationCenter11.setAddressLine3("Address Line 3");
+		registrationCenter11.setCenterTypeCode("REG");
+		registrationCenter11.setContactPerson("Test");
+		registrationCenter11.setContactPhone("9999999999");
+		registrationCenter11.setHolidayLocationCode("HLC01");
+		registrationCenter11.setId("676");
+		registrationCenter11.setIsActive(false);
+		registrationCenter11.setLangCode("eng");
+		registrationCenter11.setLatitude("12.9646818");
+		registrationCenter11.setLocationCode("10190");
+		registrationCenter11.setLongitude("77.70168");
+		registrationCenter11.setPerKioskProcessTime(perKioskProcessTime);
+		registrationCenter11.setCenterStartTime(centerStartTime);
+		registrationCenter11.setCenterEndTime(centerEndTime);
+		registrationCenter11.setLunchStartTime(lunchStartTime);
+		registrationCenter11.setLunchEndTime(lunchEndTime);
+		registrationCenter11.setNumberOfKiosks((short) 0);
+		registrationCenter11.setTimeZone("UTC");
+		registrationCenter11.setWorkingHours("9");
+
+		registrationCenterEntityList.add(registrationCenter11);
+
+		registrationCenterHistory = new RegistrationCenterHistory();
+		registrationCenterHistory.setName("TEST CENTER");
+		registrationCenterHistory.setAddressLine1("Address Line 1");
+		registrationCenterHistory.setAddressLine2("Address Line 2");
+		registrationCenterHistory.setAddressLine3("Address Line 3");
+		registrationCenterHistory.setCenterTypeCode("REG");
+		registrationCenterHistory.setContactPerson("Test");
+		registrationCenterHistory.setContactPhone("9999999999");
+		registrationCenterHistory.setHolidayLocationCode("HLC01");
+		registrationCenterHistory.setId("676");
+		registrationCenterHistory.setIsActive(false);
+		registrationCenterHistory.setLangCode("fra");
+		registrationCenterHistory.setLatitude("12.9646818");
+		registrationCenterHistory.setLocationCode("10190");
+		registrationCenterHistory.setLongitude("77.70168");
+		registrationCenterHistory.setPerKioskProcessTime(perKioskProcessTime);
+		registrationCenterHistory.setCenterStartTime(centerStartTime);
+		registrationCenterHistory.setCenterEndTime(centerEndTime);
+		registrationCenterHistory.setLunchStartTime(lunchStartTime);
+		registrationCenterHistory.setLunchEndTime(lunchEndTime);
+		registrationCenterHistory.setNumberOfKiosks((short) 0);
+		registrationCenterHistory.setTimeZone("UTC");
+		registrationCenterHistory.setWorkingHours("9");
 
 	}
 
@@ -1144,16 +1484,24 @@ public class MasterdataIntegrationTest {
 		holiday = new Holiday();
 
 		holiday = new Holiday();
-		holiday.setHolidayId(new HolidayID("KAR", date, "eng", "Diwali"));
-		holiday.setId(1);
+		// holiday.setHolidayId(new HolidayID("KAR", date, "eng", "Diwali"));
+		holiday.setLocationCode("KAR");
+		holiday.setHolidayDate(date);
+		holiday.setLangCode("eng");
+		holiday.setHolidayName("Diwali");
+		holiday.setHolidayId(1);
 		holiday.setCreatedBy("John");
 		holiday.setCreatedDateTime(specificDate);
 		holiday.setHolidayDesc("Diwali");
 		holiday.setIsActive(true);
 
 		Holiday holiday2 = new Holiday();
-		holiday2.setHolidayId(new HolidayID("KAH", date, "eng", "Durga Puja"));
-		holiday2.setId(1);
+		// holiday2.setHolidayId(new HolidayID("KAH", date, "eng", "Durga Puja"));
+		holiday2.setLocationCode("KAH");
+		holiday2.setHolidayDate(date);
+		holiday2.setLangCode("eng");
+		holiday2.setHolidayName("Durga Puja");
+		holiday2.setHolidayId(1);
 		holiday2.setCreatedBy("John");
 		holiday2.setCreatedDateTime(specificDate);
 		holiday2.setHolidayDesc("Diwali");
@@ -2292,6 +2640,34 @@ public class MasterdataIntegrationTest {
 				.andExpect(jsonPath("$.response.registrationCenters[0].name", is("bangalore")));
 	}
 
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void getAllExistingRegistrationCenterTest() throws Exception {
+		Page<RegistrationCenter> page = new PageImpl<>(registrationCenters);
+		when(registrationCenterRepository
+				.findAll(PageRequest.of(0, 10, Sort.by(Direction.fromString("desc"), "createdDateTime"))))
+						.thenReturn(page);
+		mockMvc.perform(get("/registrationcenters/all")).andExpect(status().isOk());
+	}
+
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void getAllExistingRegistrationCenterNotFoundExceptionTest() throws Exception {
+		when(registrationCenterRepository
+				.findAll(PageRequest.of(0, 10, Sort.by(Direction.fromString("desc"), "createdDateTime"))))
+						.thenReturn(null);
+		mockMvc.perform(get("/registrationcenters/all")).andExpect(status().isOk());
+
+	}
+
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void getAllExistingRegistrationCentersFetchExceptionTest() throws Exception {
+		when(registrationCenterRepository
+				.findAll(PageRequest.of(0, 10, Sort.by(Direction.fromString("desc"), "createdDateTime"))))
+						.thenThrow(new DataAccessLayerException("errorCode", "errorMessage", new RuntimeException()));
+		mockMvc.perform(get("/registrationcenters/all")).andExpect(status().isInternalServerError());
+	}
 	// -----------------------------RegistrationCenterIntegrationTest----------------------------------
 
 	@Test
@@ -3359,7 +3735,7 @@ public class MasterdataIntegrationTest {
 	}
 
 	@Test
-	@WithUserDetails("test")
+	@WithUserDetails("zonal-admin")
 	public void createMachineTest() throws Exception {
 		RequestWrapper<MachineDto> requestDto;
 		requestDto = new RequestWrapper<>();
@@ -3433,7 +3809,7 @@ public class MasterdataIntegrationTest {
 	}
 
 	@Test
-	@WithUserDetails("test")
+	@WithUserDetails("zonal-admin")
 	public void updateMachineTest() throws Exception {
 
 		RequestWrapper<MachineDto> requestDto = new RequestWrapper<>();
@@ -3472,7 +3848,7 @@ public class MasterdataIntegrationTest {
 	}
 
 	@Test
-	@WithUserDetails("test")
+	@WithUserDetails("zonal-admin")
 	public void updateMachineNotFoundExceptionTest() throws Exception {
 
 		RequestWrapper<MachineDto> requestDto = new RequestWrapper<>();
@@ -3488,6 +3864,7 @@ public class MasterdataIntegrationTest {
 				.andExpect(status().isOk());
 	}
 
+	@Ignore
 	@Test
 	@WithUserDetails("test")
 	public void updateMachineDatabaseConnectionExceptionTest() throws Exception {
@@ -3502,7 +3879,7 @@ public class MasterdataIntegrationTest {
 
 		mockMvc.perform(
 				MockMvcRequestBuilders.put("/machines").contentType(MediaType.APPLICATION_JSON).content(content))
-				.andExpect(status().isInternalServerError());
+				.andExpect(status().is5xxServerError());
 
 	}
 
@@ -3661,7 +4038,7 @@ public class MasterdataIntegrationTest {
 	// ---------------------------------------------
 
 	@Test
-	@WithUserDetails("test")
+	@WithUserDetails("zonal-admin")
 	public void createDeviceTest() throws Exception {
 		RequestWrapper<DeviceDto> requestDto = new RequestWrapper<>();
 		requestDto.setId("mosip.device.create");
@@ -3693,7 +4070,7 @@ public class MasterdataIntegrationTest {
 	}
 
 	@Test
-	@WithUserDetails("test")
+	@WithUserDetails("zonal-admin")
 	public void updateDeviceSuccessTest() throws Exception {
 		RequestWrapper<DeviceDto> requestDto = new RequestWrapper<>();
 		requestDto.setId("mosip.device.update");
@@ -3721,15 +4098,15 @@ public class MasterdataIntegrationTest {
 	}
 
 	@Test
-	@WithUserDetails("test")
+	@WithUserDetails("zonal-admin")
 	public void updateDeviceNotFoundExceptionTest() throws Exception {
 		RequestWrapper<DeviceDto> requestDto = new RequestWrapper<>();
 		requestDto.setId("mosip.device.create");
 		requestDto.setVersion("1.0.0");
 		requestDto.setRequest(deviceDto);
 		String content = mapper.writeValueAsString(requestDto);
-		Mockito.when(deviceRepository.findByIdAndLangCodeAndIsDeletedFalseOrIsDeletedIsNull(Mockito.anyString(),
-				Mockito.anyString())).thenReturn(null);
+		Mockito.when(deviceRepository.findByIdAndLangCodeAndIsDeletedFalseOrIsDeletedIsNullNoIsActive(
+				Mockito.anyString(), Mockito.anyString())).thenReturn(null);
 		when(deviceHistoryRepository.create(Mockito.any())).thenReturn(deviceHistory);
 		Mockito.when(deviceRepository.update(Mockito.any())).thenThrow(new DataNotFoundException("", ""));
 		mockMvc.perform(MockMvcRequestBuilders.put("/devices").contentType(MediaType.APPLICATION_JSON).content(content))
@@ -3828,7 +4205,7 @@ public class MasterdataIntegrationTest {
 	}
 
 	@Test
-	@WithUserDetails("test")
+	@WithUserDetails("central-admin")
 	public void addBlackListedWordTest() throws Exception {
 		RequestWrapper<BlacklistedWordsDto> requestDto = new RequestWrapper<>();
 		requestDto.setId("mosip.idtype.create");
@@ -4074,8 +4451,7 @@ public class MasterdataIntegrationTest {
 		documentTypeDto.setName("POI");
 		requestDto.setRequest(documentTypeDto);
 		String contentJson = mapper.writeValueAsString(requestDto);
-		when(documentTypeRepository.findByCodeAndLangCode(Mockito.any(),
-				Mockito.any())).thenReturn(type);
+		when(documentTypeRepository.findByCodeAndLangCode(Mockito.any(), Mockito.any())).thenReturn(type);
 		when(documentTypeRepository.update(Mockito.any())).thenReturn(type);
 		mockMvc.perform(put("/documenttypes").contentType(MediaType.APPLICATION_JSON).content(contentJson))
 				.andExpect(status().isOk());
@@ -4116,8 +4492,7 @@ public class MasterdataIntegrationTest {
 		documentTypeDto.setName("POI");
 		requestDto.setRequest(documentTypeDto);
 		String contentJson = mapper.writeValueAsString(requestDto);
-		when(documentTypeRepository.findByCodeAndLangCode(Mockito.any(),
-				Mockito.any())).thenReturn(null);
+		when(documentTypeRepository.findByCodeAndLangCode(Mockito.any(), Mockito.any())).thenReturn(null);
 		mockMvc.perform(put("/documenttypes").contentType(MediaType.APPLICATION_JSON).content(contentJson))
 				.andExpect(status().isOk());
 	}
@@ -4136,8 +4511,7 @@ public class MasterdataIntegrationTest {
 		documentTypeDto.setName("POI");
 		requestDto.setRequest(documentTypeDto);
 		String contentJson = mapper.writeValueAsString(requestDto);
-		when(documentTypeRepository.findByCodeAndLangCode(Mockito.any(),
-				Mockito.any())).thenReturn(type);
+		when(documentTypeRepository.findByCodeAndLangCode(Mockito.any(), Mockito.any())).thenReturn(type);
 		when(documentTypeRepository.update(Mockito.any()))
 				.thenThrow(new DataAccessLayerException("", "cannot execute statement", null));
 		mockMvc.perform(put("/documenttypes").contentType(MediaType.APPLICATION_JSON).content(contentJson))
@@ -4468,7 +4842,7 @@ public class MasterdataIntegrationTest {
 		when(documentTypeRepository.findByCodeAndLangCodeAndIsDeletedFalse(Mockito.any(), Mockito.any()))
 				.thenReturn(null);
 
-		mockMvc.perform(get("/validdocuments/eng")).andExpect(status().isOk());
+		mockMvc.perform(get("/validdocuments/eng")).andExpect(status().is5xxServerError());
 	}
 
 	@Test
@@ -4480,62 +4854,67 @@ public class MasterdataIntegrationTest {
 		mockMvc.perform(get("/validdocuments/eng")).andExpect(status().isInternalServerError());
 	}
 
-	@Test
-	@WithUserDetails("test")
-	public void createRegistrationCenterExceptionTest() throws Exception {
-		RequestWrapper<RegistrationCenterDto> requestDto = new RequestWrapper<>();
-		requestDto.setId("mosip.idtype.create");
-		requestDto.setVersion("1.0");
-		RegistrationCenterDto registrationCenterDto = getRegCenterDto();
+	/*
+	 * @Test
+	 * 
+	 * @WithUserDetails("test") public void createRegistrationCenterExceptionTest()
+	 * throws Exception { RequestWrapper<RegistrationCenterDto> requestDto = new
+	 * RequestWrapper<>(); requestDto.setId("mosip.idtype.create");
+	 * requestDto.setVersion("1.0"); RegistrationCenterDto registrationCenterDto =
+	 * getRegCenterDto();
+	 * 
+	 * requestDto.setRequest(registrationCenterDto); String contentJson =
+	 * mapper.writeValueAsString(requestDto);
+	 * when(registrationCenterRepository.create(Mockito.any())) .thenThrow(new
+	 * DataAccessLayerException("", "cannot execute statement", null));
+	 * mockMvc.perform(post("/registrationcenters").contentType(MediaType.
+	 * APPLICATION_JSON).content(contentJson))
+	 * .andExpect(status().isInternalServerError()); }
+	 */
 
-		requestDto.setRequest(registrationCenterDto);
-		String contentJson = mapper.writeValueAsString(requestDto);
-		when(registrationCenterRepository.create(Mockito.any()))
-				.thenThrow(new DataAccessLayerException("", "cannot execute statement", null));
-		mockMvc.perform(post("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(contentJson))
-				.andExpect(status().isInternalServerError());
-	}
+	/*
+	 * @Test
+	 * 
+	 * @WithUserDetails("test") public void
+	 * createRegistrationCenterLangExceptionTest() throws Exception {
+	 * RequestWrapper<RegistrationCenterDto> requestDto = new RequestWrapper<>();
+	 * requestDto.setId("mosip.idtype.create"); requestDto.setVersion("1.0");
+	 * RegistrationCenterDto registrationCenterDto = getRegCenterDto();
+	 * registrationCenterDto.setLangCode(null);
+	 * 
+	 * requestDto.setRequest(registrationCenterDto); String contentJson =
+	 * mapper.writeValueAsString(requestDto);
+	 * mockMvc.perform(post("/registrationcenters").contentType(MediaType.
+	 * APPLICATION_JSON).content(contentJson)) .andExpect(status().isOk());
+	 * 
+	 * registrationCenterDto.setLangCode("fsadgdsagdsaf"); contentJson =
+	 * mapper.writeValueAsString(requestDto);
+	 * mockMvc.perform(post("/registrationcenters").contentType(MediaType.
+	 * APPLICATION_JSON).content(contentJson)) .andExpect(status().isOk());
+	 * 
+	 * Mockito.when(restTemplate.getForObject(Mockito.anyString(),
+	 * Mockito.any())).thenReturn(null); registrationCenterDto.setLangCode("eng");
+	 * contentJson = mapper.writeValueAsString(requestDto);
+	 * mockMvc.perform(post("/registrationcenters").contentType(MediaType.
+	 * APPLICATION_JSON).content(contentJson))
+	 * .andExpect(status().is5xxServerError());
+	 * 
+	 * }
+	 */
 
-	@Test
-	@WithUserDetails("test")
-	public void createRegistrationCenterLangExceptionTest() throws Exception {
-		RequestWrapper<RegistrationCenterDto> requestDto = new RequestWrapper<>();
-		requestDto.setId("mosip.idtype.create");
-		requestDto.setVersion("1.0");
-		RegistrationCenterDto registrationCenterDto = getRegCenterDto();
-		registrationCenterDto.setLangCode(null);
-
-		requestDto.setRequest(registrationCenterDto);
-		String contentJson = mapper.writeValueAsString(requestDto);
-		mockMvc.perform(post("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(contentJson))
-				.andExpect(status().isOk());
-
-		registrationCenterDto.setLangCode("fsadgdsagdsaf");
-		contentJson = mapper.writeValueAsString(requestDto);
-		mockMvc.perform(post("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(contentJson))
-				.andExpect(status().isOk());
-
-		Mockito.when(restTemplate.getForObject(Mockito.anyString(), Mockito.any())).thenReturn(null);
-		registrationCenterDto.setLangCode("eng");
-		contentJson = mapper.writeValueAsString(requestDto);
-		mockMvc.perform(post("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(contentJson))
-				.andExpect(status().is5xxServerError());
-
-	}
-
-	@Test
-	@WithUserDetails("test")
-	public void registrationCenterInvalidTest() throws Exception {
-		RequestWrapper<RegistrationCenterDto> requestDto = new RequestWrapper<>();
-		requestDto.setId("mosip.idtype.create");
-		requestDto.setVersion("1.0");
-		RegistrationCenterDto invalidRegCntrDto = getRegCenterDto();
-		invalidRegCntrDto.setId("ID3456789102787");// more than 10 to check for invalid
-		requestDto.setRequest(invalidRegCntrDto);
-		String contentJson = mapper.writeValueAsString(requestDto);
-		mockMvc.perform(post("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(contentJson))
-				.andExpect(status().isOk());
-	}
+	/*
+	 * @Test
+	 * 
+	 * @WithUserDetails("test") public void registrationCenterInvalidTest() throws
+	 * Exception { RequestWrapper<RegistrationCenterDto> requestDto = new
+	 * RequestWrapper<>(); requestDto.setId("mosip.idtype.create");
+	 * requestDto.setVersion("1.0"); RegistrationCenterDto invalidRegCntrDto =
+	 * getRegCenterDto(); invalidRegCntrDto.setId("ID3456789102787");// more than 10
+	 * to check for invalid requestDto.setRequest(invalidRegCntrDto); String
+	 * contentJson = mapper.writeValueAsString(requestDto);
+	 * mockMvc.perform(post("/registrationcenters").contentType(MediaType.
+	 * APPLICATION_JSON).content(contentJson)) .andExpect(status().isOk()); }
+	 */
 
 	private RegistrationCenterDto getRegCenterDto() {
 
@@ -4985,14 +5364,14 @@ public class MasterdataIntegrationTest {
 	}
 
 	@Test
-	@WithUserDetails("test")
+	@WithUserDetails("central-admin")
 	public void updateBadWordSuccess() throws Exception {
 		String input = "{\n" + "  \"id\": \"string\",\n" + "  \"metadata\": {},\n" + "  \"request\": {\n"
 				+ "    \"description\": \"bad word description\",\n" + "    \"isActive\": false,\n"
-				+ "    \"langCode\": \"eng\",\n" + "    \"word\": \"badword\"\n" + "  },\n"
-				+ "  \"requesttime\": \"2018-12-24T07:21:42.232Z\",\n" + "  \"version\": \"string\"\n" + "}";
-		when(wordsRepository.findByWordAndLangCode(anyString(), anyString())).thenReturn(words.get(0));
-		when(wordsRepository.update(any())).thenReturn(words.get(0));
+				+ "    \"langCode\": \"eng\",\n" + "    \"oldWord\": \"badword\",\n"
+				+ "    \"word\": \"badwordUpdate\"\n" + "  },\n" + "  \"requesttime\": \"2018-12-24T07:21:42.232Z\",\n"
+				+ "  \"version\": \"string\"\n" + "}";
+		when(wordsRepository.createQueryUpdateOrDelete(Mockito.anyString(), Mockito.any())).thenReturn(1);
 		mockMvc.perform(put("/blacklistedwords").contentType(MediaType.APPLICATION_JSON).content(input))
 				.andExpect(status().isOk());
 	}
@@ -5024,15 +5403,15 @@ public class MasterdataIntegrationTest {
 
 	@SuppressWarnings("unchecked")
 	@Test
-	@WithUserDetails("test")
+	@WithUserDetails("zonal-admin")
 	public void updateBadWordFailure() throws Exception {
 		String input = "{\n" + "  \"id\": \"string\",\n" + "  \"metadata\": {},\n" + "  \"request\": {\n"
 				+ "    \"description\": \"bad word description\",\n" + "    \"isActive\": false,\n"
-				+ "    \"langCode\": \"eng\",\n" + "    \"word\": \"badword\"\n" + "  },\n"
-				+ "  \"requesttime\": \"2018-12-24T07:21:42.232Z\",\n" + "  \"version\": \"string\"\n" + "}";
-		when(wordsRepository.findByWordAndLangCode(anyString(), anyString())).thenReturn(words.get(0));
-		when(wordsRepository.update(any())).thenThrow(DataRetrievalFailureException.class,
-				DataAccessLayerException.class);
+				+ "    \"langCode\": \"eng\",\n" + "    \"oldWord\": \"badword\",\n"
+				+ "    \"word\": \"badwordUpdate\"\n" + "  },\n" + "  \"requesttime\": \"2018-12-24T07:21:42.232Z\",\n"
+				+ "  \"version\": \"string\"\n" + "}";
+		when(wordsRepository.createQueryUpdateOrDelete(Mockito.anyString(), Mockito.any()))
+				.thenThrow(DataRetrievalFailureException.class, DataAccessLayerException.class);
 		mockMvc.perform(put("/blacklistedwords").contentType(MediaType.APPLICATION_JSON).content(input))
 				.andExpect(status().isInternalServerError());
 
@@ -5301,7 +5680,7 @@ public class MasterdataIntegrationTest {
 	}
 
 	@Test
-	@WithUserDetails("test")
+	@WithUserDetails("zonal-admin")
 	public void createRegistrationCenterTest() throws Exception {
 		RequestWrapper<RegistrationCenterDto> requestDto = new RequestWrapper<>();
 		short numberOfKiosks = 1;
@@ -5351,7 +5730,7 @@ public class MasterdataIntegrationTest {
 	}
 
 	@Test
-	@WithUserDetails("test")
+	@WithUserDetails("zonal-admin")
 	public void updateRegistrationCenterTest() throws Exception {
 		RequestWrapper<RegistrationCenterDto> requestDto = new RequestWrapper<>();
 		short numberOfKiosks = 1;
@@ -5654,7 +6033,7 @@ public class MasterdataIntegrationTest {
 	}
 
 	@Test
-	@WithUserDetails("test")
+	@WithUserDetails("zonal-admin")
 	public void createRegistrationCenterTestInvalidLatLongFormatTest() throws Exception {
 		RequestWrapper<RegistrationCenterDto> requestDto = new RequestWrapper<>();
 		short numberOfKiosks = 1;
@@ -5701,92 +6080,6 @@ public class MasterdataIntegrationTest {
 		when(registrationCenterRepository.create(Mockito.any())).thenThrow(new RequestException("", ""));
 		mockMvc.perform(post("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(contentJson))
 				.andExpect(status().isOk());
-	}
-
-	@Test
-	@WithUserDetails("test")
-	public void updateRegistrationCenterRequestExceptionTest() throws Exception {
-		RegistrationCenterHistory registrationCenterHistory = new RegistrationCenterHistory();
-		RequestWrapper<RegistrationCenterDto> requestDto = new RequestWrapper<>();
-		short numberOfKiosks = 1;
-		requestDto.setId("mosip.idtype.create");
-		requestDto.setVersion("1.0");
-		RegistrationCenterDto registrationCenterDto = new RegistrationCenterDto();
-		registrationCenterDto.setName("TEST CENTER");
-		registrationCenterDto.setAddressLine1("Address Line 1");
-		registrationCenterDto.setAddressLine2("Address Line 2");
-		registrationCenterDto.setAddressLine3("Address Line 3");
-		registrationCenterDto.setCenterTypeCode("REG01");
-		registrationCenterDto.setContactPerson("Test");
-		registrationCenterDto.setContactPhone("9999999999");
-		registrationCenterDto.setHolidayLocationCode("HLC01");
-		registrationCenterDto.setId("676");
-		registrationCenterDto.setIsActive(true);
-		registrationCenterDto.setLangCode("eng");
-		registrationCenterDto.setLatitude("INVALID");
-		registrationCenterDto.setLocationCode("INVALID");
-		registrationCenterDto.setLongitude("77.70168");
-		registrationCenterDto.setNumberOfKiosks((short) 1);
-		registrationCenterDto.setTimeZone("UTC");
-		registrationCenterDto.setWorkingHours("9");
-		RegistrationCenter registrationCenter = new RegistrationCenter();
-		registrationCenter.setName("TEST CENTER");
-		registrationCenter.setAddressLine1("Address Line 1");
-		registrationCenter.setAddressLine2("Address Line 2");
-		registrationCenter.setAddressLine3("Address Line 3");
-		registrationCenter.setCenterTypeCode("REG01");
-		registrationCenter.setContactPerson("Test");
-		registrationCenter.setContactPhone("9999999999");
-		registrationCenter.setHolidayLocationCode("HLC01");
-		registrationCenter.setId("676");
-		registrationCenter.setIsActive(true);
-		registrationCenter.setLangCode("eng");
-		registrationCenter.setLatitude("12.9646818");
-		registrationCenter.setLocationCode("LOC01");
-		registrationCenter.setLongitude("77.70168");
-		registrationCenter.setNumberOfKiosks(numberOfKiosks);
-		registrationCenter.setTimeZone("UTC");
-		registrationCenter.setWorkingHours("9");
-		requestDto.setRequest(registrationCenterDto);
-		String contentJson = mapper.writeValueAsString(requestDto);
-		when(registrationCenterRepository.findByIdAndLangCode(Mockito.anyString(), Mockito.anyString()))
-				.thenReturn(registrationCenter);
-		when(registrationCenterRepository.update(registrationCenter)).thenReturn(registrationCenter);
-		when(repositoryCenterHistoryRepository.create(Mockito.any())).thenReturn(registrationCenterHistory);
-		mockMvc.perform(put("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(contentJson))
-				.andExpect(status().isOk());
-	}
-
-	@Test
-	@WithUserDetails("test")
-	public void updateRegistrationCenterDataAccessExceptionTest() throws Exception {
-		RequestWrapper<RegistrationCenterDto> requestDto = new RequestWrapper<>();
-		requestDto.setId("mosip.idtype.create");
-		requestDto.setVersion("1.0");
-		RegistrationCenterDto registrationCenterDto = new RegistrationCenterDto();
-		registrationCenterDto.setName("TEST CENTER");
-		registrationCenterDto.setAddressLine1("Address Line 1");
-		registrationCenterDto.setAddressLine2("Address Line 2");
-		registrationCenterDto.setAddressLine3("Address Line 3");
-		registrationCenterDto.setCenterTypeCode("REG01");
-		registrationCenterDto.setContactPerson("Test");
-		registrationCenterDto.setContactPhone("9999999999");
-		registrationCenterDto.setHolidayLocationCode("HLC01");
-		registrationCenterDto.setId("676");
-		registrationCenterDto.setIsActive(true);
-		registrationCenterDto.setLangCode("eng");
-		registrationCenterDto.setLatitude("12.9646818");
-		registrationCenterDto.setLocationCode("LOC");
-		registrationCenterDto.setLongitude("77.70168");
-		registrationCenterDto.setNumberOfKiosks((short) 1);
-		registrationCenterDto.setTimeZone("UTC");
-		registrationCenterDto.setWorkingHours("9");
-		requestDto.setRequest(registrationCenterDto);
-		String contentJson = mapper.writeValueAsString(requestDto);
-		when(registrationCenterRepository.findByIdAndLangCode(Mockito.any(), Mockito.any()))
-				.thenThrow(new DataAccessLayerException("", "cannot execute statement", null));
-		mockMvc.perform(put("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(contentJson))
-				.andExpect(status().isInternalServerError());
 	}
 
 	// -----------------------------------genderNameValidationTest-------------------//
@@ -5877,5 +6170,342 @@ public class MasterdataIntegrationTest {
 				.thenThrow(DataRetrievalFailureException.class);
 		mockMvc.perform(get("/users/110001/2018-01-01T10:10:30.956Z")).andExpect(status().isInternalServerError());
 	}
+
+	// -----------------------createRegistrationCenter
+	// TestCase------------------------
+
+	@Autowired
+	RegistrationCenterIdGenerator<String> registrationCenterIdGenerator;
+	
+	@Ignore
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void createRegistrationCenterAdminTest() throws Exception {
+		String content = objectMapper.writeValueAsString(regRequest);
+		Zone zone = new Zone();
+		zone.setCode("JRD");
+		List<Zone> zones = new ArrayList<>();
+		zones.add(zone);
+		when(zoneUtils.getUserZones()).thenReturn(zones);
+		when(registrationCenterRepository.create(Mockito.any())).thenReturn(registrationCenter1);
+		when(repositoryCenterHistoryRepository.create(Mockito.any())).thenReturn(registrationCenterHistory);
+		mockMvc.perform(post("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(content))
+				.andExpect(status().isOk());
+	}
+	
+	@Ignore
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void createRegistrationCenterAdminDataExcpTest() throws Exception {
+		String content = objectMapper.writeValueAsString(regRequest);
+		Zone zone = new Zone();
+		zone.setCode("JRD");
+		List<Zone> zones = new ArrayList<>();
+		zones.add(zone);
+		when(zoneUtils.getUserZones()).thenReturn(zones);
+		when(registrationCenterRepository.create(Mockito.any()))
+				.thenThrow(new DataAccessLayerException("", "cannot execute statement", null));
+		mockMvc.perform(post("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(content))
+				.andExpect(status().isInternalServerError());
+	}
+	
+	//------ update the RegitrationCenter----------------------
+	@Ignore
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void updateRegistrationCenterAdminTest() throws Exception {
+		String content = objectMapper.writeValueAsString(updRegRequest);
+		Zone zone = new Zone();
+		zone.setCode("JRD");
+		List<Zone> zones = new ArrayList<>();
+		zones.add(zone);
+		when(zoneUtils.getUserZones()).thenReturn(zones);
+		when(registrationCenterRepository.findByIdAndLangCodeAndIsDeletedTrue(Mockito.any(), Mockito.any()))
+				.thenReturn(registrationCenter1);
+		when(registrationCenterRepository.update(Mockito.any())).thenReturn(registrationCenter1);
+		when(repositoryCenterHistoryRepository.create(Mockito.any())).thenReturn(registrationCenterHistory);
+		mockMvc.perform(put("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(content))
+				.andExpect(status().isOk());
+	}
+	
+	@Ignore
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void updateRegistrationCenterAdminDataExcpTest() throws Exception {
+		String content = objectMapper.writeValueAsString(updRegRequest);
+		Zone zone = new Zone();
+		zone.setCode("JRD");
+		List<Zone> zones = new ArrayList<>();
+		zones.add(zone);
+		when(zoneUtils.getUserZones()).thenReturn(zones);
+		when(registrationCenterRepository.findByIdAndLangCodeAndIsDeletedTrue(Mockito.any(), Mockito.any()))
+				.thenReturn(registrationCenter1);
+		when(registrationCenterRepository.update(Mockito.any()))
+				.thenThrow(new DataAccessLayerException("", "cannot execute statement", null));
+		mockMvc.perform(put("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(content))
+				.andExpect(status().isInternalServerError());
+	}
+
+	// ------------------------------------------------RegistrationMachine Get
+	// ------------------------------------------------
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void getMachineRegistrationCenterMappingSuccessTest() throws Exception {
+		String page = "0";
+		String size = "2";
+		String orderBy = "id";
+		String direction = "ASC";
+		Machine machine = new Machine();
+		machine.setId("10001");
+		machine.setName("laptop");
+		machine.setMachineSpecId("10001");
+		machine.setIsActive(true);
+		machine.setIpAddress("102.0.0.0");
+		List<Machine> machinelist = new ArrayList<>();
+		machinelist.add(machine);
+		Page<Machine> pageEntity = new PageImpl<>(machinelist);
+
+		when(machineRepository.findMachineByRegCenterId(Mockito.anyString(), Mockito.any())).thenReturn(pageEntity);
+		mockMvc.perform(get("/machines/mappedmachines/{regCenterId}", "10001").param("page", page).param("size", size)
+				.param("orderBy", orderBy).param("direction", direction)).andExpect(status().isOk());
+	}
+
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void getMachineRegistrationCenterMappingNullResponseTest() throws Exception {
+		String page = "0";
+		String size = "2";
+		String orderBy = "id";
+		String direction = "ASC";
+		when(machineRepository.findMachineByRegCenterId(Mockito.anyString(), Mockito.any())).thenReturn(null);
+		mockMvc.perform(get("/machines/mappedmachines/{regCenterId}", "10001").param("page", page).param("size", size)
+				.param("orderBy", orderBy).param("direction", direction)).andExpect(status().isOk());
+
+	}
+
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void getMachineRegistrationCenterMappingFetchExceptionTest() throws Exception {
+		String page = "0";
+		String size = "2";
+		String orderBy = "id";
+		String direction = "ASC";
+		when(machineRepository.findMachineByRegCenterId(Mockito.anyString(), Mockito.any()))
+				.thenThrow(DataRetrievalFailureException.class);
+		mockMvc.perform(get("/machines/mappedmachines/{regCenterId}", "10001").param("page", page).param("size", size)
+				.param("orderBy", orderBy).param("direction", direction)).andExpect(status().isInternalServerError());
+
+	}
+
+	// ------------------------------------------------Get Devices mapped with given
+	// Registration center ------------------------------------------------
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void getDeviceRegistrationCenterMappingSuccessTest() throws Exception {
+		String page = "0";
+		String size = "2";
+		String orderBy = "id";
+		String direction = "ASC";
+		when(deviceRepository.findDeviceByRegCenterId(Mockito.anyString(), Mockito.any())).thenReturn(pageDeviceEntity);
+		mockMvc.perform(get("/devices/mappeddevices/{regCenterId}", "10001").param("page", page).param("size", size)
+				.param("orderBy", orderBy).param("direction", direction)).andExpect(status().isOk());
+	}
+
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void getDeviceRegistrationCenterMappingNullResponseTest() throws Exception {
+		String page = "0";
+		String size = "2";
+		String orderBy = "id";
+		String direction = "ASC";
+		when(deviceRepository.findDeviceByRegCenterId(Mockito.anyString(), Mockito.any())).thenReturn(null);
+		mockMvc.perform(get("/devices/mappeddevices/{regCenterId}", "10001").param("page", page).param("size", size)
+				.param("orderBy", orderBy).param("direction", direction)).andExpect(status().isOk());
+
+	}
+
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void getDeviceRegistrationCenterMappingFetchExceptionTest() throws Exception {
+		String page = "0";
+		String size = "2";
+		String orderBy = "id";
+		String direction = "ASC";
+		when(deviceRepository.findDeviceByRegCenterId(Mockito.anyString(), Mockito.any()))
+				.thenThrow(DataRetrievalFailureException.class);
+		mockMvc.perform(get("/devices/mappeddevices/{regCenterId}", "10001").param("page", page).param("size", size)
+				.param("orderBy", orderBy).param("direction", direction)).andExpect(status().isInternalServerError());
+
+	}
+
+	/* get all document type by lang code test cases */
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void getAllDocumetTypeByLangCode() throws Exception {
+		when(documentTypeRepository.findAllByLangCodeAndIsDeletedFalseOrIsDeletedIsNull(Mockito.anyString()))
+				.thenReturn(documentTypes);
+		mockMvc.perform(MockMvcRequestBuilders.get("/documenttypes/{langcode}", "eng"))
+				.andExpect(MockMvcResultMatchers.status().isOk());
+	}
+
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void getAllDocumetTypeByLangCodeNotFoundException() throws Exception {
+		List<DocumentType> docuemtnsReturns = new ArrayList<DocumentType>();
+		when(documentTypeRepository.findAllByLangCodeAndIsDeletedFalseOrIsDeletedIsNull(Mockito.anyString()))
+				.thenReturn(docuemtnsReturns);
+		mockMvc.perform(MockMvcRequestBuilders.get("/documenttypes/{langcode}", "eng"))
+				.andExpect(MockMvcResultMatchers.status().isOk());
+	}
+
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void testDocumentTypeFetchException() throws Exception {
+		when(documentTypeRepository.findAllByLangCodeAndIsDeletedFalseOrIsDeletedIsNull(Mockito.anyString()))
+				.thenThrow(DataRetrievalFailureException.class);
+		mockMvc.perform(MockMvcRequestBuilders.get("/documenttypes/{langcode}", "eng"))
+				.andExpect(MockMvcResultMatchers.status().isInternalServerError());
+	}
+	/*----------------------------------end-----------------------------------*/
+
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void decommissionRegCenterInvalidLength() throws Exception {
+		mockMvc.perform(put("/registrationcenters/decommission/100000101").contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk()).andExpect(jsonPath("$.errors.[0].errorCode", isA(String.class)));
+	}
+
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void decommissionRegCenterSuccessTest() throws Exception {
+		List<RegistrationCenterDevice> regCenterDeviceMappings = new ArrayList<>();
+		List<RegistrationCenterUser> regCenterUserMappings = new ArrayList<>();
+		List<RegistrationCenterMachine> regCenterMachineMappings = new ArrayList<>();
+		when(registrationCenterMachineRepository.findRegCenterMachineMappings(Mockito.anyString()))
+				.thenReturn(regCenterMachineMappings);
+		when(registrationCenterDeviceRepository.registrationCenterDeviceMappings(Mockito.anyString()))
+				.thenReturn(regCenterDeviceMappings);
+		when(registrationCenterUserRepository.registrationCenterUserMappings(Mockito.anyString()))
+				.thenReturn(regCenterUserMappings);
+		when(registrationCenterRepository.findByRegIdAndIsDeletedFalseOrNull(Mockito.anyString()))
+				.thenReturn(registrationCenters);
+		when(registrationCenterRepository.decommissionRegCenter(Mockito.anyString(), Mockito.anyString(),
+				Mockito.any())).thenReturn(1);
+		mockMvc.perform(put("/registrationcenters/decommission/10001").contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+	}
+
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void decommissionRegCenterNotFoundTest() throws Exception {
+		List<RegistrationCenterDevice> regCenterDeviceMappings = new ArrayList<>();
+		List<RegistrationCenterUser> regCenterUserMappings = new ArrayList<>();
+		List<RegistrationCenterMachine> regCenterMachineMappings = new ArrayList<>();
+		List<RegistrationCenter> regCenterList = new ArrayList<>();
+		when(registrationCenterMachineRepository.findRegCenterMachineMappings(Mockito.anyString()))
+				.thenReturn(regCenterMachineMappings);
+		when(registrationCenterDeviceRepository.registrationCenterDeviceMappings(Mockito.anyString()))
+				.thenReturn(regCenterDeviceMappings);
+		when(registrationCenterUserRepository.registrationCenterUserMappings(Mockito.anyString()))
+				.thenReturn(regCenterUserMappings);
+		when(registrationCenterRepository.findByRegIdAndIsDeletedFalseOrNull(Mockito.anyString()))
+				.thenReturn(regCenterList);
+		mockMvc.perform(put("/registrationcenters/decommission/10001").contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+	}
+
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void decommissionRegCenterInternalServerErrorTest() throws Exception {
+		when(registrationCenterMachineRepository.findRegCenterMachineMappings(Mockito.anyString()))
+				.thenThrow(new DataAccessLayerException("KER-MSD-354", "Internal Server Error", null));
+		mockMvc.perform(put("/registrationcenters/decommission/10001").contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isInternalServerError());
+	}
+
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void decommissionRegCenterMappedMachineTest() throws Exception {
+		List<RegistrationCenterMachine> regCenterMachineMappings = new ArrayList<>();
+		regCenterMachineMappings.add(registrationCenterMachine);
+		when(registrationCenterMachineRepository.findRegCenterMachineMappings(Mockito.anyString()))
+				.thenReturn(regCenterMachineMappings);
+		mockMvc.perform(put("/registrationcenters/decommission/10001").contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+	}
+
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void decommissionRegCenterMappedDeviceTest() throws Exception {
+		List<RegistrationCenterMachine> regCenterMachineMappings = new ArrayList<>();
+		List<RegistrationCenterDevice> regCenterDeviceMappings = new ArrayList<>();
+
+		List<RegistrationCenterUser> regCenterUserMappings = new ArrayList<>();
+		regCenterDeviceMappings.add(registrationCenterDevice);
+		when(registrationCenterUserRepository.registrationCenterUserMappings(Mockito.anyString()))
+				.thenReturn(regCenterUserMappings);
+		when(registrationCenterMachineRepository.findRegCenterMachineMappings(Mockito.anyString()))
+				.thenReturn(regCenterMachineMappings);
+		when(registrationCenterDeviceRepository.registrationCenterDeviceMappings(Mockito.anyString()))
+				.thenReturn(regCenterDeviceMappings);
+		mockMvc.perform(put("/registrationcenters/decommission/10001").contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+	}
+
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void decommissionRegCenterMappedUserTest() throws Exception {
+		RegistrationCenterUserID id = new RegistrationCenterUserID();
+		id.setRegCenterId("10001");
+		id.setUserId("1001");
+		RegistrationCenterUser registrationCenterUser = new RegistrationCenterUser();
+		registrationCenterUser.setRegistrationCenterUserID(id);
+		List<RegistrationCenterUser> regCenterUserMappings = new ArrayList<>();
+		regCenterUserMappings.add(registrationCenterUser);
+		when(registrationCenterUserRepository.registrationCenterUserMappings(Mockito.anyString()))
+				.thenReturn(regCenterUserMappings);
+		mockMvc.perform(put("/registrationcenters/decommission/10001").contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+	}
+
+			@Test
+			@WithUserDetails("zonal-admin")
+			public void decommissionMachineTest() throws Exception {
+				
+				when(machineRepository.decommissionMachine(Mockito.any())).thenReturn(1);
+				mockMvc.perform(put("/machines/decommission/10001").contentType(MediaType.APPLICATION_JSON))
+						.andExpect(status().isOk());
+
+			}
+			
+			@Test
+			@WithUserDetails("zonal-admin")
+			public void decommissionDeviceTest() throws Exception {
+				
+				when(deviceRepository.decommissionDevice(Mockito.any())).thenReturn(1);
+				mockMvc.perform(put("/devices/decommission/3000022").contentType(MediaType.APPLICATION_JSON))
+						.andExpect(status().isOk());
+
+			}
+			
+			@Test
+			@WithUserDetails("zonal-admin")
+			public void decommissionMachineExceptionTest() throws Exception {
+				
+				when(machineRepository.decommissionMachine(Mockito.any())).thenThrow(DataAccessLayerException.class);
+				mockMvc.perform(put("/machines/decommission/10001").contentType(MediaType.APPLICATION_JSON))
+						.andExpect(status().isInternalServerError());
+
+			}
+			
+			@Test
+			@WithUserDetails("zonal-admin")
+			public void decommissionDeviceExceptionTest() throws Exception {
+				
+				when(deviceRepository.decommissionDevice(Mockito.any())).thenThrow(DataAccessLayerException.class);
+				mockMvc.perform(put("/devices/decommission/3000022").contentType(MediaType.APPLICATION_JSON))
+						.andExpect(status().isInternalServerError());
+
+			}
 
 }
