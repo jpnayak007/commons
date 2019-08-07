@@ -2410,7 +2410,7 @@ public class MasterdataIntegrationTest {
 				Mockito.anyString())).thenThrow(DataAccessLayerException.class);
 		when(locationRepository.getAllLocationsByLangCodeAndLevel(Mockito.anyString(), Mockito.anyShort()))
 				.thenReturn(locationHierarchies);
-		mockMvc.perform(get("/registrationcenters/ENG/1/PATANA").contentType(MediaType.APPLICATION_JSON))
+		mockMvc.perform(get("/registrationcenters/ENG/2/PATANA").contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isInternalServerError());
 
 	}
@@ -2466,7 +2466,7 @@ public class MasterdataIntegrationTest {
 		when(registrationCenterRepository.findRegistrationCenterByListOfLocationCode(Mockito.anySet(),
 				Mockito.anyString())).thenThrow(DataAccessLayerException.class);
 
-		mockMvc.perform(get("/registrationcenters/ENG/5/names").param("name", "PATANA")
+		mockMvc.perform(get("/registrationcenters/ENG/2/names").param("name", "PATANA")
 				.param("name", "Bangalore Central").contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isInternalServerError());
 
