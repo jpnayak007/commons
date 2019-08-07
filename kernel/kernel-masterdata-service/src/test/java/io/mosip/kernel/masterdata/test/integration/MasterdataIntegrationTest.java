@@ -85,8 +85,8 @@ import io.mosip.kernel.masterdata.dto.RegistrationCenterDeviceHistoryDto;
 import io.mosip.kernel.masterdata.dto.RegistrationCenterDto;
 import io.mosip.kernel.masterdata.dto.RegistrationCenterMachineDeviceDto;
 import io.mosip.kernel.masterdata.dto.RegistrationCenterMachineDto;
-import io.mosip.kernel.masterdata.dto.RegistrationCenterPutReqAdmDto;
-import io.mosip.kernel.masterdata.dto.RegCenterPostReqPrimAdmDto;
+import io.mosip.kernel.masterdata.dto.RegCenterPutReqDto;
+import io.mosip.kernel.masterdata.dto.RegCenterPostReqDto;
 import io.mosip.kernel.masterdata.dto.RegistrationCenterTypeDto;
 import io.mosip.kernel.masterdata.dto.RegistrationCenterUserMachineMappingDto;
 import io.mosip.kernel.masterdata.dto.TemplateDto;
@@ -191,6 +191,7 @@ import io.mosip.kernel.masterdata.repository.UserDetailsRepository;
 import io.mosip.kernel.masterdata.repository.ValidDocumentRepository;
 import io.mosip.kernel.masterdata.test.TestBootApplication;
 import io.mosip.kernel.masterdata.utils.MapperUtils;
+import io.mosip.kernel.masterdata.utils.RegistrationCenterValidator;
 import io.mosip.kernel.masterdata.utils.ZoneUtils;
 
 /**
@@ -1076,12 +1077,14 @@ public class MasterdataIntegrationTest {
 				LocalDateTime.now().minusDays(1), "eng");
 	}
 
-	RegistarionCenterReqDto<RegCenterPostReqPrimAdmDto> regRequest =null;	
+	RegistarionCenterReqDto<RegCenterPostReqDto> regPostRequest =null;	
 
 	RegistrationCenter registrationCenter1 = null;
 	RegistrationCenterHistory registrationCenterHistory = null;
 	RegistrationCenter registrationCenter2 = null;
 	RegistrationCenter registrationCenter3 = null;
+	
+	List<RegistrationCenter> registrationCenterEntityList = null;
 
 	private void registrationCenterSetup() {
 		registrationCenter = new RegistrationCenter();
@@ -1118,12 +1121,12 @@ public class MasterdataIntegrationTest {
 		LocalTime lunchEndTime = LocalTime.of(1, 10, 10, 30);
 		LocalTime perKioskProcessTime = LocalTime.of(1, 10, 10, 30);
 
-		regRequest = new RegistarionCenterReqDto<>();
-		List<RegCenterPostReqPrimAdmDto> requestSet = new ArrayList<>();
-		regRequest.setId("mosip.idtype.create");
-		regRequest.setVersion("1.0");
+		regPostRequest = new RegistarionCenterReqDto<>();
+		List<RegCenterPostReqDto> regCenterPostReqDtoList = new ArrayList<>();
+		regPostRequest.setId("mosip.idtype.create");
+		regPostRequest.setVersion("1.0");
 		// 1st obj
-		RegCenterPostReqPrimAdmDto registrationCenterDto1 = new RegCenterPostReqPrimAdmDto();
+		RegCenterPostReqDto registrationCenterDto1 = new RegCenterPostReqDto();
 		registrationCenterDto1.setName("TEST CENTER");
 		registrationCenterDto1.setAddressLine1("Address Line 1");
 		registrationCenterDto1.setAddressLine2("Address Line 2");
@@ -1132,7 +1135,6 @@ public class MasterdataIntegrationTest {
 		registrationCenterDto1.setContactPerson("Test");
 		registrationCenterDto1.setContactPhone("9999999999");
 		registrationCenterDto1.setHolidayLocationCode("HLC01");
-		// registrationCenterDto1.setId("676");
 		registrationCenterDto1.setLangCode("eng");
 		registrationCenterDto1.setLatitude("12.9646818");
 		registrationCenterDto1.setLocationCode("10190");
@@ -1145,10 +1147,10 @@ public class MasterdataIntegrationTest {
 		registrationCenterDto1.setTimeZone("UTC");
 		registrationCenterDto1.setWorkingHours("9");
 		registrationCenterDto1.setZoneCode("JRD");
-		requestSet.add(registrationCenterDto1);
+		regCenterPostReqDtoList.add(registrationCenterDto1);
 
 		// 2nd obj
-		RegCenterPostReqPrimAdmDto registrationCenterDto2 = new RegCenterPostReqPrimAdmDto();
+		RegCenterPostReqDto registrationCenterDto2 = new RegCenterPostReqDto();
 		registrationCenterDto2.setName("TEST CENTER");
 		registrationCenterDto2.setAddressLine1("Address Line 1");
 		registrationCenterDto2.setAddressLine2("Address Line 2");
@@ -1157,7 +1159,6 @@ public class MasterdataIntegrationTest {
 		registrationCenterDto2.setContactPerson("Test");
 		registrationCenterDto2.setContactPhone("9999999999");
 		registrationCenterDto2.setHolidayLocationCode("HLC01");
-		// registrationCenterDto2.setId("676");
 		registrationCenterDto2.setLangCode("ara");
 		registrationCenterDto2.setLatitude("12.9646818");
 		registrationCenterDto2.setLocationCode("10190");
@@ -1170,10 +1171,10 @@ public class MasterdataIntegrationTest {
 		registrationCenterDto2.setTimeZone("UTC");
 		registrationCenterDto2.setWorkingHours("9");
 		registrationCenterDto2.setZoneCode("JRD");
-		requestSet.add(registrationCenterDto2);
+		regCenterPostReqDtoList.add(registrationCenterDto2);
 
 		// 3rd obj
-		RegCenterPostReqPrimAdmDto registrationCenterDto3 = new RegCenterPostReqPrimAdmDto();
+		RegCenterPostReqDto registrationCenterDto3 = new RegCenterPostReqDto();
 		registrationCenterDto3.setName("TEST CENTER");
 		registrationCenterDto3.setAddressLine1("Address Line 1");
 		registrationCenterDto3.setAddressLine2("Address Line 2");
@@ -1182,7 +1183,6 @@ public class MasterdataIntegrationTest {
 		registrationCenterDto3.setContactPerson("Test");
 		registrationCenterDto3.setContactPhone("9999999999");
 		registrationCenterDto3.setHolidayLocationCode("HLC01");
-		// registrationCenterDto3.setId("676");
 		registrationCenterDto3.setLangCode("fra");
 		registrationCenterDto3.setLatitude("12.9646818");
 		registrationCenterDto3.setLocationCode("10190");
@@ -1195,11 +1195,11 @@ public class MasterdataIntegrationTest {
 		registrationCenterDto3.setTimeZone("UTC");
 		registrationCenterDto3.setWorkingHours("9");
 		registrationCenterDto3.setZoneCode("JRD");
-		requestSet.add(registrationCenterDto3);
+		regCenterPostReqDtoList.add(registrationCenterDto3);
 
-		regRequest.setRequest(requestSet);
+		regPostRequest.setRequest(regCenterPostReqDtoList);
 
-		List<RegistrationCenter> registrationCenterEntityList = new ArrayList<>();
+		registrationCenterEntityList = new ArrayList<>();
 		// entity1
 		registrationCenter1 = new RegistrationCenter();
 		registrationCenter1.setName("TEST CENTER");
@@ -1255,7 +1255,7 @@ public class MasterdataIntegrationTest {
 	}
 
 	// update registartion Center
-	RegistarionCenterReqDto<RegistrationCenterPutReqAdmDto> updRegRequest = null;
+	RegistarionCenterReqDto<RegCenterPutReqDto> updRegRequest = null;
 	RegistrationCenter registrationCenter11 = null;
 	RegistrationCenterHistory registrationCenterHistory1 = null;
 
@@ -1267,11 +1267,11 @@ public class MasterdataIntegrationTest {
 		LocalTime perKioskProcessTime = LocalTime.of(1, 10, 10, 30);
 
 		updRegRequest = new RegistarionCenterReqDto<>();
-		List<RegistrationCenterPutReqAdmDto> updRequestSet = new ArrayList<>();
+		List<RegCenterPutReqDto> updRequestList = new ArrayList<>();
 		updRegRequest.setId("mosip.idtype.create");
 		updRegRequest.setVersion("1.0");
 		// 1st obj
-		RegistrationCenterPutReqAdmDto registrationCenterPutReqAdmDto1 = new RegistrationCenterPutReqAdmDto();
+		RegCenterPutReqDto registrationCenterPutReqAdmDto1 = new RegCenterPutReqDto();
 		registrationCenterPutReqAdmDto1.setName("TEST CENTER");
 		registrationCenterPutReqAdmDto1.setAddressLine1("Address Line 1");
 		registrationCenterPutReqAdmDto1.setAddressLine2("Address Line 2");
@@ -1294,10 +1294,10 @@ public class MasterdataIntegrationTest {
 		registrationCenterPutReqAdmDto1.setWorkingHours("9");
 		registrationCenterPutReqAdmDto1.setIsActive(false);
 		registrationCenterPutReqAdmDto1.setZoneCode("JRD");
-		updRequestSet.add(registrationCenterPutReqAdmDto1);
+		updRequestList.add(registrationCenterPutReqAdmDto1);
 
 		// 2nd obj
-		RegistrationCenterPutReqAdmDto registrationCenterPutReqAdmDto2 = new RegistrationCenterPutReqAdmDto();
+		RegCenterPutReqDto registrationCenterPutReqAdmDto2 = new RegCenterPutReqDto();
 		registrationCenterPutReqAdmDto2.setName("TEST CENTER");
 		registrationCenterPutReqAdmDto2.setAddressLine1("Address Line 1");
 		registrationCenterPutReqAdmDto2.setAddressLine2("Address Line 2");
@@ -1320,10 +1320,10 @@ public class MasterdataIntegrationTest {
 		registrationCenterPutReqAdmDto2.setWorkingHours("9");
 		registrationCenterPutReqAdmDto2.setIsActive(false);
 		registrationCenterPutReqAdmDto2.setZoneCode("JRD");
-		updRequestSet.add(registrationCenterPutReqAdmDto2);
+		updRequestList.add(registrationCenterPutReqAdmDto2);
 
 		// 3rd obj
-		RegistrationCenterPutReqAdmDto registrationCenterPutReqAdmDto3 = new RegistrationCenterPutReqAdmDto();
+		RegCenterPutReqDto registrationCenterPutReqAdmDto3 = new RegCenterPutReqDto();
 		registrationCenterPutReqAdmDto3.setName("TEST CENTER");
 		registrationCenterPutReqAdmDto3.setAddressLine1("Address Line 1");
 		registrationCenterPutReqAdmDto3.setAddressLine2("Address Line 2");
@@ -1346,9 +1346,9 @@ public class MasterdataIntegrationTest {
 		registrationCenterPutReqAdmDto3.setWorkingHours("9");
 		registrationCenterPutReqAdmDto3.setIsActive(false);
 		registrationCenterPutReqAdmDto3.setZoneCode("JRD");
-		updRequestSet.add(registrationCenterPutReqAdmDto3);
+		updRequestList.add(registrationCenterPutReqAdmDto3);
 
-		updRegRequest.setRequest(updRequestSet);
+		updRegRequest.setRequest(updRequestList);
 
 		List<RegistrationCenter> registrationCenterEntityList = new ArrayList<>();
 		// entity1
@@ -4854,23 +4854,28 @@ public class MasterdataIntegrationTest {
 		mockMvc.perform(get("/validdocuments/eng")).andExpect(status().isInternalServerError());
 	}
 
-	/*
-	 * @Test
-	 * 
-	 * @WithUserDetails("test") public void createRegistrationCenterExceptionTest()
-	 * throws Exception { RequestWrapper<RegistrationCenterDto> requestDto = new
-	 * RequestWrapper<>(); requestDto.setId("mosip.idtype.create");
-	 * requestDto.setVersion("1.0"); RegistrationCenterDto registrationCenterDto =
-	 * getRegCenterDto();
-	 * 
-	 * requestDto.setRequest(registrationCenterDto); String contentJson =
-	 * mapper.writeValueAsString(requestDto);
-	 * when(registrationCenterRepository.create(Mockito.any())) .thenThrow(new
-	 * DataAccessLayerException("", "cannot execute statement", null));
-	 * mockMvc.perform(post("/registrationcenters").contentType(MediaType.
-	 * APPLICATION_JSON).content(contentJson))
-	 * .andExpect(status().isInternalServerError()); }
-	 */
+	
+	/*@Autowired
+	RegistrationCenterValidator registrationCenterValidator;
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void createRegistrationCenterExceptionTest() throws Exception {
+		RequestWrapper<RegistrationCenterDto> requestDto = new RequestWrapper<>();
+		requestDto.setId("mosip.idtype.create");
+		requestDto.setVersion("1.0");
+		RegistrationCenterDto registrationCenterDto = getRegCenterDto();
+
+		requestDto.setRequest(registrationCenterDto);
+		String contentJson = mapper.writeValueAsString(requestDto);
+		when(registrationCenterValidator.validatePrimarySencodaryLangMandatoryFields(Mockito.any(),
+                        Mockito.any(), Mockito.any(), Mockito.any(),
+                        Mockito.any(), Mockito.any()));
+		when(registrationCenterRepository.create(Mockito.any()))
+				.thenThrow(new DataAccessLayerException("", "cannot execute statement", null));
+		mockMvc.perform(post("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(contentJson))
+				.andExpect(status().isInternalServerError());
+	}*/
+	 
 
 	/*
 	 * @Test
@@ -6174,14 +6179,11 @@ public class MasterdataIntegrationTest {
 	// -----------------------createRegistrationCenter
 	// TestCase------------------------
 
-	@Autowired
-	RegistrationCenterIdGenerator<String> registrationCenterIdGenerator;
 	
-	@Ignore
 	@Test
 	@WithUserDetails("zonal-admin")
-	public void createRegistrationCenterAdminTest() throws Exception {
-		String content = objectMapper.writeValueAsString(regRequest);
+	public void createRegCenterAdminTest() throws Exception {
+		String content = objectMapper.writeValueAsString(regPostRequest);
 		Zone zone = new Zone();
 		zone.setCode("JRD");
 		List<Zone> zones = new ArrayList<>();
@@ -6193,11 +6195,10 @@ public class MasterdataIntegrationTest {
 				.andExpect(status().isOk());
 	}
 	
-	@Ignore
 	@Test
 	@WithUserDetails("zonal-admin")
-	public void createRegistrationCenterAdminDataExcpTest() throws Exception {
-		String content = objectMapper.writeValueAsString(regRequest);
+	public void createRegCenterAdminDataExcpTest() throws Exception {
+		String content = objectMapper.writeValueAsString(regPostRequest);
 		Zone zone = new Zone();
 		zone.setCode("JRD");
 		List<Zone> zones = new ArrayList<>();
@@ -6210,10 +6211,9 @@ public class MasterdataIntegrationTest {
 	}
 	
 	//------ update the RegitrationCenter----------------------
-	@Ignore
 	@Test
 	@WithUserDetails("zonal-admin")
-	public void updateRegistrationCenterAdminTest() throws Exception {
+	public void updateRegCenterAdminTest() throws Exception {
 		String content = objectMapper.writeValueAsString(updRegRequest);
 		Zone zone = new Zone();
 		zone.setCode("JRD");
@@ -6228,7 +6228,28 @@ public class MasterdataIntegrationTest {
 				.andExpect(status().isOk());
 	}
 	
-	@Ignore
+	
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void updateRegCenterNewCreateAdminTest() throws Exception {
+		String content = objectMapper.writeValueAsString(updRegRequest);
+		Zone zone = new Zone();
+		zone.setCode("JRD");
+		List<Zone> zones = new ArrayList<>();
+		zones.add(zone);
+		when(zoneUtils.getUserZones()).thenReturn(zones);
+		when(registrationCenterRepository.findByIdAndLangCodeAndIsDeletedTrue(Mockito.any(), Mockito.any()))
+				.thenReturn(null);
+		//when(registrationCenterRepository.update(Mockito.any())).thenReturn(registrationCenter1);
+		when(registrationCenterRepository.findByRegCenterIdAndIsDeletedFalseOrNull(Mockito.any()))
+		.thenReturn(registrationCenterEntityList);
+		when(registrationCenterRepository.create(Mockito.any())).thenReturn(registrationCenter1);
+		when(repositoryCenterHistoryRepository.create(Mockito.any())).thenReturn(registrationCenterHistory);
+		mockMvc.perform(put("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(content))
+				.andExpect(status().isOk());
+	}
+	
+	
 	@Test
 	@WithUserDetails("zonal-admin")
 	public void updateRegistrationCenterAdminDataExcpTest() throws Exception {
