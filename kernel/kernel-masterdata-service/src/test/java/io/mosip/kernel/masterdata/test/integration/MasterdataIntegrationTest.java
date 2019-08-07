@@ -4225,7 +4225,7 @@ public class MasterdataIntegrationTest {
 	}
 
 	@Test
-	@WithUserDetails("test")
+	@WithUserDetails("zonal-admin")
 	public void createBlacklistedWordsLangValidationExceptionTest() throws Exception {
 		RequestWrapper<BlacklistedWordsDto> requestDto = new RequestWrapper<BlacklistedWordsDto>();
 		requestDto.setId("mosip.language.create");
@@ -4242,7 +4242,7 @@ public class MasterdataIntegrationTest {
 	}
 
 	@Test
-	@WithUserDetails("test")
+	@WithUserDetails("zonal-admin")
 	public void addBlackListedWordExceptionTest() throws Exception {
 		RequestWrapper<BlacklistedWordsDto> requestDto = new RequestWrapper<>();
 		requestDto.setId("mosip.idtype.create");
@@ -4400,7 +4400,7 @@ public class MasterdataIntegrationTest {
 	}
 
 	@Test
-	@WithUserDetails("test")
+	@WithUserDetails("zonal-admin")
 	public void addDocumentTypesDatabaseConnectionExceptionTest() throws Exception {
 		RequestWrapper<DocumentTypeDto> requestDto = new RequestWrapper<>();
 		requestDto.setId("mosip.idtype.create");
@@ -6506,6 +6506,24 @@ public class MasterdataIntegrationTest {
 				mockMvc.perform(put("/devices/decommission/3000022").contentType(MediaType.APPLICATION_JSON))
 						.andExpect(status().isInternalServerError());
 
+			}
+			
+			@Test
+			@WithUserDetails("zonal-admin")
+			public void testMapDocCategoryAndDocType() throws Exception {				
+				Mockito.when(validDocumentRepository.findByDocCategoryCodeAndDocTypeCode(Mockito.anyString(), Mockito.anyString()))
+				.thenReturn(new ValidDocument());
+				mockMvc.perform(put("/validdocuments/map/POE/CIN"))
+						.andExpect(status().isInternalServerError());
+			}
+
+			@Test
+			@WithUserDetails("zonal-admin")
+			public void testUnmapDocCategoryAndDocType() throws Exception {
+				Mockito.when(validDocumentRepository.findByDocCategoryCodeAndDocTypeCode(Mockito.anyString(), Mockito.anyString()))
+				.thenReturn(new ValidDocument());
+				mockMvc.perform(MockMvcRequestBuilders.put("/validdocuments/unmap/POE/CIN"))
+						.andExpect(MockMvcResultMatchers.status().isInternalServerError());
 			}
 
 }
