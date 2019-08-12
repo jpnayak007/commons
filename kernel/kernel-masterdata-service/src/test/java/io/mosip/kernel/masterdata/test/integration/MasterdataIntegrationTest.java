@@ -6252,6 +6252,25 @@ public class MasterdataIntegrationTest {
 	
 	@Test
 	@WithUserDetails("zonal-admin")
+	public void updateRegCenterEmptyAdminTest() throws Exception {
+		String content = objectMapper.writeValueAsString(updRegRequest);
+		List<RegistrationCenter> emptList = new ArrayList<>();
+		Zone zone = new Zone();
+		zone.setCode("JRD");
+		List<Zone> zones = new ArrayList<>();
+		zones.add(zone);
+		when(zoneUtils.getUserZones()).thenReturn(zones);
+		when(registrationCenterRepository.findByIdAndLangCodeAndIsDeletedTrue(Mockito.any(), Mockito.any()))
+				.thenReturn(null);
+		when(registrationCenterRepository.findByRegCenterIdAndIsDeletedFalseOrNull(Mockito.any()))
+		.thenReturn(emptList);
+		mockMvc.perform(put("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(content))
+				.andExpect(status().isOk());
+	}
+	
+	
+	@Test
+	@WithUserDetails("zonal-admin")
 	public void updateRegistrationCenterAdminDataExcpTest() throws Exception {
 		String content = objectMapper.writeValueAsString(updRegRequest);
 		Zone zone = new Zone();
