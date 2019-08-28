@@ -988,7 +988,7 @@ public class MasterdataIntegrationTest {
 
 		objectList = new ArrayList<>();
 		Object objects[] = { "1001", "Laptop", "129.0.0.0", "123", "129.0.0.0", "1212", "eng", true, validDateTime,
-				"LaptopCode" };
+				"NTH","LaptopCode" };
 		objectList.add(objects);
 
 		deviceHistory = new DeviceHistory();
