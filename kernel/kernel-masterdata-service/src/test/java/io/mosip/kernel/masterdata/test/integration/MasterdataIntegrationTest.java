@@ -187,7 +187,7 @@ import io.mosip.kernel.masterdata.repository.TemplateFileFormatRepository;
 import io.mosip.kernel.masterdata.repository.TemplateRepository;
 import io.mosip.kernel.masterdata.repository.TemplateTypeRepository;
 import io.mosip.kernel.masterdata.repository.TitleRepository;
-import io.mosip.kernel.masterdata.repository.UserDetailsRepository;
+import io.mosip.kernel.masterdata.repository.UserDetailsHistoryRepository;
 import io.mosip.kernel.masterdata.repository.ValidDocumentRepository;
 import io.mosip.kernel.masterdata.test.TestBootApplication;
 import io.mosip.kernel.masterdata.utils.MapperUtils;
@@ -240,7 +240,7 @@ public class MasterdataIntegrationTest {
 	List<UserDetailsHistory> users = new ArrayList<>();
 
 	@MockBean
-	private UserDetailsRepository userDetailsRepository;
+	private UserDetailsHistoryRepository userDetailsRepository;
 
 	@MockBean
 	RegistrationCenterUserRepository registrationCenterUserRepository;
