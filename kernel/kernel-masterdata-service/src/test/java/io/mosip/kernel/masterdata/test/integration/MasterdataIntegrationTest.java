@@ -520,7 +520,7 @@ public class MasterdataIntegrationTest {
 		
 		unMapUserRegCenter();
 		
-		//mapUserRegCenter();
+		mapUserRegCenter();
 	}
 
 	private void userDetailsHistorySetup() {
@@ -6657,6 +6657,84 @@ public class MasterdataIntegrationTest {
 		mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenteruser/unmap/110005/10008"))
 				.andExpect(MockMvcResultMatchers.status().isInternalServerError());
 	}
+	
+	// -----------------------------------map RegistrationCenterUser----------	
+		private RegistrationCenterUserHistory mapRegistrationCenterUserHistory;
+		private RegistrationCenterUser mapRegistrationCenterUserTrue;
+		private RegistrationCenterUser mapRegistrationCenterUser;
+		private RegistrationCenter mapRegCenter;
+		private List<Zone> mapZones;
+
+		private void mapUserRegCenter() {
+
+			mapRegistrationCenterUserHistory = new RegistrationCenterUserHistory();
+			mapRegistrationCenterUserTrue = new RegistrationCenterUser();
+			mapRegistrationCenterUserTrue.setRegistrationCenterUserID(new RegistrationCenterUserID("110005", "10008"));
+			mapRegistrationCenterUserTrue.setIsActive(true);
+
+			mapRegistrationCenterUser = new RegistrationCenterUser();
+			mapRegistrationCenterUser.setRegistrationCenterUserID(new RegistrationCenterUserID("110005", "10008"));
+			mapRegistrationCenterUser.setIsActive(false);
+
+			mapRegCenter = new RegistrationCenter();
+			mapRegCenter.setId("10008");
+			mapRegCenter.setZoneCode("MOR");
+
+			mapZones = new ArrayList<>();
+			Zone zone = new Zone("MOR", "eng", "Berkane", (short) 0, "Province", "MOR", " ");
+			mapZones.add(zone);
+
+		}
+
+		@Test
+		@WithUserDetails("zonal-admin")
+		public void testMapUserRegCenterNotFoundException() throws Exception {
+			when(zoneUtils.getUserZones()).thenReturn(mapZones);
+			when(registrationCenterRepository.findByLangCodeAndId(Mockito.any(), Mockito.any())).thenReturn(mapRegCenter);
+			when(registrationCenterUserRepository.findByUserIdAndRegCenterId(Mockito.any(), Mockito.any()))
+					.thenReturn(null);
+			when(registrationCenterUserRepository.create(Mockito.any())).thenReturn(mapRegistrationCenterUserTrue);
+			when(registrationCenterUserHistoryRepository.create(Mockito.any())).thenReturn(registrationCenterUserHistory);
+			mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenteruser/map/110005/10008"))
+					.andExpect(status().isOk());
+		}
+		
+		
+		
+		@Test
+		@WithUserDetails("zonal-admin")
+		public void testMapUserRegCenterTrue() throws Exception {
+			when(zoneUtils.getUserZones()).thenReturn(mapZones);
+			when(registrationCenterRepository.findByLangCodeAndId(Mockito.any(), Mockito.any())).thenReturn(mapRegCenter);
+			when(registrationCenterUserRepository.findByUserIdAndRegCenterId(Mockito.any(), Mockito.any()))
+					.thenReturn(mapRegistrationCenterUserTrue);
+			mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenteruser/map/110005/10008"))
+					.andExpect(status().isOk());
+		}
+		
+		@Test
+		@WithUserDetails("zonal-admin")
+		public void testMapUserRegCenterFalse() throws Exception {
+			when(zoneUtils.getUserZones()).thenReturn(mapZones);
+			when(registrationCenterRepository.findByLangCodeAndId(Mockito.any(), Mockito.any())).thenReturn(mapRegCenter);
+			when(registrationCenterUserRepository.findByUserIdAndRegCenterId(Mockito.any(), Mockito.any()))
+					.thenReturn(mapRegistrationCenterUser);
+			when(registrationCenterUserRepository.update(Mockito.any())).thenReturn(mapRegistrationCenterUserTrue);
+			when(registrationCenterUserHistoryRepository.create(Mockito.any())).thenReturn(registrationCenterUserHistory);
+			mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenteruser/map/110005/10008"))
+					.andExpect(status().isOk());
+		}
+		
+		@Test
+		@WithUserDetails("zonal-admin")
+		public void testMapUserRegCenterDataAccessException() throws Exception {
+			when(zoneUtils.getUserZones()).thenReturn(mapZones);
+			when(registrationCenterRepository.findByLangCodeAndId(Mockito.any(), Mockito.any())).thenReturn(mapRegCenter);
+			when(registrationCenterUserRepository.findByUserIdAndRegCenterId(Mockito.any(), Mockito.any()))
+					.thenThrow(DataAccessLayerException.class);
+			mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenteruser/map/110005/10008"))
+					.andExpect(MockMvcResultMatchers.status().isInternalServerError());
+		}
 
 	
 }
