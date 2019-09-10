@@ -6735,6 +6735,18 @@ public class MasterdataIntegrationTest {
 			mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenteruser/map/110005/10008"))
 					.andExpect(MockMvcResultMatchers.status().isInternalServerError());
 		}
+		
+		@Test
+		@WithUserDetails("zonal-admin")
+		public void testMapUserRegCenterNotFoundCreateDataAccessException() throws Exception {
+			when(zoneUtils.getUserZones()).thenReturn(mapZones);
+			when(registrationCenterRepository.findByLangCodeAndId(Mockito.any(), Mockito.any())).thenReturn(mapRegCenter);
+			when(registrationCenterUserRepository.findByUserIdAndRegCenterId(Mockito.any(), Mockito.any()))
+					.thenReturn(null);
+			when(registrationCenterUserRepository.create(Mockito.any())).thenThrow(DataAccessLayerException.class);
+			mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenteruser/map/110005/10008"))
+			.andExpect(MockMvcResultMatchers.status().isInternalServerError());
+		}
 
 	
 }
