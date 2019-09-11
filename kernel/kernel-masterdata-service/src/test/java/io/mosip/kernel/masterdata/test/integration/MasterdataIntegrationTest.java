@@ -135,6 +135,7 @@ import io.mosip.kernel.masterdata.entity.Title;
 import io.mosip.kernel.masterdata.entity.UserDetailsHistory;
 import io.mosip.kernel.masterdata.entity.ValidDocument;
 import io.mosip.kernel.masterdata.entity.Zone;
+import io.mosip.kernel.masterdata.entity.ZoneUser;
 import io.mosip.kernel.masterdata.entity.id.CodeAndLanguageCodeID;
 import io.mosip.kernel.masterdata.entity.id.CodeLangCodeAndRsnCatCodeID;
 import io.mosip.kernel.masterdata.entity.id.GenderID;
@@ -188,6 +189,7 @@ import io.mosip.kernel.masterdata.repository.TemplateTypeRepository;
 import io.mosip.kernel.masterdata.repository.TitleRepository;
 import io.mosip.kernel.masterdata.repository.UserDetailsHistoryRepository;
 import io.mosip.kernel.masterdata.repository.ValidDocumentRepository;
+import io.mosip.kernel.masterdata.repository.ZoneUserRepository;
 import io.mosip.kernel.masterdata.test.TestBootApplication;
 import io.mosip.kernel.masterdata.utils.MapperUtils;
 import io.mosip.kernel.masterdata.utils.ZoneUtils;
@@ -223,6 +225,9 @@ public class MasterdataIntegrationTest {
 
 	@MockBean
 	ZoneUtils zoneUtils;
+	
+	@MockBean
+	ZoneUserRepository zoneUserRepository;
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -6666,6 +6671,7 @@ public class MasterdataIntegrationTest {
 		private RegistrationCenterUser mapRegistrationCenterUser;
 		private RegistrationCenter mapRegCenter;
 		private List<Zone> mapZones;
+		private ZoneUser mapZoneUser;
 
 		private void mapUserRegCenter() {
 
@@ -6685,13 +6691,21 @@ public class MasterdataIntegrationTest {
 			mapZones = new ArrayList<>();
 			Zone zone = new Zone("MOR", "eng", "Berkane", (short) 0, "Province", "MOR", " ");
 			mapZones.add(zone);
+			
+			mapZoneUser = new ZoneUser();
+			mapZoneUser.setUserId("110005");
+			mapZoneUser.setZoneCode("MOR");
 
 		}
 
+		
+		
 		@Test
 		@WithUserDetails("zonal-admin")
 		public void testMapUserRegCenterNotFoundException() throws Exception {
 			when(zoneUtils.getUserZones()).thenReturn(mapZones);
+			when(zoneUserRepository.findByIdAndLangCode(Mockito.any())).thenReturn(mapZoneUser);
+			when(zoneUtils.getUserZonesByUserId(Mockito.any())).thenReturn(mapZones);
 			when(registrationCenterRepository.findByLangCodeAndId(Mockito.any(), Mockito.any())).thenReturn(mapRegCenter);
 			when(registrationCenterUserRepository.findByUserIdAndRegCenterId(Mockito.any(), Mockito.any()))
 					.thenReturn(null);
@@ -6707,6 +6721,8 @@ public class MasterdataIntegrationTest {
 		@WithUserDetails("zonal-admin")
 		public void testMapUserRegCenterTrue() throws Exception {
 			when(zoneUtils.getUserZones()).thenReturn(mapZones);
+			when(zoneUserRepository.findByIdAndLangCode(Mockito.any())).thenReturn(mapZoneUser);
+			when(zoneUtils.getUserZonesByUserId(Mockito.any())).thenReturn(mapZones);
 			when(registrationCenterRepository.findByLangCodeAndId(Mockito.any(), Mockito.any())).thenReturn(mapRegCenter);
 			when(registrationCenterUserRepository.findByUserIdAndRegCenterId(Mockito.any(), Mockito.any()))
 					.thenReturn(mapRegistrationCenterUserTrue);
@@ -6718,6 +6734,8 @@ public class MasterdataIntegrationTest {
 		@WithUserDetails("zonal-admin")
 		public void testMapUserRegCenterFalse() throws Exception {
 			when(zoneUtils.getUserZones()).thenReturn(mapZones);
+			when(zoneUserRepository.findByIdAndLangCode(Mockito.any())).thenReturn(mapZoneUser);
+			when(zoneUtils.getUserZonesByUserId(Mockito.any())).thenReturn(mapZones);
 			when(registrationCenterRepository.findByLangCodeAndId(Mockito.any(), Mockito.any())).thenReturn(mapRegCenter);
 			when(registrationCenterUserRepository.findByUserIdAndRegCenterId(Mockito.any(), Mockito.any()))
 					.thenReturn(mapRegistrationCenterUser);
@@ -6731,6 +6749,8 @@ public class MasterdataIntegrationTest {
 		@WithUserDetails("zonal-admin")
 		public void testMapUserRegCenterDataAccessException() throws Exception {
 			when(zoneUtils.getUserZones()).thenReturn(mapZones);
+			when(zoneUserRepository.findByIdAndLangCode(Mockito.any())).thenReturn(mapZoneUser);
+			when(zoneUtils.getUserZonesByUserId(Mockito.any())).thenReturn(mapZones);
 			when(registrationCenterRepository.findByLangCodeAndId(Mockito.any(), Mockito.any())).thenReturn(mapRegCenter);
 			when(registrationCenterUserRepository.findByUserIdAndRegCenterId(Mockito.any(), Mockito.any()))
 					.thenThrow(DataAccessLayerException.class);
@@ -6742,6 +6762,8 @@ public class MasterdataIntegrationTest {
 		@WithUserDetails("zonal-admin")
 		public void testMapUserRegCenterNotFoundCreateDataAccessException() throws Exception {
 			when(zoneUtils.getUserZones()).thenReturn(mapZones);
+			when(zoneUserRepository.findByIdAndLangCode(Mockito.any())).thenReturn(mapZoneUser);
+			when(zoneUtils.getUserZonesByUserId(Mockito.any())).thenReturn(mapZones);
 			when(registrationCenterRepository.findByLangCodeAndId(Mockito.any(), Mockito.any())).thenReturn(mapRegCenter);
 			when(registrationCenterUserRepository.findByUserIdAndRegCenterId(Mockito.any(), Mockito.any()))
 					.thenReturn(null);
