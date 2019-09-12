@@ -22,9 +22,11 @@ import java.time.Month;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.PriorityQueue;
 import java.util.Set;
 
 import org.junit.Before;
@@ -60,7 +62,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import io.mosip.kernel.core.dataaccess.exception.DataAccessLayerException;
 import io.mosip.kernel.core.http.RequestWrapper;
-import io.mosip.kernel.core.idgenerator.spi.RegistrationCenterIdGenerator;
 import io.mosip.kernel.masterdata.dto.BiometricAttributeDto;
 import io.mosip.kernel.masterdata.dto.BlacklistedWordsDto;
 import io.mosip.kernel.masterdata.dto.DeviceDto;
@@ -69,7 +70,6 @@ import io.mosip.kernel.masterdata.dto.DeviceTypeDto;
 import io.mosip.kernel.masterdata.dto.DocumentCategoryDto;
 import io.mosip.kernel.masterdata.dto.DocumentTypeDto;
 import io.mosip.kernel.masterdata.dto.GenderTypeDto;
-import io.mosip.kernel.masterdata.dto.IdDto;
 import io.mosip.kernel.masterdata.dto.IdTypeDto;
 import io.mosip.kernel.masterdata.dto.IndividualTypeDto;
 import io.mosip.kernel.masterdata.dto.LanguageDto;
@@ -79,14 +79,14 @@ import io.mosip.kernel.masterdata.dto.MachineTypeDto;
 import io.mosip.kernel.masterdata.dto.PostReasonCategoryDto;
 import io.mosip.kernel.masterdata.dto.ReasonListDto;
 import io.mosip.kernel.masterdata.dto.RegCenterMachineUserReqDto;
+import io.mosip.kernel.masterdata.dto.RegCenterPostReqDto;
+import io.mosip.kernel.masterdata.dto.RegCenterPutReqDto;
 import io.mosip.kernel.masterdata.dto.RegistarionCenterReqDto;
 import io.mosip.kernel.masterdata.dto.RegistrationCenterDeviceDto;
 import io.mosip.kernel.masterdata.dto.RegistrationCenterDeviceHistoryDto;
 import io.mosip.kernel.masterdata.dto.RegistrationCenterDto;
 import io.mosip.kernel.masterdata.dto.RegistrationCenterMachineDeviceDto;
 import io.mosip.kernel.masterdata.dto.RegistrationCenterMachineDto;
-import io.mosip.kernel.masterdata.dto.RegCenterPutReqDto;
-import io.mosip.kernel.masterdata.dto.RegCenterPostReqDto;
 import io.mosip.kernel.masterdata.dto.RegistrationCenterTypeDto;
 import io.mosip.kernel.masterdata.dto.RegistrationCenterUserMachineMappingDto;
 import io.mosip.kernel.masterdata.dto.TemplateDto;
@@ -96,7 +96,6 @@ import io.mosip.kernel.masterdata.dto.TitleDto;
 import io.mosip.kernel.masterdata.dto.ValidDocumentDto;
 import io.mosip.kernel.masterdata.dto.getresponse.IndividualTypeResponseDto;
 import io.mosip.kernel.masterdata.dto.getresponse.RegistrationCenterUserMachineMappingHistoryResponseDto;
-import io.mosip.kernel.masterdata.dto.postresponse.IdResponseDto;
 import io.mosip.kernel.masterdata.entity.BiometricAttribute;
 import io.mosip.kernel.masterdata.entity.BlacklistedWords;
 import io.mosip.kernel.masterdata.entity.Device;
@@ -191,7 +190,6 @@ import io.mosip.kernel.masterdata.repository.UserDetailsRepository;
 import io.mosip.kernel.masterdata.repository.ValidDocumentRepository;
 import io.mosip.kernel.masterdata.test.TestBootApplication;
 import io.mosip.kernel.masterdata.utils.MapperUtils;
-import io.mosip.kernel.masterdata.utils.RegistrationCenterValidator;
 import io.mosip.kernel.masterdata.utils.ZoneUtils;
 
 /**
@@ -988,7 +986,7 @@ public class MasterdataIntegrationTest {
 
 		objectList = new ArrayList<>();
 		Object objects[] = { "1001", "Laptop", "129.0.0.0", "123", "129.0.0.0", "1212", "eng", true, validDateTime,
-				"NTH","LaptopCode" };
+				"NTH", "LaptopCode" };
 		objectList.add(objects);
 
 		deviceHistory = new DeviceHistory();
@@ -1077,13 +1075,13 @@ public class MasterdataIntegrationTest {
 				LocalDateTime.now().minusDays(1), "eng");
 	}
 
-	RegistarionCenterReqDto<RegCenterPostReqDto> regPostRequest =null;	
+	RegistarionCenterReqDto<RegCenterPostReqDto> regPostRequest = null;
 
 	RegistrationCenter registrationCenter1 = null;
 	RegistrationCenterHistory registrationCenterHistory = null;
 	RegistrationCenter registrationCenter2 = null;
 	RegistrationCenter registrationCenter3 = null;
-	
+
 	List<RegistrationCenter> registrationCenterEntityList = null;
 
 	private void registrationCenterSetup() {
@@ -1094,6 +1092,7 @@ public class MasterdataIntegrationTest {
 		registrationCenter.setLongitude("77.5028792");
 		registrationCenter.setLangCode("eng");
 		registrationCenter.setHolidayLocationCode("KAR");
+		registrationCenter.setZoneCode("JRD");
 		registrationCenters.add(registrationCenter);
 
 		Location location = new Location();
@@ -4854,28 +4853,27 @@ public class MasterdataIntegrationTest {
 		mockMvc.perform(get("/validdocuments/eng")).andExpect(status().isInternalServerError());
 	}
 
-	
-	/*@Autowired
-	RegistrationCenterValidator registrationCenterValidator;
-	@Test
-	@WithUserDetails("zonal-admin")
-	public void createRegistrationCenterExceptionTest() throws Exception {
-		RequestWrapper<RegistrationCenterDto> requestDto = new RequestWrapper<>();
-		requestDto.setId("mosip.idtype.create");
-		requestDto.setVersion("1.0");
-		RegistrationCenterDto registrationCenterDto = getRegCenterDto();
-
-		requestDto.setRequest(registrationCenterDto);
-		String contentJson = mapper.writeValueAsString(requestDto);
-		when(registrationCenterValidator.validatePrimarySencodaryLangMandatoryFields(Mockito.any(),
-                        Mockito.any(), Mockito.any(), Mockito.any(),
-                        Mockito.any(), Mockito.any()));
-		when(registrationCenterRepository.create(Mockito.any()))
-				.thenThrow(new DataAccessLayerException("", "cannot execute statement", null));
-		mockMvc.perform(post("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(contentJson))
-				.andExpect(status().isInternalServerError());
-	}*/
-	 
+	/*
+	 * @Autowired RegistrationCenterValidator registrationCenterValidator;
+	 * 
+	 * @Test
+	 * 
+	 * @WithUserDetails("zonal-admin") public void
+	 * createRegistrationCenterExceptionTest() throws Exception {
+	 * RequestWrapper<RegistrationCenterDto> requestDto = new RequestWrapper<>();
+	 * requestDto.setId("mosip.idtype.create"); requestDto.setVersion("1.0");
+	 * RegistrationCenterDto registrationCenterDto = getRegCenterDto();
+	 * 
+	 * requestDto.setRequest(registrationCenterDto); String contentJson =
+	 * mapper.writeValueAsString(requestDto);
+	 * when(registrationCenterValidator.validatePrimarySencodaryLangMandatoryFields(
+	 * Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+	 * Mockito.any())); when(registrationCenterRepository.create(Mockito.any()))
+	 * .thenThrow(new DataAccessLayerException("", "cannot execute statement",
+	 * null)); mockMvc.perform(post("/registrationcenters").contentType(MediaType.
+	 * APPLICATION_JSON).content(contentJson))
+	 * .andExpect(status().isInternalServerError()); }
+	 */
 
 	/*
 	 * @Test
@@ -6179,7 +6177,6 @@ public class MasterdataIntegrationTest {
 	// -----------------------createRegistrationCenter
 	// TestCase------------------------
 
-	
 	@Test
 	@WithUserDetails("zonal-admin")
 	public void createRegCenterAdminTest() throws Exception {
@@ -6194,7 +6191,7 @@ public class MasterdataIntegrationTest {
 		mockMvc.perform(post("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(content))
 				.andExpect(status().isOk());
 	}
-	
+
 	@Test
 	@WithUserDetails("zonal-admin")
 	public void createRegCenterAdminDataExcpTest() throws Exception {
@@ -6209,8 +6206,8 @@ public class MasterdataIntegrationTest {
 		mockMvc.perform(post("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(content))
 				.andExpect(status().isInternalServerError());
 	}
-	
-	//------ update the RegitrationCenter----------------------
+
+	// ------ update the RegitrationCenter----------------------
 	@Test
 	@WithUserDetails("zonal-admin")
 	public void updateRegCenterAdminTest() throws Exception {
@@ -6227,8 +6224,7 @@ public class MasterdataIntegrationTest {
 		mockMvc.perform(put("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(content))
 				.andExpect(status().isOk());
 	}
-	
-	
+
 	@Test
 	@WithUserDetails("zonal-admin")
 	public void updateRegCenterNewCreateAdminTest() throws Exception {
@@ -6240,16 +6236,15 @@ public class MasterdataIntegrationTest {
 		when(zoneUtils.getUserZones()).thenReturn(zones);
 		when(registrationCenterRepository.findByIdAndLangCodeAndIsDeletedTrue(Mockito.any(), Mockito.any()))
 				.thenReturn(null);
-		//when(registrationCenterRepository.update(Mockito.any())).thenReturn(registrationCenter1);
+		// when(registrationCenterRepository.update(Mockito.any())).thenReturn(registrationCenter1);
 		when(registrationCenterRepository.findByRegCenterIdAndIsDeletedFalseOrNull(Mockito.any()))
-		.thenReturn(registrationCenterEntityList);
+				.thenReturn(registrationCenterEntityList);
 		when(registrationCenterRepository.create(Mockito.any())).thenReturn(registrationCenter1);
 		when(repositoryCenterHistoryRepository.create(Mockito.any())).thenReturn(registrationCenterHistory);
 		mockMvc.perform(put("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(content))
 				.andExpect(status().isOk());
 	}
-	
-	
+
 	@Test
 	@WithUserDetails("zonal-admin")
 	public void updateRegCenterEmptyAdminTest() throws Exception {
@@ -6262,13 +6257,11 @@ public class MasterdataIntegrationTest {
 		when(zoneUtils.getUserZones()).thenReturn(zones);
 		when(registrationCenterRepository.findByIdAndLangCodeAndIsDeletedTrue(Mockito.any(), Mockito.any()))
 				.thenReturn(null);
-		when(registrationCenterRepository.findByRegCenterIdAndIsDeletedFalseOrNull(Mockito.any()))
-		.thenReturn(emptList);
+		when(registrationCenterRepository.findByRegCenterIdAndIsDeletedFalseOrNull(Mockito.any())).thenReturn(emptList);
 		mockMvc.perform(put("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(content))
 				.andExpect(status().isOk());
 	}
-	
-	
+
 	@Test
 	@WithUserDetails("zonal-admin")
 	public void updateRegistrationCenterAdminDataExcpTest() throws Exception {
@@ -6508,62 +6501,255 @@ public class MasterdataIntegrationTest {
 				.andExpect(status().isOk());
 	}
 
-			@Test
-			@WithUserDetails("zonal-admin")
-			public void decommissionMachineTest() throws Exception {
-				
-				when(machineRepository.decommissionMachine(Mockito.any())).thenReturn(1);
-				mockMvc.perform(put("/machines/decommission/10001").contentType(MediaType.APPLICATION_JSON))
-						.andExpect(status().isOk());
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void decommissionMachineTest() throws Exception {
 
-			}
-			
-			@Test
-			@WithUserDetails("zonal-admin")
-			public void decommissionDeviceTest() throws Exception {
-				
-				when(deviceRepository.decommissionDevice(Mockito.any())).thenReturn(1);
-				mockMvc.perform(put("/devices/decommission/3000022").contentType(MediaType.APPLICATION_JSON))
-						.andExpect(status().isOk());
+		when(machineRepository.decommissionMachine(Mockito.any())).thenReturn(1);
+		mockMvc.perform(put("/machines/decommission/10001").contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
 
-			}
-			
-			@Test
-			@WithUserDetails("zonal-admin")
-			public void decommissionMachineExceptionTest() throws Exception {
-				
-				when(machineRepository.decommissionMachine(Mockito.any())).thenThrow(DataAccessLayerException.class);
-				mockMvc.perform(put("/machines/decommission/10001").contentType(MediaType.APPLICATION_JSON))
-						.andExpect(status().isInternalServerError());
+	}
 
-			}
-			
-			@Test
-			@WithUserDetails("zonal-admin")
-			public void decommissionDeviceExceptionTest() throws Exception {
-				
-				when(deviceRepository.decommissionDevice(Mockito.any())).thenThrow(DataAccessLayerException.class);
-				mockMvc.perform(put("/devices/decommission/3000022").contentType(MediaType.APPLICATION_JSON))
-						.andExpect(status().isInternalServerError());
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void decommissionDeviceTest() throws Exception {
 
-			}
-			
-			@Test
-			@WithUserDetails("zonal-admin")
-			public void testMapDocCategoryAndDocType() throws Exception {				
-				Mockito.when(validDocumentRepository.findByDocCategoryCodeAndDocTypeCode(Mockito.anyString(), Mockito.anyString()))
+		when(deviceRepository.decommissionDevice(Mockito.any())).thenReturn(1);
+		mockMvc.perform(put("/devices/decommission/3000022").contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+
+	}
+
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void decommissionMachineExceptionTest() throws Exception {
+
+		when(machineRepository.decommissionMachine(Mockito.any())).thenThrow(DataAccessLayerException.class);
+		mockMvc.perform(put("/machines/decommission/10001").contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isInternalServerError());
+
+	}
+
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void decommissionDeviceExceptionTest() throws Exception {
+
+		when(deviceRepository.decommissionDevice(Mockito.any())).thenThrow(DataAccessLayerException.class);
+		mockMvc.perform(put("/devices/decommission/3000022").contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isInternalServerError());
+
+	}
+
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void testMapDocCategoryAndDocType() throws Exception {
+		Mockito.when(
+				validDocumentRepository.findByDocCategoryCodeAndDocTypeCode(Mockito.anyString(), Mockito.anyString()))
 				.thenReturn(new ValidDocument());
-				mockMvc.perform(put("/validdocuments/map/POE/CIN"))
-						.andExpect(status().isInternalServerError());
-			}
+		mockMvc.perform(put("/validdocuments/map/POE/CIN")).andExpect(status().isInternalServerError());
+	}
 
-			@Test
-			@WithUserDetails("zonal-admin")
-			public void testUnmapDocCategoryAndDocType() throws Exception {
-				Mockito.when(validDocumentRepository.findByDocCategoryCodeAndDocTypeCode(Mockito.anyString(), Mockito.anyString()))
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void testUnmapDocCategoryAndDocType() throws Exception {
+		Mockito.when(
+				validDocumentRepository.findByDocCategoryCodeAndDocTypeCode(Mockito.anyString(), Mockito.anyString()))
 				.thenReturn(new ValidDocument());
-				mockMvc.perform(MockMvcRequestBuilders.put("/validdocuments/unmap/POE/CIN"))
-						.andExpect(MockMvcResultMatchers.status().isInternalServerError());
-			}
+		mockMvc.perform(MockMvcRequestBuilders.put("/validdocuments/unmap/POE/CIN"))
+				.andExpect(MockMvcResultMatchers.status().isInternalServerError());
+	}
+
+	
+
+	private List<Zone> getZones() {
+		Zone zone = new Zone();
+		zone.setCode("JRD");
+		zone.setLangCode("eng");
+		zone.setHierarchyPath("MOR/NTH/ORT/JRD");
+		Zone zone1 = new Zone();
+		zone1.setCode("TZT");
+		zone1.setLangCode("eng");
+		zone1.setHierarchyPath("MOR/STH/SOS/TZT");
+		Zone zone2 = new Zone();
+		zone2.setCode("TTA");
+		zone2.setLangCode("eng");
+		zone2.setHierarchyPath("MOR/STH/SOS/TTA");
+		Zone zone3 = new Zone();
+		zone3.setCode("BRT");
+		zone3.setLangCode("eng");
+		zone3.setHierarchyPath("MOR/NTH/ORT/BRK");
+		Zone zone4 = new Zone();
+		zone4.setCode("CST");
+		zone4.setLangCode("eng");
+		zone4.setHierarchyPath("MOR/NTH/ORT/CST");
+		Zone zone6 = new Zone();
+		zone6.setCode("NTH");
+		zone6.setLangCode("eng");
+		zone6.setHierarchyPath("MOR/NTH");
+		Zone zone5 = new Zone();
+		zone5.setCode("NTH");
+		zone5.setLangCode("eng");
+		zone5.setHierarchyPath("MOR/STH");
+
+		return Arrays.asList(zone, zone1, zone2, zone3, zone4, zone5, zone6);
+	}
+
+	// -------------------MapRegistrationDevice---------------------//
+
+		@Test
+		@WithUserDetails("zonal-admin")
+		public void testMapDevice() throws Exception {
+			when(zoneUtils.getUserZones()).thenReturn(getZones());
+			when(registrationCenterRepository.findByRegIdAndLangCode(Mockito.anyString(), Mockito.anyString()))
+					.thenReturn(registrationCenters);
+			// device.setZoneCode("STH");
+			when(deviceRepository.findByIdAndLangCode(Mockito.anyString(), Mockito.anyString())).thenReturn(device);
+
+			mockMvc.perform(MockMvcRequestBuilders.get("/registrationcenterdevice/map/10001/10001"))
+					.andExpect(MockMvcResultMatchers.status().isOk());
+
+		}
+
+		@Test
+		@WithUserDetails("zonal-admin")
+		public void testMapDeviceException() throws Exception {
+			registrationCenters.get(0).setNumberOfKiosks((short) 9);
+			when(zoneUtils.getUserZones()).thenReturn(getZones());
+			when(registrationCenterRepository.findByRegIdAndLangCode(Mockito.anyString(), Mockito.anyString()))
+					.thenReturn(registrationCenters);
+			registrationCenters.get(0).setZoneCode("TZT");
+			when(deviceRepository.findByIdAndLangCode(Mockito.anyString(), Mockito.anyString())).thenReturn(device);
+			device.setZoneCode("NTH");
+
+			mockMvc.perform(MockMvcRequestBuilders.get("/registrationcenterdevice/map/10001/10001"))
+					.andExpect(MockMvcResultMatchers.status().isInternalServerError());
+
+		}
+
+		@Test
+		@WithUserDetails("zonal-admin")
+		public void testMapDeviceDecommisioned() throws Exception {
+
+			when(zoneUtils.getUserZones()).thenReturn(getZones());
+			when(registrationCenterRepository.findByRegIdAndLangCode(Mockito.anyString(), Mockito.anyString()))
+					.thenReturn(registrationCenters);
+			registrationCenters.get(0).setZoneCode("JRD");
+			registrationCenters.get(0).setIsActive(Boolean.FALSE);
+			registrationCenters.get(0).setIsDeleted(Boolean.TRUE);
+			when(deviceRepository.findByIdAndLangCode(Mockito.anyString(), Mockito.anyString())).thenReturn(device);
+			device.setZoneCode("NTH");
+			device.setIsActive(Boolean.FALSE);
+			device.setIsDeleted(Boolean.TRUE);
+			when(registrationCenterDeviceRepository.findByRegIdAndDeviceIdAndLangCode(Mockito.anyString(),
+					Mockito.anyString(), Mockito.anyString())).thenReturn(registrationCenterDevice);
+
+			mockMvc.perform(MockMvcRequestBuilders.get("/registrationcenterdevice/map/10001/10001"))
+					.andExpect(MockMvcResultMatchers.status().isInternalServerError());
+
+		}
+
+		@Test
+		@WithUserDetails("zonal-admin")
+		public void testMapDeviceAlreadyActive() throws Exception {
+
+			when(zoneUtils.getUserZones()).thenReturn(getZones());
+			when(registrationCenterRepository.findByRegIdAndLangCode(Mockito.anyString(), Mockito.anyString()))
+					.thenReturn(registrationCenters);
+			registrationCenters.get(0).setZoneCode("JRD");
+			registrationCenters.get(0).setIsActive(Boolean.TRUE);
+			registrationCenters.get(0).setIsDeleted(Boolean.FALSE);
+			when(deviceRepository.findByIdAndLangCode(Mockito.anyString(), Mockito.anyString())).thenReturn(device);
+			device.setZoneCode("NTH");
+			device.setIsActive(Boolean.TRUE);
+			device.setIsDeleted(Boolean.FALSE);
+			when(registrationCenterDeviceRepository.findByRegIdAndDeviceIdAndLangCode(Mockito.anyString(),
+					Mockito.anyString(), Mockito.anyString())).thenReturn(registrationCenterDevice);
+			registrationCenterDevice.setIsActive(Boolean.TRUE);
+			mockMvc.perform(MockMvcRequestBuilders.get("/registrationcenterdevice/map/10001/10001"))
+					.andExpect(MockMvcResultMatchers.status().isInternalServerError());
+
+		}
+
+		@Test
+		@WithUserDetails("zonal-admin")
+		public void testMapDeviceAlreadyUpdate() throws Exception {
+
+			when(zoneUtils.getUserZones()).thenReturn(getZones());
+			when(registrationCenterRepository.findByRegIdAndLangCode(Mockito.anyString(), Mockito.anyString()))
+					.thenReturn(registrationCenters);
+			registrationCenters.get(0).setZoneCode("JRD");
+			registrationCenters.get(0).setIsActive(Boolean.TRUE);
+			registrationCenters.get(0).setIsDeleted(Boolean.FALSE);
+			when(deviceRepository.findByIdAndLangCode(Mockito.anyString(), Mockito.anyString())).thenReturn(device);
+			device.setZoneCode("NTH");
+			device.setIsActive(Boolean.TRUE);
+			device.setIsDeleted(Boolean.FALSE);
+			when(registrationCenterDeviceRepository.findByRegIdAndDeviceIdAndLangCode(Mockito.anyString(),
+					Mockito.anyString(), Mockito.anyString())).thenReturn(registrationCenterDevice);
+			registrationCenterDevice.setIsActive(Boolean.FALSE);
+			when(registrationCenterDeviceRepository.update(Mockito.any())).thenReturn(registrationCenterDevice);
+			when(registrationCenterDeviceHistoryRepository.create(Mockito.any()))
+					.thenReturn(registrationCenterDeviceHistory);
+			when(registrationCenterRepository.update(Mockito.any())).thenReturn(registrationCenter);
+			when(repositoryCenterHistoryRepository.create(Mockito.any())).thenReturn(registrationCenterHistory);
+			mockMvc.perform(MockMvcRequestBuilders.get("/registrationcenterdevice/map/10001/10001"))
+					.andExpect(MockMvcResultMatchers.status().isOk());
+
+		}
+
+		@Test
+		@WithUserDetails("zonal-admin")
+		public void testMapDeviceCreateException() throws Exception {
+
+			when(zoneUtils.getUserZones()).thenReturn(getZones());
+			when(registrationCenterRepository.findByRegIdAndLangCode(Mockito.anyString(), Mockito.anyString()))
+					.thenReturn(registrationCenters);
+			registrationCenters.get(0).setZoneCode("JRD");
+			registrationCenters.get(0).setIsActive(Boolean.TRUE);
+			registrationCenters.get(0).setIsDeleted(Boolean.FALSE);
+			when(deviceRepository.findByIdAndLangCode(Mockito.anyString(), Mockito.anyString())).thenReturn(device);
+			device.setZoneCode("NTH");
+			device.setIsActive(Boolean.TRUE);
+			device.setIsDeleted(Boolean.FALSE);
+			when(registrationCenterDeviceRepository.findByRegIdAndDeviceIdAndLangCode(Mockito.anyString(),
+					Mockito.anyString(), Mockito.anyString())).thenReturn(null);
+			when(registrationCenterDeviceRepository.findByDeviceIdAndLangCode(Mockito.anyString(), Mockito.anyString()))
+					.thenReturn(registrationCenterDevice);
+			when(registrationCenterDeviceRepository.create(Mockito.any())).thenReturn(registrationCenterDevice);
+			when(registrationCenterDeviceHistoryRepository.create(Mockito.any()))
+					.thenReturn(registrationCenterDeviceHistory);
+			
+			mockMvc.perform(MockMvcRequestBuilders.get("/registrationcenterdevice/map/10001/10001"))
+					.andExpect(MockMvcResultMatchers.status().isInternalServerError());
+
+		}
+		
+		@Test
+		@WithUserDetails("zonal-admin")
+		public void testMapDeviceCreate() throws Exception {
+
+			when(zoneUtils.getUserZones()).thenReturn(getZones());
+			when(registrationCenterRepository.findByRegIdAndLangCode(Mockito.anyString(), Mockito.anyString()))
+					.thenReturn(registrationCenters);
+			registrationCenters.get(0).setZoneCode("JRD");
+			registrationCenters.get(0).setIsActive(Boolean.TRUE);
+			registrationCenters.get(0).setIsDeleted(Boolean.FALSE);
+			when(deviceRepository.findByIdAndLangCode(Mockito.anyString(), Mockito.anyString())).thenReturn(device);
+			device.setZoneCode("NTH");
+			device.setIsActive(Boolean.TRUE);
+			device.setIsDeleted(Boolean.FALSE);
+			when(registrationCenterDeviceRepository.findByRegIdAndDeviceIdAndLangCode(Mockito.anyString(),
+					Mockito.anyString(), Mockito.anyString())).thenReturn(null);
+			when(registrationCenterDeviceRepository.findByDeviceIdAndLangCode(Mockito.anyString(), Mockito.anyString()))
+					.thenReturn(null);
+			when(registrationCenterDeviceRepository.create(Mockito.any())).thenReturn(registrationCenterDevice);
+			when(registrationCenterDeviceHistoryRepository.create(Mockito.any()))
+					.thenReturn(registrationCenterDeviceHistory);
+			
+			mockMvc.perform(MockMvcRequestBuilders.get("/registrationcenterdevice/map/10001/10001"))
+					.andExpect(MockMvcResultMatchers.status().isOk());
+
+		}
 
 }
