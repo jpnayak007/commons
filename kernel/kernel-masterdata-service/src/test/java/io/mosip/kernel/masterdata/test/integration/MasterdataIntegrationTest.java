@@ -528,6 +528,8 @@ public class MasterdataIntegrationTest {
 		mapUserRegCenter();
 		
 		unMapDeviceRegCenter();
+		
+		decommissionRegCenter();
 	}
 
 	private void userDetailsHistorySetup() {
@@ -6416,6 +6418,19 @@ public class MasterdataIntegrationTest {
 				.andExpect(MockMvcResultMatchers.status().isInternalServerError());
 	}
 	/*----------------------------------end-----------------------------------*/
+	// ------ decommission regCenter---------------------------------------
+
+    private List<Zone> userZones;
+    private RegistrationCenter regCenterZoneDecom;
+	private void decommissionRegCenter() {
+		 regCenterZoneDecom = new RegistrationCenter();
+		 regCenterZoneDecom.setId("10001");
+		 regCenterZoneDecom.setZoneCode("MOR");
+		userZones = new ArrayList<>();
+		Zone zone = new Zone("MOR", "eng", "Berkane", (short) 0, "Province", "MOR", " ");
+		userZones.add(zone);
+	}
+	
 
 	@Test
 	@WithUserDetails("zonal-admin")
@@ -6430,6 +6445,9 @@ public class MasterdataIntegrationTest {
 		List<RegistrationCenterDevice> regCenterDeviceMappings = new ArrayList<>();
 		List<RegistrationCenterUser> regCenterUserMappings = new ArrayList<>();
 		List<RegistrationCenterMachine> regCenterMachineMappings = new ArrayList<>();
+		when(zoneUtils.getUserZones()).thenReturn(userZones);
+		when(registrationCenterRepository.findByLangCodeAndId(Mockito.anyString(),
+				Mockito.anyString())).thenReturn(regCenterZoneDecom);
 		when(registrationCenterMachineRepository.findRegCenterMachineMappings(Mockito.anyString()))
 				.thenReturn(regCenterMachineMappings);
 		when(registrationCenterDeviceRepository.registrationCenterDeviceMappings(Mockito.anyString()))
@@ -6451,6 +6469,9 @@ public class MasterdataIntegrationTest {
 		List<RegistrationCenterUser> regCenterUserMappings = new ArrayList<>();
 		List<RegistrationCenterMachine> regCenterMachineMappings = new ArrayList<>();
 		List<RegistrationCenter> regCenterList = new ArrayList<>();
+		when(zoneUtils.getUserZones()).thenReturn(userZones);
+		when(registrationCenterRepository.findByLangCodeAndId(Mockito.anyString(),
+				Mockito.anyString())).thenReturn(regCenterZoneDecom);
 		when(registrationCenterMachineRepository.findRegCenterMachineMappings(Mockito.anyString()))
 				.thenReturn(regCenterMachineMappings);
 		when(registrationCenterDeviceRepository.registrationCenterDeviceMappings(Mockito.anyString()))
@@ -6466,6 +6487,9 @@ public class MasterdataIntegrationTest {
 	@Test
 	@WithUserDetails("zonal-admin")
 	public void decommissionRegCenterInternalServerErrorTest() throws Exception {
+		when(zoneUtils.getUserZones()).thenReturn(userZones);
+		when(registrationCenterRepository.findByLangCodeAndId(Mockito.anyString(),
+				Mockito.anyString())).thenReturn(regCenterZoneDecom);
 		when(registrationCenterMachineRepository.findRegCenterMachineMappings(Mockito.anyString()))
 				.thenThrow(new DataAccessLayerException("KER-MSD-354", "Internal Server Error", null));
 		mockMvc.perform(put("/registrationcenters/decommission/10001").contentType(MediaType.APPLICATION_JSON))
@@ -6477,6 +6501,9 @@ public class MasterdataIntegrationTest {
 	public void decommissionRegCenterMappedMachineTest() throws Exception {
 		List<RegistrationCenterMachine> regCenterMachineMappings = new ArrayList<>();
 		regCenterMachineMappings.add(registrationCenterMachine);
+		when(zoneUtils.getUserZones()).thenReturn(userZones);
+		when(registrationCenterRepository.findByLangCodeAndId(Mockito.anyString(),
+				Mockito.anyString())).thenReturn(regCenterZoneDecom);
 		when(registrationCenterMachineRepository.findRegCenterMachineMappings(Mockito.anyString()))
 				.thenReturn(regCenterMachineMappings);
 		mockMvc.perform(put("/registrationcenters/decommission/10001").contentType(MediaType.APPLICATION_JSON))
@@ -6491,6 +6518,9 @@ public class MasterdataIntegrationTest {
 
 		List<RegistrationCenterUser> regCenterUserMappings = new ArrayList<>();
 		regCenterDeviceMappings.add(registrationCenterDevice);
+		when(zoneUtils.getUserZones()).thenReturn(userZones);
+		when(registrationCenterRepository.findByLangCodeAndId(Mockito.anyString(),
+				Mockito.anyString())).thenReturn(regCenterZoneDecom);
 		when(registrationCenterUserRepository.registrationCenterUserMappings(Mockito.anyString()))
 				.thenReturn(regCenterUserMappings);
 		when(registrationCenterMachineRepository.findRegCenterMachineMappings(Mockito.anyString()))
@@ -6511,6 +6541,9 @@ public class MasterdataIntegrationTest {
 		registrationCenterUser.setRegistrationCenterUserID(id);
 		List<RegistrationCenterUser> regCenterUserMappings = new ArrayList<>();
 		regCenterUserMappings.add(registrationCenterUser);
+		when(zoneUtils.getUserZones()).thenReturn(userZones);
+		when(registrationCenterRepository.findByLangCodeAndId(Mockito.anyString(),
+				Mockito.anyString())).thenReturn(regCenterZoneDecom);
 		when(registrationCenterUserRepository.registrationCenterUserMappings(Mockito.anyString()))
 				.thenReturn(regCenterUserMappings);
 		mockMvc.perform(put("/registrationcenters/decommission/10001").contentType(MediaType.APPLICATION_JSON))
@@ -6593,10 +6626,6 @@ public class MasterdataIntegrationTest {
 		registrationCenterUser = new RegistrationCenterUser();
 		registrationCenterUser.setRegistrationCenterUserID(new RegistrationCenterUserID("110005", "10008"));
 		registrationCenterUser.setIsActive(false);
-
-	/*	registrationCenterUserFalse = new RegistrationCenterUser();
-		registrationCenterUserFalse.setRegistrationCenterUserID(new RegistrationCenterUserID("110005", "10008"));
-		registrationCenterUserFalse.setIsActive(true);*/
 
 		regCenter = new RegistrationCenter();
 		regCenter.setId("10008");
