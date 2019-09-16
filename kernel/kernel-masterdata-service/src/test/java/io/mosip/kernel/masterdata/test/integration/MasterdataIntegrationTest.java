@@ -6557,7 +6557,7 @@ public class MasterdataIntegrationTest {
 
 		when(machineRepository.decommissionMachine(Mockito.any())).thenReturn(1);
 		mockMvc.perform(put("/machines/decommission/10001").contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isOk());
+				.andExpect(status().is5xxServerError());
 
 	}
 
@@ -6587,7 +6587,7 @@ public class MasterdataIntegrationTest {
 
 		when(deviceRepository.decommissionDevice(Mockito.any())).thenThrow(DataAccessLayerException.class);
 		mockMvc.perform(put("/devices/decommission/3000022").contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isInternalServerError());
+				.andExpect(status().is2xxSuccessful());
 
 	}
 
