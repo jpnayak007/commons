@@ -7093,11 +7093,11 @@ public class MasterdataIntegrationTest {
 
 		registrationCenterUserHistory = new RegistrationCenterUserHistory();
 		registrationCenterUserTrue = new RegistrationCenterUser();
-		registrationCenterUserTrue.setRegistrationCenterUserID(new RegistrationCenterUserID("110005", "10008"));
+		registrationCenterUserTrue.setRegistrationCenterUserID(new RegistrationCenterUserID("10008", "110005"));
 		registrationCenterUserTrue.setIsActive(true);
 
 		registrationCenterUser = new RegistrationCenterUser();
-		registrationCenterUser.setRegistrationCenterUserID(new RegistrationCenterUserID("110005", "10008"));
+		registrationCenterUser.setRegistrationCenterUserID(new RegistrationCenterUserID("10008", "110005"));
 		registrationCenterUser.setIsActive(false);
 
 		regCenter = new RegistrationCenter();
@@ -7119,7 +7119,7 @@ public class MasterdataIntegrationTest {
 	public void testUnmapUserRegCenterNotFoundException() throws Exception {
 		when(registrationCenterUserRepository.findByUserIdAndRegCenterId(Mockito.any(), Mockito.any()))
 				.thenReturn(null);
-		mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenteruser/unmap/110005/10008"))
+		mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenteruser/unmap/10008/110005"))
 				.andExpect(status().isOk());
 	}
 
@@ -7132,7 +7132,7 @@ public class MasterdataIntegrationTest {
 		when(registrationCenterRepository.findByLangCodeAndId(Mockito.any(), Mockito.any())).thenReturn(null);
 		when(registrationCenterUserRepository.findByUserIdAndRegCenterId(Mockito.any(), Mockito.any()))
 				.thenReturn(registrationCenterUser);
-		mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenteruser/unmap/110005/10008"))
+		mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenteruser/unmap/10008/110005"))
 				.andExpect(status().isOk());
 	}
 
@@ -7148,7 +7148,7 @@ public class MasterdataIntegrationTest {
 		 */
 		when(registrationCenterUserRepository.findByUserIdAndRegCenterId(Mockito.any(), Mockito.any()))
 				.thenReturn(registrationCenterUser);
-		mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenteruser/unmap/110005/10008"))
+		mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenteruser/unmap/10008/110005"))
 				.andExpect(status().isOk());
 	}
 
@@ -7162,7 +7162,7 @@ public class MasterdataIntegrationTest {
 		when(registrationCenterRepository.findByLangCodeAndId(Mockito.any(), Mockito.any())).thenReturn(regCenter);
 		when(registrationCenterUserRepository.findByUserIdAndRegCenterId(Mockito.any(), Mockito.any()))
 				.thenReturn(registrationCenterUser);
-		mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenteruser/unmap/110005/10008"))
+		mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenteruser/unmap/10008/110005"))
 				.andExpect(status().isOk());
 	}
 
@@ -7180,7 +7180,7 @@ public class MasterdataIntegrationTest {
 		when(registrationCenterRepository.findByLangCodeAndId(Mockito.any(), Mockito.any())).thenReturn(regCenter);
 		when(registrationCenterUserRepository.update(Mockito.any())).thenReturn(registrationCenterUser);
 		when(registrationCenterUserHistoryRepository.create(Mockito.any())).thenReturn(registrationCenterUserHistory);
-		mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenteruser/unmap/110005/10008"))
+		mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenteruser/unmap/10008/110005"))
 				.andExpect(status().isOk());
 	}
 
@@ -7189,7 +7189,7 @@ public class MasterdataIntegrationTest {
 	public void testUnmapUserRegCenterDataAccessException() throws Exception {
 		when(registrationCenterUserRepository.findByUserIdAndRegCenterId(Mockito.any(), Mockito.any()))
 				.thenThrow(DataAccessLayerException.class);
-		mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenteruser/unmap/110005/10008"))
+		mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenteruser/unmap/10008/110005"))
 				.andExpect(MockMvcResultMatchers.status().isInternalServerError());
 	}
 
@@ -7205,11 +7205,11 @@ public class MasterdataIntegrationTest {
 
 		mapRegistrationCenterUserHistory = new RegistrationCenterUserHistory();
 		mapRegistrationCenterUserTrue = new RegistrationCenterUser();
-		mapRegistrationCenterUserTrue.setRegistrationCenterUserID(new RegistrationCenterUserID("110005", "10008"));
+		mapRegistrationCenterUserTrue.setRegistrationCenterUserID(new RegistrationCenterUserID("10008","110005"));
 		mapRegistrationCenterUserTrue.setIsActive(true);
 
 		mapRegistrationCenterUser = new RegistrationCenterUser();
-		mapRegistrationCenterUser.setRegistrationCenterUserID(new RegistrationCenterUserID("110005", "10008"));
+		mapRegistrationCenterUser.setRegistrationCenterUserID(new RegistrationCenterUserID("10008", "110005"));
 		mapRegistrationCenterUser.setIsActive(false);
 
 		mapRegCenter = new RegistrationCenter();
@@ -7238,7 +7238,7 @@ public class MasterdataIntegrationTest {
 		when(registrationCenterUserRepository.create(Mockito.any())).thenReturn(mapRegistrationCenterUserTrue);
 		when(registrationCenterUserHistoryRepository.create(Mockito.any()))
 				.thenReturn(mapRegistrationCenterUserHistory);
-		mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenteruser/map/110005/10008"))
+		mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenteruser/map/10008/110005"))
 				.andExpect(status().isOk());
 	}
 
@@ -7251,7 +7251,7 @@ public class MasterdataIntegrationTest {
 		when(registrationCenterRepository.findByLangCodeAndId(Mockito.any(), Mockito.any())).thenReturn(mapRegCenter);
 		when(registrationCenterUserRepository.findByUserIdAndRegCenterId(Mockito.any(), Mockito.any()))
 				.thenReturn(mapRegistrationCenterUserTrue);
-		mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenteruser/map/110005/10008"))
+		mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenteruser/map/10008/110005"))
 				.andExpect(status().isOk());
 	}
 
@@ -7267,7 +7267,7 @@ public class MasterdataIntegrationTest {
 		when(registrationCenterUserRepository.update(Mockito.any())).thenReturn(mapRegistrationCenterUserTrue);
 		when(registrationCenterUserHistoryRepository.create(Mockito.any()))
 				.thenReturn(mapRegistrationCenterUserHistory);
-		mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenteruser/map/110005/10008"))
+		mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenteruser/map/10008/110005"))
 				.andExpect(status().isOk());
 	}
 
@@ -7280,7 +7280,7 @@ public class MasterdataIntegrationTest {
 		when(registrationCenterRepository.findByLangCodeAndId(Mockito.any(), Mockito.any())).thenReturn(mapRegCenter);
 		when(registrationCenterUserRepository.findByUserIdAndRegCenterId(Mockito.any(), Mockito.any()))
 				.thenThrow(DataAccessLayerException.class);
-		mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenteruser/map/110005/10008"))
+		mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenteruser/map/10008/110005"))
 				.andExpect(MockMvcResultMatchers.status().isInternalServerError());
 	}
 
@@ -7294,7 +7294,7 @@ public class MasterdataIntegrationTest {
 		when(registrationCenterUserRepository.findByUserIdAndRegCenterId(Mockito.any(), Mockito.any()))
 				.thenReturn(null);
 		when(registrationCenterUserRepository.create(Mockito.any())).thenThrow(DataAccessLayerException.class);
-		mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenteruser/map/110005/10008"))
+		mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenteruser/map/10008/110005"))
 				.andExpect(MockMvcResultMatchers.status().isInternalServerError());
 	}
 
@@ -7311,11 +7311,11 @@ public class MasterdataIntegrationTest {
 
 		regCenterDeviceHistory = new RegistrationCenterDeviceHistory();
 		registrationCenterDeviceTrue = new RegistrationCenterDevice();
-		registrationCenterDeviceTrue.setRegistrationCenterDevicePk(new RegistrationCenterDeviceID("110005", "10008"));
+		registrationCenterDeviceTrue.setRegistrationCenterDevicePk(new RegistrationCenterDeviceID("10008", "110005"));
 		registrationCenterDeviceTrue.setIsActive(true);
 
 		regCenterDevice = new RegistrationCenterDevice();
-		regCenterDevice.setRegistrationCenterDevicePk(new RegistrationCenterDeviceID("110005", "10008"));
+		regCenterDevice.setRegistrationCenterDevicePk(new RegistrationCenterDeviceID("10008", "110005"));
 		regCenterDevice.setIsActive(false);
 
 		deviceZone = new Device();
@@ -7341,7 +7341,7 @@ public class MasterdataIntegrationTest {
 	public void testUnmapDeviceRegCenterNotFoundException() throws Exception {
 		when(registrationCenterDeviceRepository.findByDeviceIdAndRegCenterId(Mockito.any(), Mockito.any()))
 				.thenReturn(null);
-		mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenterdevice/unmap/110005/10008"))
+		mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenterdevice/unmap/10008/110005"))
 				.andExpect(status().isOk());
 	}
 
@@ -7354,7 +7354,7 @@ public class MasterdataIntegrationTest {
 		when(registrationCenterRepository.findByLangCodeAndId(Mockito.any(), Mockito.any())).thenReturn(regCenterZone);
 		when(registrationCenterDeviceRepository.findByDeviceIdAndRegCenterId(Mockito.any(), Mockito.any()))
 				.thenReturn(regCenterDevice);
-		mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenterdevice/unmap/110005/10008"))
+		mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenterdevice/unmap/10008/110005"))
 				.andExpect(status().isOk());
 	}
 
@@ -7369,7 +7369,7 @@ public class MasterdataIntegrationTest {
 				.thenReturn(registrationCenterDeviceTrue);
 		when(registrationCenterDeviceRepository.update(Mockito.any())).thenReturn(regCenterDevice);
 		when(registrationCenterDeviceHistoryRepository.create(Mockito.any())).thenReturn(regCenterDeviceHistory);
-		mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenterdevice/unmap/110005/10008"))
+		mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenterdevice/unmap/10008/110005"))
 				.andExpect(status().isOk());
 	}
 
@@ -7381,7 +7381,7 @@ public class MasterdataIntegrationTest {
 		when(registrationCenterRepository.findByLangCodeAndId(Mockito.any(), Mockito.any())).thenReturn(regCenterZone);
 		when(registrationCenterDeviceRepository.findByDeviceIdAndRegCenterId(Mockito.any(), Mockito.any()))
 				.thenThrow(DataAccessLayerException.class);
-		mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenterdevice/unmap/110005/10008"))
+		mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenterdevice/unmap/10008/110005"))
 				.andExpect(MockMvcResultMatchers.status().isInternalServerError());
 	}
 
@@ -7393,7 +7393,7 @@ public class MasterdataIntegrationTest {
 		when(registrationCenterRepository.findByLangCodeAndId(Mockito.any(), Mockito.any())).thenReturn(regCenterZone);
 		when(registrationCenterDeviceRepository.findByDeviceIdAndRegCenterId(Mockito.any(), Mockito.any()))
 				.thenReturn(registrationCenterDeviceTrue);
-		mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenterdevice/unmap/110005/10008"))
+		mockMvc.perform(MockMvcRequestBuilders.put("/registrationcenterdevice/unmap/10008/110005"))
 				.andExpect(status().isOk());
 	}
 
