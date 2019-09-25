@@ -3757,65 +3757,6 @@ public class MasterdataIntegrationTest {
 		mockMvc.perform(get("/machines/{langcode}", "ENG")).andExpect(status().isInternalServerError());
 	}
 
-
-	
-
-	@Test
-	@WithUserDetails("test")
-	public void updateMachineLanguageCodeValidatorTest() throws Exception {
-
-		RequestWrapper<MachineDto> requestDto = new RequestWrapper<>();
-		requestDto.setId("mosip.machine.update");
-		requestDto.setVersion("1.0.0");
-		machineDto.setLangCode("xxx");
-		requestDto.setRequest(machineDto);
-		String content = mapper.writeValueAsString(requestDto);
-
-		when(machineRepository.findMachineByIdAndLangCodeAndIsDeletedFalseorIsDeletedIsNull(Mockito.any(),
-				Mockito.any())).thenReturn(machine);
-		Mockito.when(machineRepository.update(Mockito.any())).thenReturn(machine);
-		when(machineHistoryRepository.create(Mockito.any())).thenReturn(machineHistory);
-		mockMvc.perform(
-				MockMvcRequestBuilders.put("/machines").contentType(MediaType.APPLICATION_JSON).content(content))
-				.andExpect(status().isOk());
-	}
-
-	@Test
-	@WithUserDetails("zonal-admin")
-	public void updateMachineNotFoundExceptionTest() throws Exception {
-
-		RequestWrapper<MachineDto> requestDto = new RequestWrapper<>();
-		requestDto.setId("mosip.machine.update");
-		requestDto.setVersion("1.0.0");
-		requestDto.setRequest(machineDto);
-		String content = mapper.writeValueAsString(requestDto);
-		when(machineRepository.findMachineByIdAndLangCodeAndIsDeletedFalseorIsDeletedIsNull(Mockito.any(),
-				Mockito.any())).thenReturn(null);
-
-		mockMvc.perform(
-				MockMvcRequestBuilders.put("/machines").contentType(MediaType.APPLICATION_JSON).content(content))
-				.andExpect(status().isOk());
-	}
-
-	@Ignore
-	@Test
-	@WithUserDetails("test")
-	public void updateMachineDatabaseConnectionExceptionTest() throws Exception {
-
-		RequestWrapper<MachineDto> requestDto = new RequestWrapper<>();
-		requestDto.setId("mosip.machine.update");
-		requestDto.setVersion("1.0.0");
-		requestDto.setRequest(machineDto);
-		String content = mapper.writeValueAsString(requestDto);
-		when(machineRepository.findMachineByIdAndLangCodeAndIsDeletedFalseorIsDeletedIsNull(Mockito.any(),
-				Mockito.any())).thenThrow(DataAccessLayerException.class);
-
-		mockMvc.perform(
-				MockMvcRequestBuilders.put("/machines").contentType(MediaType.APPLICATION_JSON).content(content))
-				.andExpect(status().is5xxServerError());
-
-	}
-
 	// ---------------------------------------------------------------------------------------
 	@Test
 	@WithUserDetails("test")
@@ -7492,6 +7433,8 @@ public class MasterdataIntegrationTest {
 	private RegistrationCenterHistory registrationCenterHistoryEntity=null;
 	private RegistrationCenter renRegCenter;
 	private String updateMachinecontent;
+	private String updateMachineInValideLang;
+	private MachinePutReqDto inValideMacLang;
 	
 	public void updateMachine() {
 		machinePutReqDto = new MachinePutReqDto();
@@ -7519,6 +7462,8 @@ public class MasterdataIntegrationTest {
 		renRegistrationCenters.add(renRegCenter);
 		
 		registrationCenterHistory = new RegistrationCenterHistory();
+		
+		inValideMacLang = new MachinePutReqDto();
 	}
 
 	@Test
@@ -7591,5 +7536,21 @@ public class MasterdataIntegrationTest {
 		mockMvc.perform(
 				MockMvcRequestBuilders.put("/machines").contentType(MediaType.APPLICATION_JSON).content(updateMachinecontent))
 		.andExpect(status().isInternalServerError());
+	}
+	
+	
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void updateMachineLanguageCodeValidatorTest() throws Exception {
+
+		RequestWrapper<MachinePutReqDto> requestDto = new RequestWrapper<>();
+		requestDto.setId("mosip.machine.update");
+		requestDto.setVersion("1.0.0");
+		inValideMacLang.setLangCode("xxx");
+		requestDto.setRequest(inValideMacLang);
+		updateMachineInValideLang = mapper.writeValueAsString(requestDto);
+		mockMvc.perform(
+				MockMvcRequestBuilders.put("/machines").contentType(MediaType.APPLICATION_JSON).content(updateMachineInValideLang))
+				.andExpect(status().isOk());
 	}
 }
