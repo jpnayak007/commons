@@ -7271,8 +7271,7 @@ public class MasterdataIntegrationTest {
 
 		specificDate = LocalDateTime.now(ZoneId.of("UTC"));
 		reqPostMachine = new MachinePostReqDto();
-		//reqPostMachine.setId("10001");
-		reqPostMachine.setLangCode("fra");
+		reqPostMachine.setLangCode("eng");
 		reqPostMachine.setName("HP");
 		reqPostMachine.setIpAddress("129.0.0.0");
 		reqPostMachine.setMacAddress("178.0.0.0");
@@ -7440,7 +7439,7 @@ public class MasterdataIntegrationTest {
 		machinePutReqDto = new MachinePutReqDto();
 		machinePutReqDto.setId("10001");
 		machinePutReqDto.setName("Laptop");
-		machinePutReqDto.setLangCode("fra");
+		machinePutReqDto.setLangCode("eng");
 		machinePutReqDto.setZoneCode("MOR");
 		machinePutReqDto.setName("HP");
 		machinePutReqDto.setIpAddress("129.0.0.0");
