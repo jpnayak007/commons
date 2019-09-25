@@ -63,6 +63,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.mosip.kernel.core.dataaccess.exception.DataAccessLayerException;
 import io.mosip.kernel.core.http.RequestWrapper;
 import io.mosip.kernel.core.idgenerator.spi.MachineIdGenerator;
+import io.mosip.kernel.masterdata.constant.MachinePutReqDto;
 import io.mosip.kernel.masterdata.dto.BiometricAttributeDto;
 import io.mosip.kernel.masterdata.dto.BlacklistedWordsDto;
 import io.mosip.kernel.masterdata.dto.DeviceDto;
@@ -7481,27 +7482,114 @@ public class MasterdataIntegrationTest {
 	
 	//---------------------------- update Machine-----------------------------------------------------
 	
-	private void updateMachine() {
+	
+	
+	private MachinePutReqDto machinePutReqDto=null;
+	private Machine updMachine= null;
+	private List<RegistrationCenterMachine> regCenterMachines = new ArrayList<>();
+	private List<RegistrationCenter> renRegistrationCenters = new ArrayList<>();
+	private RegistrationCenterMachine regCenterMachine=null;
+	private RegistrationCenterHistory registrationCenterHistoryEntity=null;
+	private RegistrationCenter renRegCenter;
+	private String updateMachinecontent;
+	
+	public void updateMachine() {
+		machinePutReqDto = new MachinePutReqDto();
+		machinePutReqDto.setId("10001");
+		machinePutReqDto.setName("Laptop");
+		machinePutReqDto.setLangCode("fra");
+		machinePutReqDto.setZoneCode("MOR");
+		machinePutReqDto.setName("HP");
+		machinePutReqDto.setIpAddress("129.0.0.0");
+		machinePutReqDto.setMacAddress("178.0.0.0");
+		machinePutReqDto.setMachineSpecId("1010");
+		machinePutReqDto.setSerialNum("123");
+		machinePutReqDto.setIsActive(true);
 		
+		updMachine = new Machine();
+		updMachine.setId("10001");
+		updMachine.setIsActive(false);
+	    regCenterMachine = new RegistrationCenterMachine();
+	    regCenterMachine.setRegistrationCenterMachinePk(new RegistrationCenterMachineID("10001","10001"));
+		regCenterMachines.add(regCenterMachine);
+		
+		renRegCenter = new RegistrationCenter();
+		renRegCenter.setId("10001");
+		renRegCenter.setNumberOfKiosks((short)1);
+		renRegistrationCenters.add(renRegCenter);
+		
+		registrationCenterHistory = new RegistrationCenterHistory();
 	}
 
-	/*@Test
+	@Test
 	@WithUserDetails("zonal-admin")
 	public void updateMachineTest() throws Exception {
 
-		RequestWrapper<MachineDto> requestDto = new RequestWrapper<>();
+		RequestWrapper<MachinePutReqDto> requestDto = new RequestWrapper<>();
 		requestDto.setId("mosip.machine.update");
 		requestDto.setVersion("1.0.0");
-		requestDto.setRequest(machineDto);
-		String content = mapper.writeValueAsString(requestDto);
+		requestDto.setRequest(machinePutReqDto);
+		updateMachinecontent = mapper.writeValueAsString(requestDto);
 
-		when(machineRepository.findMachineByIdAndLangCodeAndIsDeletedFalseorIsDeletedIsNull(Mockito.any(),
-				Mockito.anyString())).thenReturn(machine);
-		Mockito.when(machineRepository.update(Mockito.any())).thenReturn(machine);
+		when(zoneUtils.getUserZones()).thenReturn(zonesMachines);
+		when(machineRepository.findMachineByIdAndLangCodeAndIsDeletedFalseorIsDeletedIsNullWithoutActiveStatusCheck(Mockito.any(),
+				Mockito.anyString())).thenReturn(updMachine);
+		when(registrationCenterMachineRepository
+				.findByMachineIdAndIsDeletedFalseOrIsDeletedIsNull(Mockito.any())).thenReturn(regCenterMachines);
+		when(registrationCenterRepository
+				.findByRegIdAndIsDeletedFalseOrNull(Mockito.any())).thenReturn(renRegistrationCenters);
+		when(registrationCenterRepository.update(Mockito.any())).thenReturn(renRegCenter);
+		when(repositoryCenterHistoryRepository.create(Mockito.any())).thenReturn(registrationCenterHistory);
+		when(masterdataCreationUtil.updateMasterData(Machine.class, machinePutReqDto)).thenReturn(machinePutReqDto);
+		Mockito.when(machineRepository.update(Mockito.any())).thenReturn(updMachine);
 		when(machineHistoryRepository.create(Mockito.any())).thenReturn(machineHistory);
 		mockMvc.perform(
-				MockMvcRequestBuilders.put("/machines").contentType(MediaType.APPLICATION_JSON).content(content))
+				MockMvcRequestBuilders.put("/machines").contentType(MediaType.APPLICATION_JSON).content(updateMachinecontent))
 				.andExpect(status().isOk());
-	}*/
+	}
 
+	
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void updateMachineNotFoundTest() throws Exception {
+
+		RequestWrapper<MachinePutReqDto> requestDto = new RequestWrapper<>();
+		requestDto.setId("mosip.machine.update");
+		requestDto.setVersion("1.0.0");
+		requestDto.setRequest(machinePutReqDto);
+		updateMachinecontent = mapper.writeValueAsString(requestDto);
+
+		when(zoneUtils.getUserZones()).thenReturn(zonesMachines);
+		when(machineRepository.findMachineByIdAndLangCodeAndIsDeletedFalseorIsDeletedIsNullWithoutActiveStatusCheck(Mockito.any(),
+				Mockito.anyString())).thenReturn(null);
+		mockMvc.perform(
+				MockMvcRequestBuilders.put("/machines").contentType(MediaType.APPLICATION_JSON).content(updateMachinecontent))
+				.andExpect(status().isOk());
+	}
+	
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void updateMachineDataAccessExpTest() throws Exception {
+
+		RequestWrapper<MachinePutReqDto> requestDto = new RequestWrapper<>();
+		requestDto.setId("mosip.machine.update");
+		requestDto.setVersion("1.0.0");
+		requestDto.setRequest(machinePutReqDto);
+		updateMachinecontent = mapper.writeValueAsString(requestDto);
+
+		when(zoneUtils.getUserZones()).thenReturn(zonesMachines);
+		when(machineRepository.findMachineByIdAndLangCodeAndIsDeletedFalseorIsDeletedIsNullWithoutActiveStatusCheck(Mockito.any(),
+				Mockito.anyString())).thenReturn(updMachine);
+		when(registrationCenterMachineRepository
+				.findByMachineIdAndIsDeletedFalseOrIsDeletedIsNull(Mockito.any())).thenReturn(regCenterMachines);
+		when(registrationCenterRepository
+				.findByRegIdAndIsDeletedFalseOrNull(Mockito.any())).thenReturn(renRegistrationCenters);
+		when(registrationCenterRepository.update(Mockito.any())).thenReturn(renRegCenter);
+		when(repositoryCenterHistoryRepository.create(Mockito.any())).thenReturn(registrationCenterHistory);
+		when(masterdataCreationUtil.updateMasterData(Machine.class, machinePutReqDto)).thenReturn(machinePutReqDto);
+		Mockito.when(machineRepository.update(Mockito.any())).thenThrow(new DataAccessLayerException("", "cannot insert", null));
+		mockMvc.perform(
+				MockMvcRequestBuilders.put("/machines").contentType(MediaType.APPLICATION_JSON).content(updateMachinecontent))
+		.andExpect(status().isInternalServerError());
+	}
 }
