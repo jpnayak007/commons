@@ -6408,47 +6408,7 @@ public class MasterdataIntegrationTest {
 		mockMvc.perform(put("/registrationcenters/decommission/10001").contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk());
 	}
-
-	@Test
-	@WithUserDetails("zonal-admin")
-	public void decommissionMachineTest() throws Exception {
-
-		when(machineRepository.decommissionMachine(Mockito.any())).thenReturn(1);
-		mockMvc.perform(put("/machines/decommission/10001").contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().is5xxServerError());
-
-	}
-
-	@Test
-	@WithUserDetails("zonal-admin")
-	public void decommissionDeviceTest() throws Exception {
-
-		when(deviceRepository.decommissionDevice(Mockito.any())).thenReturn(1);
-		mockMvc.perform(put("/devices/decommission/3000022").contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isOk());
-
-	}
-
-	@Test
-	@WithUserDetails("zonal-admin")
-	public void decommissionMachineExceptionTest() throws Exception {
-
-		when(machineRepository.decommissionMachine(Mockito.any())).thenThrow(DataAccessLayerException.class);
-		mockMvc.perform(put("/machines/decommission/10001").contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isInternalServerError());
-
-	}
-
-	@Test
-	@WithUserDetails("zonal-admin")
-	public void decommissionDeviceExceptionTest() throws Exception {
-
-		when(deviceRepository.decommissionDevice(Mockito.any())).thenThrow(DataAccessLayerException.class);
-		mockMvc.perform(put("/devices/decommission/3000022").contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().is2xxSuccessful());
-
-	}
-
+	
 	@Test
 	@WithUserDetails("zonal-admin")
 	public void testMapDocCategoryAndDocType() throws Exception {
@@ -7552,4 +7512,112 @@ public class MasterdataIntegrationTest {
 				MockMvcRequestBuilders.put("/machines").contentType(MediaType.APPLICATION_JSON).content(updateMachineInValideLang))
 				.andExpect(status().isOk());
 	}
+	
+	//--------------------decommission Machine------------------------------------------
+	
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void decommissionMachineTest() throws Exception {
+		List<RegistrationCenterMachine> emptyList = new ArrayList<>();
+		Machine machine = new Machine();
+		machine.setId("10001");
+		machine.setZoneCode("MOR");
+		when(zoneUtils.getUserZones()).thenReturn(zonesMachines);
+		when(machineRepository.findMachineByIdAndLangCodeAndIsDeletedFalseorIsDeletedIsNullWithoutActiveStatusCheck(
+				Mockito.any(), Mockito.any())).thenReturn(machine);
+		when(registrationCenterMachineRepository.findByMachineIdAndIsDeletedFalseOrIsDeletedIsNull(Mockito.any()))
+				.thenReturn(emptyList);
+		when(machineRepository.decommissionMachine(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(1);
+		mockMvc.perform(put("/machines/decommission/10001").contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+
+	}
+
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void decommissionMachineExceptionTest() throws Exception {
+		List<RegistrationCenterMachine> emptyList = new ArrayList<>();
+		Machine machine = new Machine();
+		machine.setId("10001");
+		machine.setZoneCode("MOR");
+		when(zoneUtils.getUserZones()).thenReturn(zonesMachines);
+		when(machineRepository.findMachineByIdAndLangCodeAndIsDeletedFalseorIsDeletedIsNullWithoutActiveStatusCheck(
+				Mockito.any(), Mockito.any())).thenReturn(machine);
+		when(registrationCenterMachineRepository.findByMachineIdAndIsDeletedFalseOrIsDeletedIsNull(Mockito.any()))
+				.thenReturn(emptyList);
+		when(machineRepository.decommissionMachine(Mockito.any(), Mockito.any(), Mockito.any()))
+				.thenThrow(DataAccessLayerException.class);
+		mockMvc.perform(put("/machines/decommission/10001").contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isInternalServerError());
+
+	}
+
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void decommissionMachineNotFoundTest() throws Exception {
+		Machine machine = new Machine();
+		machine.setId("10001");
+		machine.setZoneCode("MOR");
+		when(zoneUtils.getUserZones()).thenReturn(zonesMachines);
+		when(machineRepository.findMachineByIdAndLangCodeAndIsDeletedFalseorIsDeletedIsNullWithoutActiveStatusCheck(
+				Mockito.any(), Mockito.any())).thenReturn(null);
+		mockMvc.perform(put("/machines/decommission/10001").contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+
+	}
+
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void decommissionMachineInvalideZoneTest() throws Exception {
+		Machine machine = new Machine();
+		machine.setId("10001");
+		machine.setZoneCode("NTR");
+		when(zoneUtils.getUserZones()).thenReturn(zonesMachines);
+		when(machineRepository.findMachineByIdAndLangCodeAndIsDeletedFalseorIsDeletedIsNullWithoutActiveStatusCheck(
+				Mockito.any(), Mockito.any())).thenReturn(machine);
+		mockMvc.perform(put("/machines/decommission/10001").contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+
+	}
+
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void decommissionMachineRegCenterTest() throws Exception {
+		List<RegistrationCenterMachine> regList = new ArrayList<>();
+		RegistrationCenterMachine regCenter = new RegistrationCenterMachine();
+		regCenter.setRegistrationCenterMachinePk(new RegistrationCenterMachineID("10001", "10001"));
+		regList.add(regCenter);
+		Machine machine = new Machine();
+		machine.setId("10001");
+		machine.setZoneCode("MOR");
+		when(zoneUtils.getUserZones()).thenReturn(zonesMachines);
+		when(machineRepository.findMachineByIdAndLangCodeAndIsDeletedFalseorIsDeletedIsNullWithoutActiveStatusCheck(
+				Mockito.any(), Mockito.any())).thenReturn(machine);
+		when(registrationCenterMachineRepository.findByMachineIdAndIsDeletedFalseOrIsDeletedIsNull(Mockito.any()))
+				.thenReturn(regList);
+		mockMvc.perform(put("/machines/decommission/10001").contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+
+	}
+
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void decommissionDeviceTest() throws Exception {
+
+		when(deviceRepository.decommissionDevice(Mockito.any())).thenReturn(1);
+		mockMvc.perform(put("/devices/decommission/3000022").contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+
+	}
+
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void decommissionDeviceExceptionTest() throws Exception {
+
+		when(deviceRepository.decommissionDevice(Mockito.any())).thenThrow(DataAccessLayerException.class);
+		mockMvc.perform(put("/devices/decommission/3000022").contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().is2xxSuccessful());
+
+	}
+	
 }
