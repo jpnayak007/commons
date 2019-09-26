@@ -7600,7 +7600,7 @@ public class MasterdataIntegrationTest {
 
 	}
 
-	@Test
+	/*@Test
 	@WithUserDetails("zonal-admin")
 	public void decommissionDeviceTest() throws Exception {
 
@@ -7618,6 +7618,6 @@ public class MasterdataIntegrationTest {
 		mockMvc.perform(put("/devices/decommission/3000022").contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().is2xxSuccessful());
 
-	}
+	}*/
 	
 }
