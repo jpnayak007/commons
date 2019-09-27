@@ -526,6 +526,7 @@ public class MasterdataIntegrationTest {
 		DeviceSpecsetUp();
 		DevicetypeSetUp();
 		deviceHistorySetUp();
+		decommissionDeviceSetUp();
 
 		machineHistorySetUp();
 		biometricAttributeTestSetup();
@@ -7619,5 +7620,92 @@ public class MasterdataIntegrationTest {
 				.andExpect(status().is2xxSuccessful());
 
 	}*/
+	
+	//--------------------------decommission device test-----------------
+	List<Zone> zonesDevices = null;
+	List<RegistrationCenterDevice> emptyList = null;
+	List<RegistrationCenterDevice> regList = null;
+	Device decDevice =null;
+	public void decommissionDeviceSetUp() {
+		zonesDevices = new ArrayList<>();
+		Zone zone = new Zone("MOR", "eng", "Berkane", (short) 0, "Province", "MOR", " ");
+		zonesDevices.add(zone);
+		
+		emptyList = new ArrayList<>();
+		
+		regList = new ArrayList<>();
+		RegistrationCenterDevice regCenter = new RegistrationCenterDevice();
+		regCenter.setRegistrationCenterDevicePk(new RegistrationCenterDeviceID("10001", "10001"));
+		regList.add(regCenter);
+		decDevice = new Device();
+		decDevice.setId("10001");
+		decDevice.setZoneCode("MOR");
+	}
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void decommissionDeviceTest() throws Exception {
+		when(zoneUtils.getUserZones()).thenReturn(zonesDevices);
+		when(deviceRepository.findByIdAndLangCodeAndIsDeletedFalseOrIsDeletedIsNullNoIsActive(
+				Mockito.any(), Mockito.any())).thenReturn(decDevice);
+		when(registrationCenterDeviceRepository.findByDeviceIdAndIsDeletedFalseOrIsDeletedIsNull(Mockito.any()))
+				.thenReturn(emptyList);
+		when(deviceRepository.decommissionDevice(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(1);
+		mockMvc.perform(put("/devices/decommission/10001").contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+
+	}
+
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void decommissionDeviceExceptionTest() throws Exception {
+		when(zoneUtils.getUserZones()).thenReturn(zonesDevices);
+		when(deviceRepository.findByIdAndLangCodeAndIsDeletedFalseOrIsDeletedIsNullNoIsActive(
+				Mockito.any(), Mockito.any())).thenReturn(decDevice);
+		when(registrationCenterDeviceRepository.findByDeviceIdAndIsDeletedFalseOrIsDeletedIsNull(Mockito.any()))
+				.thenReturn(emptyList);
+		when(deviceRepository.decommissionDevice(Mockito.any(), Mockito.any(), Mockito.any()))
+				.thenThrow(DataAccessLayerException.class);
+		mockMvc.perform(put("/devices/decommission/10001").contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isInternalServerError());
+
+	}
+
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void decommissionDeviceNotFoundTest() throws Exception {
+		when(zoneUtils.getUserZones()).thenReturn(zonesDevices);
+		when(deviceRepository.findByIdAndLangCodeAndIsDeletedFalseOrIsDeletedIsNullNoIsActive(
+				Mockito.any(), Mockito.any())).thenReturn(null);
+		mockMvc.perform(put("/devices/decommission/10001").contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+
+	}
+
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void decommissionDeviceInvalideZoneTest() throws Exception {
+		Device device = new Device();
+		device.setId("10001");
+		device.setZoneCode("NTR");
+		when(zoneUtils.getUserZones()).thenReturn(zonesDevices);
+		when(deviceRepository.findByIdAndLangCodeAndIsDeletedFalseOrIsDeletedIsNullNoIsActive(
+				Mockito.any(), Mockito.any())).thenReturn(decDevice);;
+		mockMvc.perform(put("/machines/decommission/10001").contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+
+	}
+
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void decommissionDeviceRegCenterTest() throws Exception {
+		when(zoneUtils.getUserZones()).thenReturn(zonesDevices);
+		when(deviceRepository.findByIdAndLangCodeAndIsDeletedFalseOrIsDeletedIsNullNoIsActive(
+				Mockito.any(), Mockito.any())).thenReturn(decDevice);
+		when(registrationCenterDeviceRepository.findByDeviceIdAndIsDeletedFalseOrIsDeletedIsNull(Mockito.any()))
+				.thenReturn(regList);
+		mockMvc.perform(put("/devices/decommission/10001").contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+
+	}
 	
 }
