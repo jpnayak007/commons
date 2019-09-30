@@ -522,6 +522,7 @@ public class MasterdataIntegrationTest {
 		machineSpecificationSetUp();
 		createMachineSetUp();
 		updateMachine();
+		decommissionMachineSetUp();
 
 		DeviceSpecsetUp();
 		DevicetypeSetUp();
@@ -7515,20 +7516,32 @@ public class MasterdataIntegrationTest {
 	}
 	
 	//--------------------decommission Machine------------------------------------------
+	private MachineHistory decMachineHistory =null;
+	private List<Machine> machines=null;
+	private List<RegistrationCenterMachine> regMachineemptyList=null;
+	
+	public void decommissionMachineSetUp() {
+		decMachineHistory = new MachineHistory();
+		regMachineemptyList = new ArrayList<>();
+		machines = new ArrayList<>();
+		Machine machine = new Machine();
+		machine.setId("10001");
+		machine.setZoneCode("MOR");
+		machines.add(machine);
+		
+	}
 	
 	@Test
 	@WithUserDetails("zonal-admin")
 	public void decommissionMachineTest() throws Exception {
-		List<RegistrationCenterMachine> emptyList = new ArrayList<>();
-		Machine machine = new Machine();
-		machine.setId("10001");
-		machine.setZoneCode("MOR");
+		
 		when(zoneUtils.getUserZones()).thenReturn(zonesMachines);
-		when(machineRepository.findMachineByIdAndLangCodeAndIsDeletedFalseorIsDeletedIsNullWithoutActiveStatusCheck(
-				Mockito.any(), Mockito.any())).thenReturn(machine);
+		when(machineRepository.findMachineByIdAndIsDeletedFalseorIsDeletedIsNullNoIsActive(
+				Mockito.any())).thenReturn(machines);
 		when(registrationCenterMachineRepository.findByMachineIdAndIsDeletedFalseOrIsDeletedIsNull(Mockito.any()))
-				.thenReturn(emptyList);
+				.thenReturn(regMachineemptyList);
 		when(machineRepository.decommissionMachine(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(1);
+		when(machineHistoryRepository.create(Mockito.any())).thenReturn(decMachineHistory);
 		mockMvc.perform(put("/machines/decommission/10001").contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk());
 
@@ -7537,15 +7550,11 @@ public class MasterdataIntegrationTest {
 	@Test
 	@WithUserDetails("zonal-admin")
 	public void decommissionMachineExceptionTest() throws Exception {
-		List<RegistrationCenterMachine> emptyList = new ArrayList<>();
-		Machine machine = new Machine();
-		machine.setId("10001");
-		machine.setZoneCode("MOR");
 		when(zoneUtils.getUserZones()).thenReturn(zonesMachines);
-		when(machineRepository.findMachineByIdAndLangCodeAndIsDeletedFalseorIsDeletedIsNullWithoutActiveStatusCheck(
-				Mockito.any(), Mockito.any())).thenReturn(machine);
+		when(machineRepository.findMachineByIdAndIsDeletedFalseorIsDeletedIsNullNoIsActive(
+				Mockito.any())).thenReturn(machines);
 		when(registrationCenterMachineRepository.findByMachineIdAndIsDeletedFalseOrIsDeletedIsNull(Mockito.any()))
-				.thenReturn(emptyList);
+				.thenReturn(regMachineemptyList);
 		when(machineRepository.decommissionMachine(Mockito.any(), Mockito.any(), Mockito.any()))
 				.thenThrow(DataAccessLayerException.class);
 		mockMvc.perform(put("/machines/decommission/10001").contentType(MediaType.APPLICATION_JSON))
@@ -7556,12 +7565,10 @@ public class MasterdataIntegrationTest {
 	@Test
 	@WithUserDetails("zonal-admin")
 	public void decommissionMachineNotFoundTest() throws Exception {
-		Machine machine = new Machine();
-		machine.setId("10001");
-		machine.setZoneCode("MOR");
+		List<Machine> machines = new ArrayList<>();
 		when(zoneUtils.getUserZones()).thenReturn(zonesMachines);
-		when(machineRepository.findMachineByIdAndLangCodeAndIsDeletedFalseorIsDeletedIsNullWithoutActiveStatusCheck(
-				Mockito.any(), Mockito.any())).thenReturn(null);
+		when(machineRepository.findMachineByIdAndIsDeletedFalseorIsDeletedIsNullNoIsActive(
+				Mockito.any())).thenReturn(machines);
 		mockMvc.perform(put("/machines/decommission/10001").contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk());
 
@@ -7570,12 +7577,14 @@ public class MasterdataIntegrationTest {
 	@Test
 	@WithUserDetails("zonal-admin")
 	public void decommissionMachineInvalideZoneTest() throws Exception {
+		List<Machine> machines = new ArrayList<>();
 		Machine machine = new Machine();
 		machine.setId("10001");
 		machine.setZoneCode("NTR");
+		machines.add(machine);
 		when(zoneUtils.getUserZones()).thenReturn(zonesMachines);
-		when(machineRepository.findMachineByIdAndLangCodeAndIsDeletedFalseorIsDeletedIsNullWithoutActiveStatusCheck(
-				Mockito.any(), Mockito.any())).thenReturn(machine);
+		when(machineRepository.findMachineByIdAndIsDeletedFalseorIsDeletedIsNullNoIsActive(
+				Mockito.any())).thenReturn(machines);
 		mockMvc.perform(put("/machines/decommission/10001").contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk());
 
@@ -7588,12 +7597,9 @@ public class MasterdataIntegrationTest {
 		RegistrationCenterMachine regCenter = new RegistrationCenterMachine();
 		regCenter.setRegistrationCenterMachinePk(new RegistrationCenterMachineID("10001", "10001"));
 		regList.add(regCenter);
-		Machine machine = new Machine();
-		machine.setId("10001");
-		machine.setZoneCode("MOR");
 		when(zoneUtils.getUserZones()).thenReturn(zonesMachines);
-		when(machineRepository.findMachineByIdAndLangCodeAndIsDeletedFalseorIsDeletedIsNullWithoutActiveStatusCheck(
-				Mockito.any(), Mockito.any())).thenReturn(machine);
+		when(machineRepository.findMachineByIdAndIsDeletedFalseorIsDeletedIsNullNoIsActive(
+				Mockito.any())).thenReturn(machines);
 		when(registrationCenterMachineRepository.findByMachineIdAndIsDeletedFalseOrIsDeletedIsNull(Mockito.any()))
 				.thenReturn(regList);
 		mockMvc.perform(put("/machines/decommission/10001").contentType(MediaType.APPLICATION_JSON))
@@ -7601,31 +7607,14 @@ public class MasterdataIntegrationTest {
 
 	}
 
-	/*@Test
-	@WithUserDetails("zonal-admin")
-	public void decommissionDeviceTest() throws Exception {
-
-		when(deviceRepository.decommissionDevice(Mockito.any())).thenReturn(1);
-		mockMvc.perform(put("/devices/decommission/3000022").contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isOk());
-
-	}
-
-	@Test
-	@WithUserDetails("zonal-admin")
-	public void decommissionDeviceExceptionTest() throws Exception {
-
-		when(deviceRepository.decommissionDevice(Mockito.any())).thenThrow(DataAccessLayerException.class);
-		mockMvc.perform(put("/devices/decommission/3000022").contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().is2xxSuccessful());
-
-	}*/
 	
 	//--------------------------decommission device test-----------------
 	List<Zone> zonesDevices = null;
 	List<RegistrationCenterDevice> emptyList = null;
 	List<RegistrationCenterDevice> regList = null;
-	Device decDevice =null;
+	List<Device> decDevices =null;
+	Device decDevice = null;
+	DeviceHistory devHistory = new DeviceHistory();
 	public void decommissionDeviceSetUp() {
 		zonesDevices = new ArrayList<>();
 		Zone zone = new Zone("MOR", "eng", "Berkane", (short) 0, "Province", "MOR", " ");
@@ -7637,19 +7626,22 @@ public class MasterdataIntegrationTest {
 		RegistrationCenterDevice regCenter = new RegistrationCenterDevice();
 		regCenter.setRegistrationCenterDevicePk(new RegistrationCenterDeviceID("10001", "10001"));
 		regList.add(regCenter);
+		decDevices = new ArrayList<>();
 		decDevice = new Device();
 		decDevice.setId("10001");
 		decDevice.setZoneCode("MOR");
+		decDevices.add(decDevice);
 	}
 	@Test
 	@WithUserDetails("zonal-admin")
 	public void decommissionDeviceTest() throws Exception {
 		when(zoneUtils.getUserZones()).thenReturn(zonesDevices);
-		when(deviceRepository.findByIdAndLangCodeAndIsDeletedFalseOrIsDeletedIsNullNoIsActive(
-				Mockito.any(), Mockito.any())).thenReturn(decDevice);
+		when(deviceRepository.findDeviceByIdAndIsDeletedFalseorIsDeletedIsNullNoIsActive(
+				Mockito.any())).thenReturn(decDevices);
 		when(registrationCenterDeviceRepository.findByDeviceIdAndIsDeletedFalseOrIsDeletedIsNull(Mockito.any()))
 				.thenReturn(emptyList);
 		when(deviceRepository.decommissionDevice(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(1);
+		when(deviceHistoryRepository.create(Mockito.any())).thenReturn(devHistory);
 		mockMvc.perform(put("/devices/decommission/10001").contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk());
 
@@ -7659,8 +7651,8 @@ public class MasterdataIntegrationTest {
 	@WithUserDetails("zonal-admin")
 	public void decommissionDeviceExceptionTest() throws Exception {
 		when(zoneUtils.getUserZones()).thenReturn(zonesDevices);
-		when(deviceRepository.findByIdAndLangCodeAndIsDeletedFalseOrIsDeletedIsNullNoIsActive(
-				Mockito.any(), Mockito.any())).thenReturn(decDevice);
+		when(deviceRepository.findDeviceByIdAndIsDeletedFalseorIsDeletedIsNullNoIsActive(
+				Mockito.any())).thenReturn(decDevices);
 		when(registrationCenterDeviceRepository.findByDeviceIdAndIsDeletedFalseOrIsDeletedIsNull(Mockito.any()))
 				.thenReturn(emptyList);
 		when(deviceRepository.decommissionDevice(Mockito.any(), Mockito.any(), Mockito.any()))
@@ -7673,9 +7665,10 @@ public class MasterdataIntegrationTest {
 	@Test
 	@WithUserDetails("zonal-admin")
 	public void decommissionDeviceNotFoundTest() throws Exception {
+		List<Device> devices = new ArrayList<>();
 		when(zoneUtils.getUserZones()).thenReturn(zonesDevices);
-		when(deviceRepository.findByIdAndLangCodeAndIsDeletedFalseOrIsDeletedIsNullNoIsActive(
-				Mockito.any(), Mockito.any())).thenReturn(null);
+		when(deviceRepository.findDeviceByIdAndIsDeletedFalseorIsDeletedIsNullNoIsActive(
+				Mockito.any())).thenReturn(devices);
 		mockMvc.perform(put("/devices/decommission/10001").contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk());
 
@@ -7684,13 +7677,15 @@ public class MasterdataIntegrationTest {
 	@Test
 	@WithUserDetails("zonal-admin")
 	public void decommissionDeviceInvalideZoneTest() throws Exception {
+		List<Device> decDevices = new ArrayList<>();
 		Device device = new Device();
 		device.setId("10001");
 		device.setZoneCode("NTR");
+		decDevices.add(device);
 		when(zoneUtils.getUserZones()).thenReturn(zonesDevices);
-		when(deviceRepository.findByIdAndLangCodeAndIsDeletedFalseOrIsDeletedIsNullNoIsActive(
-				Mockito.any(), Mockito.any())).thenReturn(decDevice);;
-		mockMvc.perform(put("/machines/decommission/10001").contentType(MediaType.APPLICATION_JSON))
+		when(deviceRepository.findDeviceByIdAndIsDeletedFalseorIsDeletedIsNullNoIsActive(
+				Mockito.any())).thenReturn(decDevices);;
+		mockMvc.perform(put("/devices/decommission/10001").contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk());
 
 	}
@@ -7699,8 +7694,8 @@ public class MasterdataIntegrationTest {
 	@WithUserDetails("zonal-admin")
 	public void decommissionDeviceRegCenterTest() throws Exception {
 		when(zoneUtils.getUserZones()).thenReturn(zonesDevices);
-		when(deviceRepository.findByIdAndLangCodeAndIsDeletedFalseOrIsDeletedIsNullNoIsActive(
-				Mockito.any(), Mockito.any())).thenReturn(decDevice);
+		when(deviceRepository.findDeviceByIdAndIsDeletedFalseorIsDeletedIsNullNoIsActive(
+				Mockito.any())).thenReturn(decDevices);
 		when(registrationCenterDeviceRepository.findByDeviceIdAndIsDeletedFalseOrIsDeletedIsNull(Mockito.any()))
 				.thenReturn(regList);
 		mockMvc.perform(put("/devices/decommission/10001").contentType(MediaType.APPLICATION_JSON))
