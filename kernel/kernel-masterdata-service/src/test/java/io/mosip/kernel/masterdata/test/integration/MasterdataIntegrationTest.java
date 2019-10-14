@@ -75,6 +75,7 @@ import io.mosip.kernel.masterdata.dto.GenderTypeDto;
 import io.mosip.kernel.masterdata.dto.IdTypeDto;
 import io.mosip.kernel.masterdata.dto.IndividualTypeDto;
 import io.mosip.kernel.masterdata.dto.LanguageDto;
+import io.mosip.kernel.masterdata.dto.MOSIPDeviceServiceDto;
 import io.mosip.kernel.masterdata.dto.MachineDto;
 import io.mosip.kernel.masterdata.dto.MachinePostReqDto;
 import io.mosip.kernel.masterdata.dto.MachineSpecificationDto;
@@ -103,6 +104,7 @@ import io.mosip.kernel.masterdata.entity.BiometricAttribute;
 import io.mosip.kernel.masterdata.entity.BlacklistedWords;
 import io.mosip.kernel.masterdata.entity.Device;
 import io.mosip.kernel.masterdata.entity.DeviceHistory;
+import io.mosip.kernel.masterdata.entity.DeviceProvider;
 import io.mosip.kernel.masterdata.entity.DeviceSpecification;
 import io.mosip.kernel.masterdata.entity.DeviceType;
 import io.mosip.kernel.masterdata.entity.DocumentCategory;
@@ -113,6 +115,8 @@ import io.mosip.kernel.masterdata.entity.IdType;
 import io.mosip.kernel.masterdata.entity.IndividualType;
 import io.mosip.kernel.masterdata.entity.Language;
 import io.mosip.kernel.masterdata.entity.Location;
+import io.mosip.kernel.masterdata.entity.MOSIPDeviceService;
+import io.mosip.kernel.masterdata.entity.MOSIPDeviceServiceHistory;
 import io.mosip.kernel.masterdata.entity.Machine;
 import io.mosip.kernel.masterdata.entity.MachineHistory;
 import io.mosip.kernel.masterdata.entity.MachineSpecification;
@@ -133,6 +137,8 @@ import io.mosip.kernel.masterdata.entity.RegistrationCenterUser;
 import io.mosip.kernel.masterdata.entity.RegistrationCenterUserHistory;
 import io.mosip.kernel.masterdata.entity.RegistrationCenterUserMachine;
 import io.mosip.kernel.masterdata.entity.RegistrationCenterUserMachineHistory;
+import io.mosip.kernel.masterdata.entity.RegistrationDeviceSubType;
+import io.mosip.kernel.masterdata.entity.RegistrationDeviceType;
 import io.mosip.kernel.masterdata.entity.Template;
 import io.mosip.kernel.masterdata.entity.TemplateFileFormat;
 import io.mosip.kernel.masterdata.entity.TemplateType;
@@ -158,6 +164,7 @@ import io.mosip.kernel.masterdata.repository.ApplicantValidDocumentRepository;
 import io.mosip.kernel.masterdata.repository.BiometricAttributeRepository;
 import io.mosip.kernel.masterdata.repository.BlacklistedWordsRepository;
 import io.mosip.kernel.masterdata.repository.DeviceHistoryRepository;
+import io.mosip.kernel.masterdata.repository.DeviceProviderRepository;
 import io.mosip.kernel.masterdata.repository.DeviceRepository;
 import io.mosip.kernel.masterdata.repository.DeviceSpecificationRepository;
 import io.mosip.kernel.masterdata.repository.DeviceTypeRepository;
@@ -169,6 +176,8 @@ import io.mosip.kernel.masterdata.repository.IdTypeRepository;
 import io.mosip.kernel.masterdata.repository.IndividualTypeRepository;
 import io.mosip.kernel.masterdata.repository.LanguageRepository;
 import io.mosip.kernel.masterdata.repository.LocationRepository;
+import io.mosip.kernel.masterdata.repository.MOSIPDeviceServiceHistoryRepository;
+import io.mosip.kernel.masterdata.repository.MOSIPDeviceServiceRepository;
 import io.mosip.kernel.masterdata.repository.MachineHistoryRepository;
 import io.mosip.kernel.masterdata.repository.MachineRepository;
 import io.mosip.kernel.masterdata.repository.MachineSpecificationRepository;
@@ -188,6 +197,8 @@ import io.mosip.kernel.masterdata.repository.RegistrationCenterTypeRepository;
 import io.mosip.kernel.masterdata.repository.RegistrationCenterUserHistoryRepository;
 import io.mosip.kernel.masterdata.repository.RegistrationCenterUserMachineHistoryRepository;
 import io.mosip.kernel.masterdata.repository.RegistrationCenterUserRepository;
+import io.mosip.kernel.masterdata.repository.RegistrationDeviceSubTypeRepository;
+import io.mosip.kernel.masterdata.repository.RegistrationDeviceTypeRepository;
 import io.mosip.kernel.masterdata.repository.TemplateFileFormatRepository;
 import io.mosip.kernel.masterdata.repository.TemplateRepository;
 import io.mosip.kernel.masterdata.repository.TemplateTypeRepository;
@@ -536,6 +547,7 @@ public class MasterdataIntegrationTest {
 		templateFileFormatSetup();
 		registrationCenterDeviceHistorySetup();
 		userDetailsHistorySetup();
+		MSDcreateSetUp();
 
 		unMapUserRegCenter();
 
@@ -7382,21 +7394,18 @@ public class MasterdataIntegrationTest {
 				.andExpect(status().isOk());
 	}
 	
-	//---------------------------- update Machine-----------------------------------------------------
-	
-	
-	
-	private MachinePutReqDto machinePutReqDto=null;
-	private Machine updMachine= null;
+	// ---------------------------- update
+	// Machine-----------------------------------------------------
+	private MachinePutReqDto machinePutReqDto = null;
+	private Machine updMachine = null;
 	private List<RegistrationCenterMachine> regCenterMachines = new ArrayList<>();
 	private List<RegistrationCenter> renRegistrationCenters = new ArrayList<>();
-	private RegistrationCenterMachine regCenterMachine=null;
-	private RegistrationCenterHistory registrationCenterHistoryEntity=null;
+	private RegistrationCenterMachine regCenterMachine = null;
 	private RegistrationCenter renRegCenter;
 	private String updateMachinecontent;
 	private String updateMachineInValideLang;
 	private MachinePutReqDto inValideMacLang;
-	
+
 	public void updateMachine() {
 		machinePutReqDto = new MachinePutReqDto();
 		machinePutReqDto.setId("10001");
@@ -7409,21 +7418,21 @@ public class MasterdataIntegrationTest {
 		machinePutReqDto.setMachineSpecId("1010");
 		machinePutReqDto.setSerialNum("123");
 		machinePutReqDto.setIsActive(true);
-		
+
 		updMachine = new Machine();
 		updMachine.setId("10001");
 		updMachine.setIsActive(false);
-	    regCenterMachine = new RegistrationCenterMachine();
-	    regCenterMachine.setRegistrationCenterMachinePk(new RegistrationCenterMachineID("10001","10001"));
+		regCenterMachine = new RegistrationCenterMachine();
+		regCenterMachine.setRegistrationCenterMachinePk(new RegistrationCenterMachineID("10001", "10001"));
 		regCenterMachines.add(regCenterMachine);
-		
+
 		renRegCenter = new RegistrationCenter();
 		renRegCenter.setId("10001");
-		renRegCenter.setNumberOfKiosks((short)1);
+		renRegCenter.setNumberOfKiosks((short) 1);
 		renRegistrationCenters.add(renRegCenter);
-		
+
 		registrationCenterHistory = new RegistrationCenterHistory();
-		
+
 		inValideMacLang = new MachinePutReqDto();
 	}
 
@@ -7438,23 +7447,21 @@ public class MasterdataIntegrationTest {
 		updateMachinecontent = mapper.writeValueAsString(requestDto);
 
 		when(zoneUtils.getUserZones()).thenReturn(zonesMachines);
-		when(machineRepository.findMachineByIdAndLangCodeAndIsDeletedFalseorIsDeletedIsNullWithoutActiveStatusCheck(Mockito.any(),
-				Mockito.anyString())).thenReturn(updMachine);
-		when(registrationCenterMachineRepository
-				.findByMachineIdAndIsDeletedFalseOrIsDeletedIsNull(Mockito.any())).thenReturn(regCenterMachines);
-		when(registrationCenterRepository
-				.findByRegIdAndIsDeletedFalseOrNull(Mockito.any())).thenReturn(renRegistrationCenters);
+		when(machineRepository.findMachineByIdAndLangCodeAndIsDeletedFalseorIsDeletedIsNullWithoutActiveStatusCheck(
+				Mockito.any(), Mockito.anyString())).thenReturn(updMachine);
+		when(registrationCenterMachineRepository.findByMachineIdAndIsDeletedFalseOrIsDeletedIsNull(Mockito.any()))
+				.thenReturn(regCenterMachines);
+		when(registrationCenterRepository.findByRegIdAndIsDeletedFalseOrNull(Mockito.any()))
+				.thenReturn(renRegistrationCenters);
 		when(registrationCenterRepository.update(Mockito.any())).thenReturn(renRegCenter);
 		when(repositoryCenterHistoryRepository.create(Mockito.any())).thenReturn(registrationCenterHistory);
 		when(masterdataCreationUtil.updateMasterData(Machine.class, machinePutReqDto)).thenReturn(machinePutReqDto);
 		Mockito.when(machineRepository.update(Mockito.any())).thenReturn(updMachine);
 		when(machineHistoryRepository.create(Mockito.any())).thenReturn(machineHistory);
-		mockMvc.perform(
-				MockMvcRequestBuilders.put("/machines").contentType(MediaType.APPLICATION_JSON).content(updateMachinecontent))
-				.andExpect(status().isOk());
+		mockMvc.perform(MockMvcRequestBuilders.put("/machines").contentType(MediaType.APPLICATION_JSON)
+				.content(updateMachinecontent)).andExpect(status().isOk());
 	}
 
-	
 	@Test
 	@WithUserDetails("zonal-admin")
 	public void updateMachineNotFoundTest() throws Exception {
@@ -7466,13 +7473,12 @@ public class MasterdataIntegrationTest {
 		updateMachinecontent = mapper.writeValueAsString(requestDto);
 
 		when(zoneUtils.getUserZones()).thenReturn(zonesMachines);
-		when(machineRepository.findMachineByIdAndLangCodeAndIsDeletedFalseorIsDeletedIsNullWithoutActiveStatusCheck(Mockito.any(),
-				Mockito.anyString())).thenReturn(null);
-		mockMvc.perform(
-				MockMvcRequestBuilders.put("/machines").contentType(MediaType.APPLICATION_JSON).content(updateMachinecontent))
-				.andExpect(status().isOk());
+		when(machineRepository.findMachineByIdAndLangCodeAndIsDeletedFalseorIsDeletedIsNullWithoutActiveStatusCheck(
+				Mockito.any(), Mockito.anyString())).thenReturn(null);
+		mockMvc.perform(MockMvcRequestBuilders.put("/machines").contentType(MediaType.APPLICATION_JSON)
+				.content(updateMachinecontent)).andExpect(status().isOk());
 	}
-	
+
 	@Test
 	@WithUserDetails("zonal-admin")
 	public void updateMachineDataAccessExpTest() throws Exception {
@@ -7484,22 +7490,21 @@ public class MasterdataIntegrationTest {
 		updateMachinecontent = mapper.writeValueAsString(requestDto);
 
 		when(zoneUtils.getUserZones()).thenReturn(zonesMachines);
-		when(machineRepository.findMachineByIdAndLangCodeAndIsDeletedFalseorIsDeletedIsNullWithoutActiveStatusCheck(Mockito.any(),
-				Mockito.anyString())).thenReturn(updMachine);
-		when(registrationCenterMachineRepository
-				.findByMachineIdAndIsDeletedFalseOrIsDeletedIsNull(Mockito.any())).thenReturn(regCenterMachines);
-		when(registrationCenterRepository
-				.findByRegIdAndIsDeletedFalseOrNull(Mockito.any())).thenReturn(renRegistrationCenters);
+		when(machineRepository.findMachineByIdAndLangCodeAndIsDeletedFalseorIsDeletedIsNullWithoutActiveStatusCheck(
+				Mockito.any(), Mockito.anyString())).thenReturn(updMachine);
+		when(registrationCenterMachineRepository.findByMachineIdAndIsDeletedFalseOrIsDeletedIsNull(Mockito.any()))
+				.thenReturn(regCenterMachines);
+		when(registrationCenterRepository.findByRegIdAndIsDeletedFalseOrNull(Mockito.any()))
+				.thenReturn(renRegistrationCenters);
 		when(registrationCenterRepository.update(Mockito.any())).thenReturn(renRegCenter);
 		when(repositoryCenterHistoryRepository.create(Mockito.any())).thenReturn(registrationCenterHistory);
 		when(masterdataCreationUtil.updateMasterData(Machine.class, machinePutReqDto)).thenReturn(machinePutReqDto);
-		Mockito.when(machineRepository.update(Mockito.any())).thenThrow(new DataAccessLayerException("", "cannot insert", null));
-		mockMvc.perform(
-				MockMvcRequestBuilders.put("/machines").contentType(MediaType.APPLICATION_JSON).content(updateMachinecontent))
-		.andExpect(status().isInternalServerError());
+		Mockito.when(machineRepository.update(Mockito.any()))
+				.thenThrow(new DataAccessLayerException("", "cannot insert", null));
+		mockMvc.perform(MockMvcRequestBuilders.put("/machines").contentType(MediaType.APPLICATION_JSON)
+				.content(updateMachinecontent)).andExpect(status().isInternalServerError());
 	}
-	
-	
+
 	@Test
 	@WithUserDetails("zonal-admin")
 	public void updateMachineLanguageCodeValidatorTest() throws Exception {
@@ -7510,16 +7515,16 @@ public class MasterdataIntegrationTest {
 		inValideMacLang.setLangCode("xxx");
 		requestDto.setRequest(inValideMacLang);
 		updateMachineInValideLang = mapper.writeValueAsString(requestDto);
-		mockMvc.perform(
-				MockMvcRequestBuilders.put("/machines").contentType(MediaType.APPLICATION_JSON).content(updateMachineInValideLang))
-				.andExpect(status().isOk());
+		mockMvc.perform(MockMvcRequestBuilders.put("/machines").contentType(MediaType.APPLICATION_JSON)
+				.content(updateMachineInValideLang)).andExpect(status().isOk());
 	}
-	
-	//--------------------decommission Machine------------------------------------------
-	private MachineHistory decMachineHistory =null;
-	private List<Machine> machines=null;
-	private List<RegistrationCenterMachine> regMachineemptyList=null;
-	
+
+	// --------------------decommission
+	// Machine------------------------------------------
+	private MachineHistory decMachineHistory = null;
+	private List<Machine> machines = null;
+	private List<RegistrationCenterMachine> regMachineemptyList = null;
+
 	public void decommissionMachineSetUp() {
 		decMachineHistory = new MachineHistory();
 		regMachineemptyList = new ArrayList<>();
@@ -7528,16 +7533,16 @@ public class MasterdataIntegrationTest {
 		machine.setId("10001");
 		machine.setZoneCode("MOR");
 		machines.add(machine);
-		
+
 	}
-	
+
 	@Test
 	@WithUserDetails("zonal-admin")
 	public void decommissionMachineTest() throws Exception {
-		
+
 		when(zoneUtils.getUserZones()).thenReturn(zonesMachines);
-		when(machineRepository.findMachineByIdAndIsDeletedFalseorIsDeletedIsNullNoIsActive(
-				Mockito.any())).thenReturn(machines);
+		when(machineRepository.findMachineByIdAndIsDeletedFalseorIsDeletedIsNullNoIsActive(Mockito.any()))
+				.thenReturn(machines);
 		when(registrationCenterMachineRepository.findByMachineIdAndIsDeletedFalseOrIsDeletedIsNull(Mockito.any()))
 				.thenReturn(regMachineemptyList);
 		when(machineRepository.decommissionMachine(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(1);
@@ -7551,8 +7556,8 @@ public class MasterdataIntegrationTest {
 	@WithUserDetails("zonal-admin")
 	public void decommissionMachineExceptionTest() throws Exception {
 		when(zoneUtils.getUserZones()).thenReturn(zonesMachines);
-		when(machineRepository.findMachineByIdAndIsDeletedFalseorIsDeletedIsNullNoIsActive(
-				Mockito.any())).thenReturn(machines);
+		when(machineRepository.findMachineByIdAndIsDeletedFalseorIsDeletedIsNullNoIsActive(Mockito.any()))
+				.thenReturn(machines);
 		when(registrationCenterMachineRepository.findByMachineIdAndIsDeletedFalseOrIsDeletedIsNull(Mockito.any()))
 				.thenReturn(regMachineemptyList);
 		when(machineRepository.decommissionMachine(Mockito.any(), Mockito.any(), Mockito.any()))
@@ -7567,8 +7572,8 @@ public class MasterdataIntegrationTest {
 	public void decommissionMachineNotFoundTest() throws Exception {
 		List<Machine> machines = new ArrayList<>();
 		when(zoneUtils.getUserZones()).thenReturn(zonesMachines);
-		when(machineRepository.findMachineByIdAndIsDeletedFalseorIsDeletedIsNullNoIsActive(
-				Mockito.any())).thenReturn(machines);
+		when(machineRepository.findMachineByIdAndIsDeletedFalseorIsDeletedIsNullNoIsActive(Mockito.any()))
+				.thenReturn(machines);
 		mockMvc.perform(put("/machines/decommission/10001").contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk());
 
@@ -7583,8 +7588,8 @@ public class MasterdataIntegrationTest {
 		machine.setZoneCode("NTR");
 		machines.add(machine);
 		when(zoneUtils.getUserZones()).thenReturn(zonesMachines);
-		when(machineRepository.findMachineByIdAndIsDeletedFalseorIsDeletedIsNullNoIsActive(
-				Mockito.any())).thenReturn(machines);
+		when(machineRepository.findMachineByIdAndIsDeletedFalseorIsDeletedIsNullNoIsActive(Mockito.any()))
+				.thenReturn(machines);
 		mockMvc.perform(put("/machines/decommission/10001").contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk());
 
@@ -7598,8 +7603,8 @@ public class MasterdataIntegrationTest {
 		regCenter.setRegistrationCenterMachinePk(new RegistrationCenterMachineID("10001", "10001"));
 		regList.add(regCenter);
 		when(zoneUtils.getUserZones()).thenReturn(zonesMachines);
-		when(machineRepository.findMachineByIdAndIsDeletedFalseorIsDeletedIsNullNoIsActive(
-				Mockito.any())).thenReturn(machines);
+		when(machineRepository.findMachineByIdAndIsDeletedFalseorIsDeletedIsNullNoIsActive(Mockito.any()))
+				.thenReturn(machines);
 		when(registrationCenterMachineRepository.findByMachineIdAndIsDeletedFalseOrIsDeletedIsNull(Mockito.any()))
 				.thenReturn(regList);
 		mockMvc.perform(put("/machines/decommission/10001").contentType(MediaType.APPLICATION_JSON))
@@ -7607,21 +7612,21 @@ public class MasterdataIntegrationTest {
 
 	}
 
-	
-	//--------------------------decommission device test-----------------
+	// --------------------------decommission device test-----------------
 	List<Zone> zonesDevices = null;
 	List<RegistrationCenterDevice> emptyList = null;
 	List<RegistrationCenterDevice> regList = null;
-	List<Device> decDevices =null;
+	List<Device> decDevices = null;
 	Device decDevice = null;
 	DeviceHistory devHistory = new DeviceHistory();
+
 	public void decommissionDeviceSetUp() {
 		zonesDevices = new ArrayList<>();
 		Zone zone = new Zone("MOR", "eng", "Berkane", (short) 0, "Province", "MOR", " ");
 		zonesDevices.add(zone);
-		
+
 		emptyList = new ArrayList<>();
-		
+
 		regList = new ArrayList<>();
 		RegistrationCenterDevice regCenter = new RegistrationCenterDevice();
 		regCenter.setRegistrationCenterDevicePk(new RegistrationCenterDeviceID("10001", "10001"));
@@ -7632,12 +7637,13 @@ public class MasterdataIntegrationTest {
 		decDevice.setZoneCode("MOR");
 		decDevices.add(decDevice);
 	}
+
 	@Test
 	@WithUserDetails("zonal-admin")
 	public void decommissionDeviceTest() throws Exception {
 		when(zoneUtils.getUserZones()).thenReturn(zonesDevices);
-		when(deviceRepository.findDeviceByIdAndIsDeletedFalseorIsDeletedIsNullNoIsActive(
-				Mockito.any())).thenReturn(decDevices);
+		when(deviceRepository.findDeviceByIdAndIsDeletedFalseorIsDeletedIsNullNoIsActive(Mockito.any()))
+				.thenReturn(decDevices);
 		when(registrationCenterDeviceRepository.findByDeviceIdAndIsDeletedFalseOrIsDeletedIsNull(Mockito.any()))
 				.thenReturn(emptyList);
 		when(deviceRepository.decommissionDevice(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(1);
@@ -7651,8 +7657,8 @@ public class MasterdataIntegrationTest {
 	@WithUserDetails("zonal-admin")
 	public void decommissionDeviceExceptionTest() throws Exception {
 		when(zoneUtils.getUserZones()).thenReturn(zonesDevices);
-		when(deviceRepository.findDeviceByIdAndIsDeletedFalseorIsDeletedIsNullNoIsActive(
-				Mockito.any())).thenReturn(decDevices);
+		when(deviceRepository.findDeviceByIdAndIsDeletedFalseorIsDeletedIsNullNoIsActive(Mockito.any()))
+				.thenReturn(decDevices);
 		when(registrationCenterDeviceRepository.findByDeviceIdAndIsDeletedFalseOrIsDeletedIsNull(Mockito.any()))
 				.thenReturn(emptyList);
 		when(deviceRepository.decommissionDevice(Mockito.any(), Mockito.any(), Mockito.any()))
@@ -7667,8 +7673,8 @@ public class MasterdataIntegrationTest {
 	public void decommissionDeviceNotFoundTest() throws Exception {
 		List<Device> devices = new ArrayList<>();
 		when(zoneUtils.getUserZones()).thenReturn(zonesDevices);
-		when(deviceRepository.findDeviceByIdAndIsDeletedFalseorIsDeletedIsNullNoIsActive(
-				Mockito.any())).thenReturn(devices);
+		when(deviceRepository.findDeviceByIdAndIsDeletedFalseorIsDeletedIsNullNoIsActive(Mockito.any()))
+				.thenReturn(devices);
 		mockMvc.perform(put("/devices/decommission/10001").contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk());
 
@@ -7683,8 +7689,9 @@ public class MasterdataIntegrationTest {
 		device.setZoneCode("NTR");
 		decDevices.add(device);
 		when(zoneUtils.getUserZones()).thenReturn(zonesDevices);
-		when(deviceRepository.findDeviceByIdAndIsDeletedFalseorIsDeletedIsNullNoIsActive(
-				Mockito.any())).thenReturn(decDevices);;
+		when(deviceRepository.findDeviceByIdAndIsDeletedFalseorIsDeletedIsNullNoIsActive(Mockito.any()))
+				.thenReturn(decDevices);
+		;
 		mockMvc.perform(put("/devices/decommission/10001").contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk());
 
@@ -7694,13 +7701,187 @@ public class MasterdataIntegrationTest {
 	@WithUserDetails("zonal-admin")
 	public void decommissionDeviceRegCenterTest() throws Exception {
 		when(zoneUtils.getUserZones()).thenReturn(zonesDevices);
-		when(deviceRepository.findDeviceByIdAndIsDeletedFalseorIsDeletedIsNullNoIsActive(
-				Mockito.any())).thenReturn(decDevices);
+		when(deviceRepository.findDeviceByIdAndIsDeletedFalseorIsDeletedIsNullNoIsActive(Mockito.any()))
+				.thenReturn(decDevices);
 		when(registrationCenterDeviceRepository.findByDeviceIdAndIsDeletedFalseOrIsDeletedIsNull(Mockito.any()))
 				.thenReturn(regList);
 		mockMvc.perform(put("/devices/decommission/10001").contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk());
 
 	}
-	
+
+	// ---------------------------create MDS--------------------------------------
+
+	private MOSIPDeviceServiceDto mosipDeviceServiceDto = null;
+	private MOSIPDeviceServiceHistory msdHistory = null;
+	private MOSIPDeviceService mosipDeviceService = null;
+	private RegistrationDeviceType regDeviceType = null;
+	private RegistrationDeviceSubType regDeviceSubType = null;
+	private DeviceProvider deviceProvider = null;
+	private String mdsJson = null;
+
+	private void MSDcreateSetUp() {
+
+		byte[] binary = { 1 };
+		specificDate = LocalDateTime.now(ZoneId.of("UTC"));
+		mosipDeviceServiceDto = new MOSIPDeviceServiceDto();
+		mosipDeviceServiceDto.setId("10002");
+		mosipDeviceServiceDto.setSwVersion("0.1v");
+		mosipDeviceServiceDto.setMake("make");
+		mosipDeviceServiceDto.setModel("model");
+		mosipDeviceServiceDto.setRegDeviceSubCode("10001");
+		mosipDeviceServiceDto.setRegDeviceTypeCode("10003");
+		mosipDeviceServiceDto.setDeviceProviderId("10003");
+		mosipDeviceServiceDto.setSwBinaryHash(binary);
+		mosipDeviceServiceDto.setIsActive(true);
+
+		mosipDeviceService = new MOSIPDeviceService();
+		mosipDeviceService.setId("10002");
+		msdHistory = new MOSIPDeviceServiceHistory();
+
+		regDeviceType = new RegistrationDeviceType();
+		regDeviceType.setCode("10003");
+
+		regDeviceSubType = new RegistrationDeviceSubType();
+		regDeviceSubType.setCode("10003");
+
+		deviceProvider = new DeviceProvider();
+		deviceProvider.setId("10003");
+	}
+
+	@MockBean
+	MOSIPDeviceServiceRepository mosipDeviceServiceRepository;
+
+	@MockBean
+	MOSIPDeviceServiceHistoryRepository mosipDeviceServiceHistoryRepository;
+
+	@MockBean
+	RegistrationDeviceTypeRepository registrationDeviceTypeRepository;
+
+	@MockBean
+	RegistrationDeviceSubTypeRepository registrationDeviceSubTypeRepository;
+
+	@MockBean
+	DeviceProviderRepository deviceProviderRepository;
+
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void createMOSIPDeviceServiceTest() throws Exception {
+
+		RequestWrapper<MOSIPDeviceServiceDto> requestMSDDto = null;
+		requestMSDDto = new RequestWrapper<>();
+		requestMSDDto.setId("mosip.match.regcentr.machineid");
+		requestMSDDto.setVersion("1.0.0");
+		requestMSDDto.setRequest(mosipDeviceServiceDto);
+
+		mdsJson = mapper.writeValueAsString(requestMSDDto);
+		when(mosipDeviceServiceRepository.findById(Mockito.any(), Mockito.any())).thenReturn(null);
+		when(registrationDeviceTypeRepository
+				.findByCodeAndIsDeletedFalseorIsDeletedIsNullAndIsActiveTrue(Mockito.any())).thenReturn(regDeviceType);
+		when(registrationDeviceSubTypeRepository
+				.findByCodeAndIsDeletedFalseorIsDeletedIsNullAndIsActiveTrue(Mockito.any()))
+						.thenReturn(regDeviceSubType);
+		when(deviceProviderRepository.findByIdAndIsDeletedFalseorIsDeletedIsNullAndIsActiveTrue(Mockito.any()))
+				.thenReturn(deviceProvider);
+		when(mosipDeviceServiceRepository.create(Mockito.any())).thenReturn(mosipDeviceService);
+		when(mosipDeviceServiceHistoryRepository.create(Mockito.any())).thenReturn(msdHistory);
+		mockMvc.perform(post("/mosipdeviceservice").contentType(MediaType.APPLICATION_JSON).content(mdsJson))
+				.andExpect(status().isOk());
+	}
+
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void createMSDregDeviceTypeNotFoundTest() throws Exception {
+		RequestWrapper<MOSIPDeviceServiceDto> requestMSDDto = null;
+		requestMSDDto = new RequestWrapper<>();
+		requestMSDDto.setId("mosip.match.regcentr.machineid");
+		requestMSDDto.setVersion("1.0.0");
+		requestMSDDto.setRequest(mosipDeviceServiceDto);
+
+		mdsJson = mapper.writeValueAsString(requestMSDDto);
+		when(mosipDeviceServiceRepository.findById(Mockito.any(), Mockito.any())).thenReturn(null);
+		when(registrationDeviceTypeRepository
+				.findByCodeAndIsDeletedFalseorIsDeletedIsNullAndIsActiveTrue(Mockito.any())).thenReturn(null);
+		mockMvc.perform(post("/mosipdeviceservice").contentType(MediaType.APPLICATION_JSON).content(mdsJson))
+				.andExpect(status().isOk());
+	}
+
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void createMSDregDeviceSubTypeNotFoundTest() throws Exception {
+		RequestWrapper<MOSIPDeviceServiceDto> requestMSDDto = null;
+		requestMSDDto = new RequestWrapper<>();
+		requestMSDDto.setId("mosip.match.regcentr.machineid");
+		requestMSDDto.setVersion("1.0.0");
+		requestMSDDto.setRequest(mosipDeviceServiceDto);
+
+		mdsJson = mapper.writeValueAsString(requestMSDDto);
+		when(mosipDeviceServiceRepository.findById(Mockito.any(), Mockito.any())).thenReturn(null);
+		when(registrationDeviceTypeRepository
+				.findByCodeAndIsDeletedFalseorIsDeletedIsNullAndIsActiveTrue(Mockito.any())).thenReturn(regDeviceType);
+		when(registrationDeviceSubTypeRepository
+				.findByCodeAndIsDeletedFalseorIsDeletedIsNullAndIsActiveTrue(Mockito.any())).thenReturn(null);
+		mockMvc.perform(post("/mosipdeviceservice").contentType(MediaType.APPLICATION_JSON).content(mdsJson))
+				.andExpect(status().isOk());
+	}
+
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void createMSDDeviceProviderTest() throws Exception {
+		RequestWrapper<MOSIPDeviceServiceDto> requestMSDDto = null;
+		requestMSDDto = new RequestWrapper<>();
+		requestMSDDto.setId("mosip.match.regcentr.machineid");
+		requestMSDDto.setVersion("1.0.0");
+		requestMSDDto.setRequest(mosipDeviceServiceDto);
+
+		mdsJson = mapper.writeValueAsString(requestMSDDto);
+		when(mosipDeviceServiceRepository.findById(Mockito.any(), Mockito.any())).thenReturn(null);
+		when(registrationDeviceTypeRepository
+				.findByCodeAndIsDeletedFalseorIsDeletedIsNullAndIsActiveTrue(Mockito.any())).thenReturn(regDeviceType);
+		when(registrationDeviceSubTypeRepository
+				.findByCodeAndIsDeletedFalseorIsDeletedIsNullAndIsActiveTrue(Mockito.any()))
+						.thenReturn(regDeviceSubType);
+		when(deviceProviderRepository.findByIdAndIsDeletedFalseorIsDeletedIsNullAndIsActiveTrue(Mockito.any()))
+				.thenReturn(null);
+		mockMvc.perform(post("/mosipdeviceservice").contentType(MediaType.APPLICATION_JSON).content(mdsJson))
+				.andExpect(status().isOk());
+	}
+
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void createMSDExistPKTest() throws Exception {
+		RequestWrapper<MOSIPDeviceServiceDto> requestMSDDto = null;
+		requestMSDDto = new RequestWrapper<>();
+		requestMSDDto.setId("mosip.match.regcentr.machineid");
+		requestMSDDto.setVersion("1.0.0");
+		requestMSDDto.setRequest(mosipDeviceServiceDto);
+
+		mdsJson = mapper.writeValueAsString(requestMSDDto);
+		when(mosipDeviceServiceRepository.findById(Mockito.any(), Mockito.any())).thenReturn(mosipDeviceService);
+		mockMvc.perform(post("/mosipdeviceservice").contentType(MediaType.APPLICATION_JSON).content(mdsJson))
+				.andExpect(status().isOk());
+	}
+
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void createMDSInternaleExpTest() throws Exception {
+		RequestWrapper<MOSIPDeviceServiceDto> requestMSDDto = null;
+		requestMSDDto = new RequestWrapper<>();
+		requestMSDDto.setId("mosip.match.regcentr.machineid");
+		requestMSDDto.setVersion("1.0.0");
+		requestMSDDto.setRequest(mosipDeviceServiceDto);
+		mdsJson = mapper.writeValueAsString(requestMSDDto);
+		when(mosipDeviceServiceRepository.findById(Mockito.any(), Mockito.any())).thenReturn(null);
+		when(registrationDeviceTypeRepository
+				.findByCodeAndIsDeletedFalseorIsDeletedIsNullAndIsActiveTrue(Mockito.any())).thenReturn(regDeviceType);
+		when(registrationDeviceSubTypeRepository
+				.findByCodeAndIsDeletedFalseorIsDeletedIsNullAndIsActiveTrue(Mockito.any()))
+						.thenReturn(regDeviceSubType);
+		when(deviceProviderRepository.findByIdAndIsDeletedFalseorIsDeletedIsNullAndIsActiveTrue(Mockito.any()))
+				.thenReturn(deviceProvider);
+		when(mosipDeviceServiceRepository.create(Mockito.any())).thenThrow(DataAccessLayerException.class);
+		mockMvc.perform(post("/mosipdeviceservice").contentType(MediaType.APPLICATION_JSON).content(mdsJson))
+				.andExpect(status().isInternalServerError());
+	}
+
 }
