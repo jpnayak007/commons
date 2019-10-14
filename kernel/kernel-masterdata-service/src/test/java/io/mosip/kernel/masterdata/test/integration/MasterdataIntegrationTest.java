@@ -7710,8 +7710,7 @@ public class MasterdataIntegrationTest {
 
 	}
 
-	// ---------------------------create
-	// MDS-----------------------------------------------------
+	// ---------------------------create MDS--------------------------------------
 
 	private MOSIPDeviceServiceDto mosipDeviceServiceDto = null;
 	private MOSIPDeviceServiceHistory msdHistory = null;
