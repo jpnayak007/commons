@@ -7733,7 +7733,7 @@ public class MasterdataIntegrationTest {
 		mosipDeviceServiceDto.setRegDeviceTypeCode("10003");
 		mosipDeviceServiceDto.setDeviceProviderId("10003");
 		mosipDeviceServiceDto.setSwBinaryHash(binary);
-		mosipDeviceServiceDto.setIsActive(true);
+
 
 		mosipDeviceService = new MOSIPDeviceService();
 		mosipDeviceService.setId("10002");
