@@ -7901,6 +7901,8 @@ public class MasterdataIntegrationTest {
 		deviceProviderDto.setContactNumber("123456789");
 		deviceProviderDto.setEmail("device@gmail.com");
 		deviceProviderDto.setCertificateAlias("device");
+		deviceProviderDto.setIsActive(true);
+		
 
 		deviceProviderEnt = new DeviceProvider();
 		deviceProviderEnt.setId("10001");
