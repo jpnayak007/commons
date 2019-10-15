@@ -71,6 +71,7 @@ import io.mosip.kernel.masterdata.dto.DeviceSpecificationDto;
 import io.mosip.kernel.masterdata.dto.DeviceTypeDto;
 import io.mosip.kernel.masterdata.dto.DocumentCategoryDto;
 import io.mosip.kernel.masterdata.dto.DocumentTypeDto;
+import io.mosip.kernel.masterdata.dto.FoundationalTrustProviderDto;
 import io.mosip.kernel.masterdata.dto.GenderTypeDto;
 import io.mosip.kernel.masterdata.dto.IdTypeDto;
 import io.mosip.kernel.masterdata.dto.IndividualTypeDto;
@@ -170,6 +171,7 @@ import io.mosip.kernel.masterdata.repository.DeviceSpecificationRepository;
 import io.mosip.kernel.masterdata.repository.DeviceTypeRepository;
 import io.mosip.kernel.masterdata.repository.DocumentCategoryRepository;
 import io.mosip.kernel.masterdata.repository.DocumentTypeRepository;
+import io.mosip.kernel.masterdata.repository.FoundationalTrustProviderRepository;
 import io.mosip.kernel.masterdata.repository.GenderTypeRepository;
 import io.mosip.kernel.masterdata.repository.HolidayRepository;
 import io.mosip.kernel.masterdata.repository.IdTypeRepository;
@@ -478,6 +480,11 @@ public class MasterdataIntegrationTest {
 	private IndividualTypeRepository individualTypeRepository;
 	private IndividualTypeResponseDto individualTypeResponseDto;
 	private List<IndividualType> individualTypes = new ArrayList<>();
+	
+	@MockBean
+	private FoundationalTrustProviderRepository foundationalTrustProviderRepository;
+	
+	private FoundationalTrustProviderDto foundationalTrustProviderDto;
 
 	@SuppressWarnings("static-access")
 	@Before
@@ -556,6 +563,19 @@ public class MasterdataIntegrationTest {
 		unMapDeviceRegCenter();
 
 		decommissionRegCenter();
+		
+		foundationProvider();
+	}
+
+	private void foundationProvider() {
+		foundationalTrustProviderDto = new FoundationalTrustProviderDto();
+		foundationalTrustProviderDto.setId("24233443444");
+		foundationalTrustProviderDto.setActive(true);
+		foundationalTrustProviderDto.setAddress("test address");
+		foundationalTrustProviderDto.setCertAlias("141d3962380139742ac9a1e4b23e0221");
+		foundationalTrustProviderDto.setContactNo("9876378945");
+		foundationalTrustProviderDto.setEmail("test@mosip.io");
+		foundationalTrustProviderDto.setName("Test Name");
 	}
 
 	private void userDetailsHistorySetup() {
@@ -7882,6 +7902,21 @@ public class MasterdataIntegrationTest {
 		when(mosipDeviceServiceRepository.create(Mockito.any())).thenThrow(DataAccessLayerException.class);
 		mockMvc.perform(post("/mosipdeviceservice").contentType(MediaType.APPLICATION_JSON).content(mdsJson))
 				.andExpect(status().isInternalServerError());
+	}
+	
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void createFoundationalProviderTest() throws Exception {
+		RequestWrapper<FoundationalTrustProviderDto> requestMSDDto = null;
+		requestMSDDto = new RequestWrapper<>();
+		requestMSDDto.setId("mosip.");
+		requestMSDDto.setVersion("1.0.0");
+		requestMSDDto.setRequest(foundationalTrustProviderDto);
+
+		mdsJson = mapper.writeValueAsString(requestMSDDto);
+		when(foundationalTrustProviderRepository.findById(Mockito.any(), Mockito.any())).thenReturn(null);
+		mockMvc.perform(post("/mosipdeviceservice").contentType(MediaType.APPLICATION_JSON).content(mdsJson))
+				.andExpect(status().isOk());
 	}
 
 }
