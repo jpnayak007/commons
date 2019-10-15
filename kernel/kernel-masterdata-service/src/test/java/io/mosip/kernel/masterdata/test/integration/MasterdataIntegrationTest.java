@@ -7904,6 +7904,7 @@ public class MasterdataIntegrationTest {
 
 		deviceProviderEnt = new DeviceProvider();
 		deviceProviderEnt.setId("10001");
+		
 		deviceProviderHistory = new DeviceProviderHistory();
 		deviceProviderHistory.setId("10001");
 	}
@@ -7957,8 +7958,59 @@ public class MasterdataIntegrationTest {
 		String deviceProviderJson = mapper.writeValueAsString(requestMSDDto);
 		when(deviceProviderRepository.findById(Mockito.any(), Mockito.any())).thenReturn(deviceProviderEnt);
 		when(deviceProviderRepository.create(Mockito.any())).thenReturn(deviceProviderEnt);
-		/*when(deviceProviderHistoryRepository.create(Mockito.any())).thenReturn(deviceProviderHistory);*/
 		mockMvc.perform(post("/deviceprovider").contentType(MediaType.APPLICATION_JSON).content(deviceProviderJson))
+				.andExpect(status().isOk());
+	}
+	
+	
+	//---------------------------update Device Provider--------------------
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void updateDeviceProviderTest() throws Exception {
+		RequestWrapper<DeviceProviderDto> requestMSDDto = null;
+		requestMSDDto = new RequestWrapper<>();
+		requestMSDDto.setId("mosip.match.regcentr.machineid");
+		requestMSDDto.setVersion("1.0.0");
+		requestMSDDto.setRequest(deviceProviderDto);
+
+		String deviceProviderJson = mapper.writeValueAsString(requestMSDDto);
+		when(deviceProviderRepository.findById(Mockito.any(), Mockito.any())).thenReturn(deviceProviderEnt);
+		when(deviceProviderRepository.update(Mockito.any())).thenReturn(deviceProviderEnt);
+		when(deviceProviderHistoryRepository.create(Mockito.any())).thenReturn(deviceProviderHistory);
+		mockMvc.perform(put("/deviceprovider").contentType(MediaType.APPLICATION_JSON).content(deviceProviderJson))
+				.andExpect(status().isOk());
+	}
+	
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void updateDeviceProvideInternaleExpTest() throws Exception {
+		RequestWrapper<DeviceProviderDto> requestMSDDto = null;
+		requestMSDDto = new RequestWrapper<>();
+		requestMSDDto.setId("mosip.match.regcentr.machineid");
+		requestMSDDto.setVersion("1.0.0");
+		requestMSDDto.setRequest(deviceProviderDto);
+
+		String deviceProviderJson = mapper.writeValueAsString(requestMSDDto);
+		when(deviceProviderRepository.findById(Mockito.any(), Mockito.any())).thenReturn(deviceProviderEnt);
+		when(deviceProviderRepository.update(Mockito.any())).thenThrow(DataAccessLayerException.class);
+		mockMvc.perform(put("/deviceprovider").contentType(MediaType.APPLICATION_JSON).content(deviceProviderJson))
+				.andExpect(status().isInternalServerError());
+	}
+	
+
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void updateDeviceProviderNotFoundTest() throws Exception {
+		RequestWrapper<DeviceProviderDto> requestMSDDto = null;
+		requestMSDDto = new RequestWrapper<>();
+		requestMSDDto.setId("mosip.match.regcentr.machineid");
+		requestMSDDto.setVersion("1.0.0");
+		requestMSDDto.setRequest(deviceProviderDto);
+
+		String deviceProviderJson = mapper.writeValueAsString(requestMSDDto);
+		when(deviceProviderRepository.findById(Mockito.any(), Mockito.any())).thenReturn(null);
+		when(deviceProviderRepository.update(Mockito.any())).thenReturn(deviceProviderEnt);
+		mockMvc.perform(put("/deviceprovider").contentType(MediaType.APPLICATION_JSON).content(deviceProviderJson))
 				.andExpect(status().isOk());
 	}
 }
