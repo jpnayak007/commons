@@ -7908,10 +7908,24 @@ public class MasterdataIntegrationTest {
 				.andExpect(status().isInternalServerError());
 	}
 	
-	@Ignore
 	@Test
 	@WithUserDetails("zonal-admin")
 	public void createFoundationalProviderTest() throws Exception {
+		RequestWrapper<FoundationalTrustProviderDto> requestMSDDto = null;
+		requestMSDDto = new RequestWrapper<>();
+		requestMSDDto.setId("mosip.foundationalprovider.test");
+		requestMSDDto.setVersion("1.0.0");
+		requestMSDDto.setRequest(foundationalTrustProviderDto);
+
+		mdsJson = mapper.writeValueAsString(requestMSDDto);
+		when(foundationalTrustProviderRepository.findById(Mockito.any(), Mockito.any())).thenReturn(null);
+		mockMvc.perform(post("/foundationaltrustprovider").contentType(MediaType.APPLICATION_JSON).content(mdsJson))
+				.andExpect(status().isOk());
+	}
+	
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void createFoundationalProviderExcepTest() throws Exception {
 		RequestWrapper<FoundationalTrustProviderDto> requestMSDDto = null;
 		requestMSDDto = new RequestWrapper<>();
 		requestMSDDto.setId("mosip.foundationalprovider.test");
