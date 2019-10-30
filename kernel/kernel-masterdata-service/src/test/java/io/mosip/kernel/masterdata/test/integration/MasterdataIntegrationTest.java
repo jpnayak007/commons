@@ -569,6 +569,41 @@ public class MasterdataIntegrationTest {
 		decommissionRegCenter();
 		
 		foundationProvider();
+		
+		newRegCenterSetup();
+	}
+	RegCenterPostReqDto regCenterPostReqDto = null;
+	private void newRegCenterSetup() {
+//		LocalTime centerStartTime = LocalTime.of(1, 10, 10, 30);
+//		LocalTime centerEndTime = LocalTime.of(1, 10, 10, 30);
+//		LocalTime lunchStartTime = LocalTime.of(1, 10, 10, 30);
+//		LocalTime lunchEndTime = LocalTime.of(1, 10, 10, 30);
+		LocalTime perKioskProcessTime = LocalTime.parse("09:00:00");
+		LocalTime centerStartTime = LocalTime.parse("09:00:00");
+		//LocalTime perKioskProcessTime = LocalTime.of(1, 10, 10, 30);
+		regCenterPostReqDto = new RegCenterPostReqDto();
+		regCenterPostReqDto.setName("TEST CENTER");
+		regCenterPostReqDto.setAddressLine1("Address Line 1");
+		regCenterPostReqDto.setAddressLine2("Address Line 2");
+		regCenterPostReqDto.setAddressLine3("Address Line 3");
+		regCenterPostReqDto.setCenterTypeCode("REG");
+		regCenterPostReqDto.setContactPerson("Test");
+		regCenterPostReqDto.setContactPhone("9999999999");
+		regCenterPostReqDto.setHolidayLocationCode("HLC01");
+		regCenterPostReqDto.setLangCode("eng");
+		regCenterPostReqDto.setLatitude("12.9646818");
+		regCenterPostReqDto.setLocationCode("10190");
+		regCenterPostReqDto.setLongitude("77.70168");
+		regCenterPostReqDto.setIsActive(true);
+		regCenterPostReqDto.setPerKioskProcessTime(perKioskProcessTime);
+		regCenterPostReqDto.setCenterStartTime(centerStartTime);
+		//regCenterPostReqDto.setCenterEndTime(centerEndTime);
+		//regCenterPostReqDto.setLunchStartTime(lunchStartTime);
+		//regCenterPostReqDto.setLunchEndTime(lunchEndTime);
+		regCenterPostReqDto.setTimeZone("UTC");
+		regCenterPostReqDto.setWorkingHours("9");
+		regCenterPostReqDto.setZoneCode("JRD");
+		
 	}
 
 	private void foundationProvider() {
@@ -8065,4 +8100,24 @@ public class MasterdataIntegrationTest {
 		mockMvc.perform(put("/deviceprovider").contentType(MediaType.APPLICATION_JSON).content(deviceProviderJson))
 				.andExpect(status().isOk());
 	}
+	
+	
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void createRegCenterTest() throws Exception {
+		RequestWrapper<RegCenterPostReqDto> requestMSDDto = null;
+		requestMSDDto = new RequestWrapper<>();
+		requestMSDDto.setId("mosip.match.regcentr.machineid");
+		requestMSDDto.setVersion("1.0.0");
+		requestMSDDto.setRequest(regCenterPostReqDto);
+
+		String regcenterJson = mapper.writeValueAsString(requestMSDDto);
+		when(registrationCenterRepository.findById(Mockito.any(), Mockito.any())).thenReturn(null);
+		when(registrationCenterRepository.create(Mockito.any())).thenReturn(registrationCenter);
+		when(repositoryCenterHistoryRepository.create(Mockito.any())).thenReturn(registrationCenterHistory);
+		mockMvc.perform(post("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(regcenterJson))
+				.andExpect(status().isOk());
+	}
+	
+	
 }
