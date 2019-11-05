@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.9.2-alpha" last-position="0,793" last-zoom="0.35"
+<dbmodel pgmodeler-ver="0.9.2-alpha" last-position="0,1806" last-zoom="0.45"
 	 default-schema="public" default-owner="postgres">
 <role name="sysadmin"
       superuser="true"
@@ -698,7 +698,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<schema name="master"/>
 	<role name="sysadmin"/>
 	<comment><![CDATA[Device Master : Contains list of approved devices and  details,  like fingerprint scanner, iris scanner, scanner etc used at registration centers. Valid devices with active status only allowed at registration centers for respective functionalities. Device onboarding are handled through admin application/portal by the user who is having the device onboarding authority. ]]></comment>
-	<position x="1740" y="3560"/>
+	<position x="1420" y="3340"/>
 	<column name="id" not-null="true">
 		<type name="character varying" length="36"/>
 		<comment><![CDATA[Device ID : Unique ID generated / assigned for device]]></comment>
@@ -850,7 +850,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<schema name="master"/>
 	<role name="sysadmin"/>
 	<comment><![CDATA[Device Specification :  Specification of devices for each device type that are supported by system for various process requirements, like scanning, printing, photo, biometric etc]]></comment>
-	<position x="2620" y="760"/>
+	<position x="580" y="3780"/>
 	<column name="id" not-null="true">
 		<type name="character varying" length="36"/>
 		<comment><![CDATA[Device Specification ID : Unique ID generated / assigned for device specification]]></comment>
@@ -920,7 +920,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<schema name="master"/>
 	<role name="sysadmin"/>
 	<comment><![CDATA[Device Type : Types of devices that are supported by the system,  like  scanning, printing, photo, biometric etc]]></comment>
-	<position x="3020" y="880"/>
+	<position x="200" y="3800"/>
 	<column name="code" not-null="true">
 		<type name="character varying" length="36"/>
 		<comment><![CDATA[Code : types of devices used for registration processes, for ex., printer, scanner, etc]]></comment>
@@ -1679,7 +1679,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<schema name="master"/>
 	<role name="sysadmin"/>
 	<comment><![CDATA[Machine Master : Contains list of approved Machines and  details,  like laptop, desktop, dongle etc used at registration centers. Valid Machines with active status only allowed at registration centers for respective functionalities. Machine onboarding are handled through admin application/portal by the user who is having the Machine onboarding authority. ]]></comment>
-	<position x="980" y="3520"/>
+	<position x="240" y="3300"/>
 	<column name="id" not-null="true">
 		<type name="character varying" length="10"/>
 		<comment><![CDATA[Machine ID : Unique ID generated / assigned for machine]]></comment>
@@ -2673,7 +2673,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<schema name="master"/>
 	<role name="sysadmin"/>
 	<comment><![CDATA[Registration Center Machine : Mapping table to assign machines that are used at a registration center]]></comment>
-	<position x="1260" y="3900"/>
+	<position x="1140" y="3800"/>
 	<column name="regcntr_id" not-null="true">
 		<type name="character varying" length="10"/>
 		<comment><![CDATA[Registration Center ID : registration center id refers to master.registration_center.id]]></comment>
@@ -4273,43 +4273,51 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="registered_device_master" alias="regdevm">
 	<schema name="master"/>
 	<role name="sysadmin"/>
-	<comment><![CDATA[Registered Device Master : Contains list of registered devices and details, like fingerprint scanner, iris scanner, scanner etc used at registration centers, authentication services, eKYC...etc. Valid devices with active status only allowed at registering devices for respective functionalities. Device onboarding are handled through admin application/portal by the user who is having the device onboarding authority. Table is created temporarily and will be relooked in to this for re-design of the solution later]]></comment>
-	<position x="420" y="3180"/>
+	<comment><![CDATA[Registered Device Master : Contains list of registered devices and details, like fingerprint scanner, iris scanner, scanner etc used at registration centers, authentication services, eKYC...etc. Valid devices with active status only allowed at registering devices for respective functionalities. Device onboarding are handled through admin application/portal by the user who is having the device onboarding authority. ]]></comment>
+	<position x="580" y="4540"/>
 	<column name="code" not-null="true">
 		<type name="character varying" length="36"/>
-		<comment><![CDATA[Device ID : Unique ID generated / assigned for device]]></comment>
+		<comment><![CDATA[Registred Device Code : Unique ID generated / assigned for device which is registred in MOSIP system for the purpose]]></comment>
 	</column>
-	<column name="type">
-		<type name="character varying" length="64"/>
-		<comment><![CDATA[Type: Types of devices used for registration processes, authentication, eKYC..etc. for ex., printer, scanner, etc]]></comment>
+	<column name="dtype_code" not-null="true">
+		<type name="character varying" length="36"/>
+		<comment><![CDATA[Device Type Code: Code of the device type, Referenced from master.reg_device_type.code]]></comment>
 	</column>
-	<column name="subtype">
-		<type name="character varying" length="64"/>
-		<comment><![CDATA[Sub Type: Sub types of devices used for registration processes, authentication, eKYC..etc. for ex., thumb finger print, palm print scanner, Iris scanner, etc]]></comment>
+	<column name="dstype_code" not-null="true">
+		<type name="character varying" length="36"/>
+		<comment><![CDATA[Device Sub Type Code: Code of the device sub type, Referenced from master.reg_device_sub_type.code]]></comment>
 	</column>
 	<column name="status_code">
-		<type name="character varying" length="36"/>
-		<comment><![CDATA[ Status Code : Status of the registered devices]]></comment>
+		<type name="character varying" length="64"/>
+		<comment><![CDATA[Status Code : Status of the registered devices, The status code can be Registered, De-Registered or Retired/Revoked.]]></comment>
 	</column>
 	<column name="device_id" not-null="true">
-		<type name="character varying" length="36"/>
-		<comment><![CDATA[Device ID: Unique ID of the device by the provider, This ID can be serial number device]]></comment>
+		<type name="character varying" length="256"/>
+		<comment><![CDATA[Device ID: Device ID is the unigue id provided by device provider for each device]]></comment>
 	</column>
 	<column name="device_sub_id">
+		<type name="character varying" length="256"/>
+		<comment><![CDATA[Device Sub ID: Sub ID of the devices, Each device can have an array of sub IDs.]]></comment>
+	</column>
+	<column name="digital_id" not-null="true">
 		<type name="character varying" length="1024"/>
-		<comment><![CDATA[Device Sub ID: Sub ID of the devices, Each device will have an array of sub IDs]]></comment>
+		<comment><![CDATA[Digital ID: Digital ID received as a Json value containing below values like Serial number of the device, make , model, type, provider details..etc]]></comment>
+	</column>
+	<column name="serial_number" not-null="true">
+		<type name="character varying" length="64"/>
+		<comment><![CDATA[Serial Number : Serial number of the device, This will be the Unique ID of the device by the provider]]></comment>
 	</column>
 	<column name="provider_id" not-null="true">
 		<type name="character varying" length="36"/>
-		<comment><![CDATA[Provider ID: ID of the device provider]]></comment>
+		<comment><![CDATA[Device Provider ID: ID of the device provider, Referenced from master.device_provider.id]]></comment>
 	</column>
 	<column name="provider_name">
 		<type name="character varying" length="128"/>
-		<comment><![CDATA[Provider Name: Name of the device provider]]></comment>
+		<comment><![CDATA[Device Provider Name : Name of the device provider, This also available in master.device_provider entity]]></comment>
 	</column>
-	<column name="mosip_process" not-null="true">
+	<column name="purpose" not-null="true">
 		<type name="character varying" length="64"/>
-		<comment><![CDATA[MOSIP process where there devices will be used for. ex. Registrations, Authentication, eKYC...etc]]></comment>
+		<comment><![CDATA[Purpose : Purpose of these devices in the MOSIP system. ex. Registrations, Authentication, eKYC...etc]]></comment>
 	</column>
 	<column name="firmware">
 		<type name="character varying" length="128"/>
@@ -4326,25 +4334,29 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		<type name="timestamp" length="0"/>
 		<comment><![CDATA[Expiry Date: expiry date of the device]]></comment>
 	</column>
-	<column name="certification">
-		<type name="bytea" length="0"/>
-		<comment><![CDATA[Certification: Device certification]]></comment>
+	<column name="certification_level">
+		<type name="character varying" length="3"/>
+		<comment><![CDATA[Certification Level: Certification level for the device, This can be L0 or L1 devices]]></comment>
 	</column>
 	<column name="foundational_trust_provider_id">
 		<type name="character varying" length="36"/>
-		<comment><![CDATA[Foundational Trust Provider ID: Foundational trust provider ID]]></comment>
+		<comment><![CDATA[Foundational Trust Provider ID: Foundational trust provider ID, This will be soft referenced from master.foundational_trust_provider.id. Required only for L1 devices.]]></comment>
 	</column>
 	<column name="foundational_trust_signature">
 		<type name="character varying" length="512"/>
-		<comment><![CDATA[Foundational Trust Signature: Signature of the foundational trust]]></comment>
+		<comment><![CDATA[Foundational Trust Signature: Signature of the foundational trust which is asigned to the device]]></comment>
 	</column>
 	<column name="foundational_trust_certificate">
 		<type name="bytea" length="0"/>
-		<comment><![CDATA[Foundational Trust Certificate: Certificate of the foundational trust]]></comment>
+		<comment><![CDATA[Foundational Trust Certificate: Certificate of the foundational trust  which is assigned to the device]]></comment>
 	</column>
-	<column name="dpsignature">
+	<column name="dprovider_signature">
 		<type name="character varying" length="512"/>
-		<comment><![CDATA[DP Signation: DP Signature]]></comment>
+		<comment><![CDATA[Device Provider Sugnature: Signature of the device provider, Provided by device provider for each device with date and time stamp]]></comment>
+	</column>
+	<column name="is_active" not-null="true">
+		<type name="boolean" length="0"/>
+		<comment><![CDATA[IS_Active : Flag to mark whether the record/device is Active or In-active]]></comment>
 	</column>
 	<column name="cr_by" not-null="true">
 		<type name="character varying" length="256"/>
@@ -4373,117 +4385,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<constraint name="pk_regdevicem_code" type="pk-constr" table="master.registered_device_master">
 		<columns names="code" ref-type="src-columns"/>
 	</constraint>
-	<constraint name="uk_devpro_id" type="uq-constr" table="master.registered_device_master">
-		<columns names="device_id,provider_id" ref-type="src-columns"/>
-	</constraint>
-</table>
-
-<table name="registered_device_master_h" alias="regdevmh">
-	<schema name="master"/>
-	<role name="sysadmin"/>
-	<comment><![CDATA[Registered Device Master History : History- Contains list of registered devices and details,  like fingerprint scanner, iris scanner, scanner etc used at registration centers, authentication services, eKYC...etc. Table is created temporarily and will be relooked in to this for re-design of the solution later]]></comment>
-	<position x="420" y="3600"/>
-	<column name="code" not-null="true">
-		<type name="character varying" length="36"/>
-		<comment><![CDATA[Device ID : Unique ID generated / assigned for device]]></comment>
-	</column>
-	<column name="type">
-		<type name="character varying" length="64"/>
-		<comment><![CDATA[Type: Types of devices used for registration processes, authentication, eKYC..etc. for ex., printer, scanner, etc]]></comment>
-	</column>
-	<column name="subtype">
-		<type name="character varying" length="64"/>
-		<comment><![CDATA[Sub Type: Sub types of devices used for registration processes, authentication, eKYC..etc. for ex., thumb finger print, palm print scanner, Iris scanner, etc]]></comment>
-	</column>
-	<column name="status_code">
-		<type name="character varying" length="36"/>
-		<comment><![CDATA[ Status Code : Status of the registered devices]]></comment>
-	</column>
-	<column name="device_id" not-null="true">
-		<type name="character varying" length="36"/>
-		<comment><![CDATA[Device ID: Unique ID of the device by the provider, This ID can be serial number device]]></comment>
-	</column>
-	<column name="device_sub_id">
-		<type name="character varying" length="1024"/>
-		<comment><![CDATA[Device Sub ID: Sub ID of the devices, Each device will have an array of sub IDs]]></comment>
-	</column>
-	<column name="provider_id" not-null="true">
-		<type name="character varying" length="36"/>
-		<comment><![CDATA[Provider ID: ID of the device provider]]></comment>
-	</column>
-	<column name="provider_name">
-		<type name="character varying" length="128"/>
-		<comment><![CDATA[Provider Name: Name of the device provider]]></comment>
-	</column>
-	<column name="mosip_process" not-null="true">
-		<type name="character varying" length="64"/>
-		<comment><![CDATA[MOSIP process where there devices will be used for. ex. Registrations, Authentication, eKYC...etc]]></comment>
-	</column>
-	<column name="firmware">
-		<type name="character varying" length="128"/>
-		<comment><![CDATA[Firmware: Firmware used in devices]]></comment>
-	</column>
-	<column name="make">
-		<type name="character varying" length="36"/>
-		<comment><![CDATA[Make: Make of the device]]></comment>
-	</column>
-	<column name="model">
-		<type name="character varying" length="36"/>
-	</column>
-	<column name="expiry_date">
-		<type name="timestamp" length="0"/>
-		<comment><![CDATA[Expiry Date: expiry date of the device]]></comment>
-	</column>
-	<column name="certification">
-		<type name="bytea" length="0"/>
-		<comment><![CDATA[Certification: Device certification]]></comment>
-	</column>
-	<column name="foundational_trust_provider_id">
-		<type name="character varying" length="36"/>
-		<comment><![CDATA[Foundational Trust Provider ID: Foundational trust provider ID]]></comment>
-	</column>
-	<column name="foundational_trust_signature">
-		<type name="character varying" length="512"/>
-		<comment><![CDATA[Foundational Trust Signature: Signature of the foundational trust]]></comment>
-	</column>
-	<column name="foundational_trust_certificate">
-		<type name="bytea" length="0"/>
-		<comment><![CDATA[Foundational Trust Certificate: Certificate of the foundational trust]]></comment>
-	</column>
-	<column name="dpsignature">
-		<type name="character varying" length="512"/>
-		<comment><![CDATA[DP Signation: DP Signature]]></comment>
-	</column>
-	<column name="cr_by" not-null="true">
-		<type name="character varying" length="256"/>
-		<comment><![CDATA[Created By : ID or name of the user who create / insert record]]></comment>
-	</column>
-	<column name="cr_dtimes" not-null="true">
-		<type name="timestamp" length="0"/>
-		<comment><![CDATA[Created DateTimestamp : Date and Timestamp when the record is created/inserted]]></comment>
-	</column>
-	<column name="upd_by">
-		<type name="character varying" length="256"/>
-		<comment><![CDATA[Updated By : ID or name of the user who update the record with new values]]></comment>
-	</column>
-	<column name="upd_dtimes">
-		<type name="timestamp" length="0"/>
-		<comment><![CDATA[Updated DateTimestamp : Date and Timestamp when any of the fields in the record is updated with new values.]]></comment>
-	</column>
-	<column name="is_deleted">
-		<type name="boolean" length="0"/>
-		<comment><![CDATA[IS_Deleted : Flag to mark whether the record is Soft deleted.]]></comment>
-	</column>
-	<column name="del_dtimes">
-		<type name="timestamp" length="0"/>
-		<comment><![CDATA[Deleted DateTimestamp : Date and Timestamp when the record is soft deleted with is_deleted=TRUE]]></comment>
-	</column>
-	<column name="eff_dtimes" not-null="true">
-		<type name="timestamp" length="0"/>
-		<comment><![CDATA[Effective Date Timestamp : This to track master record whenever there is an INSERT/UPDATE/DELETE ( soft delete ).  The current record is effective from this date-time.]]></comment>
-	</column>
-	<constraint name="pk_regdevicemh_code" type="pk-constr" table="master.registered_device_master_h">
-		<columns names="code,eff_dtimes" ref-type="src-columns"/>
+	<constraint name="uk_regdevm_id" type="uq-constr" table="master.registered_device_master">
+		<columns names="serial_number,provider_id" ref-type="src-columns"/>
 	</constraint>
 </table>
 
@@ -4650,6 +4553,653 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</column>
 	<constraint name="pk_exceptional_hol" type="pk-constr" table="master.reg_exceptional_holiday">
 		<columns names="regcntr_id,hol_date" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="registered_device_master_h" alias="regdevmh">
+	<schema name="master"/>
+	<role name="sysadmin"/>
+	<comment><![CDATA[Registered Device History : History of changes of any MOSIP device registration will be stored in history table to track any chnages for future validations.]]></comment>
+	<position x="200" y="4640"/>
+	<column name="code" not-null="true">
+		<type name="character varying" length="36"/>
+		<comment><![CDATA[Registred Device Code : Unique ID generated / assigned for device which is registred in MOSIP system for the purpose]]></comment>
+	</column>
+	<column name="dtype_code" not-null="true">
+		<type name="character varying" length="36"/>
+		<comment><![CDATA[Device Type Code: Code of the device type, Referenced from master.reg_device_type.code]]></comment>
+	</column>
+	<column name="dstype_code" not-null="true">
+		<type name="character varying" length="36"/>
+		<comment><![CDATA[Device Sub Type Code: Code of the device sub type, Referenced from master.reg_device_sub_type.code]]></comment>
+	</column>
+	<column name="status_code">
+		<type name="character varying" length="64"/>
+		<comment><![CDATA[Status Code : Status of the registered devices, The status code can be Registered, De-Registered or Retired/Revoked.]]></comment>
+	</column>
+	<column name="device_id" not-null="true">
+		<type name="character varying" length="256"/>
+		<comment><![CDATA[Device ID: Device ID is the unigue id provided by device provider for each device]]></comment>
+	</column>
+	<column name="device_sub_id">
+		<type name="character varying" length="1024"/>
+		<comment><![CDATA[Device Sub ID: Sub ID of the devices, Each device can have an array of sub IDs.]]></comment>
+	</column>
+	<column name="digital_id" not-null="true">
+		<type name="character varying" length="1024"/>
+		<comment><![CDATA[Digital ID: Digital ID received as a Json value containing below values like Serial number of the device, make , model, type, provider details..etc]]></comment>
+	</column>
+	<column name="serial_number" not-null="true">
+		<type name="character varying" length="64"/>
+		<comment><![CDATA[Serial Number : Serial number of the device, This will be the Unique ID of the device by the provider]]></comment>
+	</column>
+	<column name="provider_id" not-null="true">
+		<type name="character varying" length="36"/>
+		<comment><![CDATA[Device Provider ID: ID of the device provider, Referenced from master.device_provider.id]]></comment>
+	</column>
+	<column name="provider_name">
+		<type name="character varying" length="128"/>
+		<comment><![CDATA[Device Provider Name : Name of the device provider, This also available in master.device_provider entity]]></comment>
+	</column>
+	<column name="purpose" not-null="true">
+		<type name="character varying" length="64"/>
+		<comment><![CDATA[Purpose : Purpose of these devices in the MOSIP system. ex. Registrations, Authentication, eKYC...etc]]></comment>
+	</column>
+	<column name="firmware">
+		<type name="character varying" length="128"/>
+		<comment><![CDATA[Firmware: Firmware used in devices]]></comment>
+	</column>
+	<column name="make">
+		<type name="character varying" length="36"/>
+		<comment><![CDATA[Make: Make of the device]]></comment>
+	</column>
+	<column name="model">
+		<type name="character varying" length="36"/>
+	</column>
+	<column name="expiry_date">
+		<type name="timestamp" length="0"/>
+		<comment><![CDATA[Expiry Date: expiry date of the device]]></comment>
+	</column>
+	<column name="certification_level">
+		<type name="character varying" length="3"/>
+		<comment><![CDATA[Certification Level: Certification level for the device, This can be L0 or L1 devices]]></comment>
+	</column>
+	<column name="foundational_trust_provider_id">
+		<type name="character varying" length="36"/>
+		<comment><![CDATA[Foundational Trust Provider ID: Foundational trust provider ID, This will be soft referenced from master.foundational_trust_provider.id. Required only for L1 devices.]]></comment>
+	</column>
+	<column name="foundational_trust_signature">
+		<type name="character varying" length="512"/>
+		<comment><![CDATA[Foundational Trust Signature: Signature of the foundational trust which is asigned to the device]]></comment>
+	</column>
+	<column name="foundational_trust_certificate">
+		<type name="bytea" length="0"/>
+		<comment><![CDATA[Foundational Trust Certificate: Certificate of the foundational trust  which is assigned to the device]]></comment>
+	</column>
+	<column name="dprovider_signature">
+		<type name="character varying" length="512"/>
+		<comment><![CDATA[Device Provider Sugnature: Signature of the device provider, Provided by device provider for each device with date and time stamp]]></comment>
+	</column>
+	<column name="is_active" not-null="true">
+		<type name="boolean" length="0"/>
+		<comment><![CDATA[IS_Active : Flag to mark whether the record is Active or In-active]]></comment>
+	</column>
+	<column name="cr_by" not-null="true">
+		<type name="character varying" length="256"/>
+		<comment><![CDATA[Created By : ID or name of the user who create / insert record]]></comment>
+	</column>
+	<column name="cr_dtimes" not-null="true">
+		<type name="timestamp" length="0"/>
+		<comment><![CDATA[Created DateTimestamp : Date and Timestamp when the record is created/inserted]]></comment>
+	</column>
+	<column name="upd_by">
+		<type name="character varying" length="256"/>
+		<comment><![CDATA[Updated By : ID or name of the user who update the record with new values]]></comment>
+	</column>
+	<column name="upd_dtimes">
+		<type name="timestamp" length="0"/>
+		<comment><![CDATA[Updated DateTimestamp : Date and Timestamp when any of the fields in the record is updated with new values.]]></comment>
+	</column>
+	<column name="is_deleted">
+		<type name="boolean" length="0"/>
+		<comment><![CDATA[IS_Deleted : Flag to mark whether the record is Soft deleted.]]></comment>
+	</column>
+	<column name="del_dtimes">
+		<type name="timestamp" length="0"/>
+		<comment><![CDATA[Deleted DateTimestamp : Date and Timestamp when the record is soft deleted with is_deleted=TRUE]]></comment>
+	</column>
+	<column name="eff_dtimes" not-null="true">
+		<type name="timestamp" length="0"/>
+		<comment><![CDATA[Effective Date Timestamp : This to track master record whenever there is an INSERT/UPDATE/DELETE ( soft delete ).  The current record is effective from this date-time.]]></comment>
+	</column>
+	<constraint name="pk_regdevicemh_code" type="pk-constr" table="master.registered_device_master_h">
+		<columns names="code,eff_dtimes" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="device_provider" alias="devprd">
+	<schema name="master"/>
+	<role name="sysadmin"/>
+	<comment><![CDATA[Device Provider : To store MOSIP device provider details, Devices will be used in MOSIP those are provided by only registred device provider.]]></comment>
+	<position x="1080" y="4180"/>
+	<column name="id" not-null="true">
+		<type name="character varying" length="36"/>
+		<comment><![CDATA[Device Provider ID: Unique ID of the device provider, Device provider id is generated by MOSIP system.]]></comment>
+	</column>
+	<column name="vendor_name" not-null="true">
+		<type name="character varying" length="128"/>
+		<comment><![CDATA[Device Provider Vendor Name : Name of the device provider, Those device will be used by MOSIP syatem.]]></comment>
+	</column>
+	<column name="address">
+		<type name="character varying" length="512"/>
+		<comment><![CDATA[Address : Postal address of the device provider, This will have full address of the provider including postal code.]]></comment>
+	</column>
+	<column name="email">
+		<type name="character varying" length="256"/>
+		<comment><![CDATA[Email Address : Email address of the device provider]]></comment>
+	</column>
+	<column name="contact_number">
+		<type name="character varying" length="16"/>
+		<comment><![CDATA[Contact Number : Contact number of the device provider]]></comment>
+	</column>
+	<column name="certificate_alias">
+		<type name="character varying" length="36"/>
+		<comment><![CDATA[Certificate Alias : Its certificate alias which is stored in HSP and provided by MOSIP to a device provider]]></comment>
+	</column>
+	<column name="is_active" not-null="true">
+		<type name="boolean" length="0"/>
+		<comment><![CDATA[IS_Active : Flag to mark whether the record/device is Active or In-active]]></comment>
+	</column>
+	<column name="cr_by" not-null="true">
+		<type name="character varying" length="256"/>
+		<comment><![CDATA[Created By : ID or name of the user who create / insert record]]></comment>
+	</column>
+	<column name="cr_dtimes" not-null="true">
+		<type name="timestamp" length="0"/>
+		<comment><![CDATA[Created DateTimestamp : Date and Timestamp when the record is created/inserted]]></comment>
+	</column>
+	<column name="upd_by">
+		<type name="character varying" length="256"/>
+		<comment><![CDATA[Updated By : ID or name of the user who update the record with new values]]></comment>
+	</column>
+	<column name="upd_dtimes">
+		<type name="timestamp" length="0"/>
+		<comment><![CDATA[Updated DateTimestamp : Date and Timestamp when any of the fields in the record is updated with new values.]]></comment>
+	</column>
+	<column name="is_deleted">
+		<type name="boolean" length="0"/>
+		<comment><![CDATA[IS_Deleted : Flag to mark whether the record is Soft deleted.]]></comment>
+	</column>
+	<column name="del_dtimes">
+		<type name="timestamp" length="0"/>
+		<comment><![CDATA[Deleted DateTimestamp : Date and Timestamp when the record is soft deleted with is_deleted=TRUE]]></comment>
+	</column>
+	<constraint name="pk_devprd_id" type="pk-constr" table="master.device_provider">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="device_provider_h" alias="devprdh">
+	<schema name="master"/>
+	<role name="sysadmin"/>
+	<comment><![CDATA[Device Provider History : History of changes of any device provider will be stored in history table to track any chnages for future validations.]]></comment>
+	<position x="1480" y="4140"/>
+	<column name="id" not-null="true">
+		<type name="character varying" length="36"/>
+		<comment><![CDATA[Device Provider ID: Unique ID of the device provider, Device provider id is generated by MOSIP system.]]></comment>
+	</column>
+	<column name="vendor_name" not-null="true">
+		<type name="character varying" length="128"/>
+		<comment><![CDATA[Device Provider Vendor Name : Name of the device provider, Those device will be used by MOSIP syatem.]]></comment>
+	</column>
+	<column name="address">
+		<type name="character varying" length="512"/>
+		<comment><![CDATA[Address : Postal address of the device provider, This will have full address of the provider including postal code.]]></comment>
+	</column>
+	<column name="email">
+		<type name="character varying" length="256"/>
+		<comment><![CDATA[Email Address : Email address of the device provider]]></comment>
+	</column>
+	<column name="contact_number">
+		<type name="character varying" length="16"/>
+		<comment><![CDATA[Contact Number : Contact number of the device provider]]></comment>
+	</column>
+	<column name="certificate_alias">
+		<type name="character varying" length="36"/>
+		<comment><![CDATA[Certificate Alias : Its certificate alias which is stored in HSP and provided by MOSIP to a device provider]]></comment>
+	</column>
+	<column name="is_active" not-null="true">
+		<type name="boolean" length="0"/>
+		<comment><![CDATA[IS_Active : Flag to mark whether the record/device is Active or In-active]]></comment>
+	</column>
+	<column name="cr_by" not-null="true">
+		<type name="character varying" length="256"/>
+		<comment><![CDATA[Created By : ID or name of the user who create / insert record]]></comment>
+	</column>
+	<column name="cr_dtimes" not-null="true">
+		<type name="timestamp" length="0"/>
+		<comment><![CDATA[Created DateTimestamp : Date and Timestamp when the record is created/inserted]]></comment>
+	</column>
+	<column name="upd_by">
+		<type name="character varying" length="256"/>
+		<comment><![CDATA[Updated By : ID or name of the user who update the record with new values]]></comment>
+	</column>
+	<column name="upd_dtimes">
+		<type name="timestamp" length="0"/>
+		<comment><![CDATA[Updated DateTimestamp : Date and Timestamp when any of the fields in the record is updated with new values.]]></comment>
+	</column>
+	<column name="is_deleted">
+		<type name="boolean" length="0"/>
+		<comment><![CDATA[IS_Deleted : Flag to mark whether the record is Soft deleted.]]></comment>
+	</column>
+	<column name="del_dtimes">
+		<type name="timestamp" length="0"/>
+		<comment><![CDATA[Deleted DateTimestamp : Date and Timestamp when the record is soft deleted with is_deleted=TRUE]]></comment>
+	</column>
+	<column name="eff_dtimes" not-null="true">
+		<type name="timestamp" length="0"/>
+		<comment><![CDATA[Effective Date Timestamp : This to track master record whenever there is an INSERT/UPDATE/DELETE ( soft delete ).  The current record is effective from this date-time.]]></comment>
+	</column>
+	<constraint name="pk_devprdh_id" type="pk-constr" table="master.device_provider_h">
+		<columns names="id,eff_dtimes" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="foundational_trust_provider" alias="ftprd">
+	<schema name="master"/>
+	<role name="sysadmin"/>
+	<comment><![CDATA[Foundational Trust Provider : To store all foundational trust provider, This provider will issue certificates to the chip/device manufacturer to certify devices.]]></comment>
+	<position x="600" y="4200"/>
+	<column name="id" not-null="true">
+		<type name="character varying" length="36"/>
+		<comment><![CDATA[Foundational Trust Provider ID: Unique ID of the trust provider, Trust provider id is generated by MOSIP system.]]></comment>
+	</column>
+	<column name="name" not-null="true">
+		<type name="character varying" length="128"/>
+		<comment><![CDATA[Foundational Trust Provider Name : Name of the trust provider, Those trust provider's certicate used by chip/device manufacturer.]]></comment>
+	</column>
+	<column name="address">
+		<type name="character varying" length="512"/>
+		<comment><![CDATA[Address : Postal address of the trust provider, This will have full address of the trust provider including postal code.]]></comment>
+	</column>
+	<column name="email">
+		<type name="character varying" length="256"/>
+		<comment><![CDATA[Email Address : Email address of the foundational trust providers]]></comment>
+	</column>
+	<column name="contact_number">
+		<type name="character varying" length="16"/>
+		<comment><![CDATA[Contact Number : Contact number of the foundational trust provider]]></comment>
+	</column>
+	<column name="certificate_alias">
+		<type name="character varying" length="36"/>
+		<comment><![CDATA[Certificate Alias : Its certificate alias which is stored in HSP and provided by MOSIP to a trust provider]]></comment>
+	</column>
+	<column name="is_active" not-null="true">
+		<type name="boolean" length="0"/>
+		<comment><![CDATA[IS_Active : Flag to mark whether the record/device is Active or In-active]]></comment>
+	</column>
+	<column name="cr_by" not-null="true">
+		<type name="character varying" length="256"/>
+		<comment><![CDATA[Created By : ID or name of the user who create / insert record]]></comment>
+	</column>
+	<column name="cr_dtimes" not-null="true">
+		<type name="timestamp" length="0"/>
+		<comment><![CDATA[Created DateTimestamp : Date and Timestamp when the record is created/inserted]]></comment>
+	</column>
+	<column name="upd_by">
+		<type name="character varying" length="256"/>
+		<comment><![CDATA[Updated By : ID or name of the user who update the record with new values]]></comment>
+	</column>
+	<column name="upd_dtimes">
+		<type name="timestamp" length="0"/>
+		<comment><![CDATA[Updated DateTimestamp : Date and Timestamp when any of the fields in the record is updated with new values.]]></comment>
+	</column>
+	<column name="is_deleted">
+		<type name="boolean" length="0"/>
+		<comment><![CDATA[IS_Deleted : Flag to mark whether the record is Soft deleted.]]></comment>
+	</column>
+	<column name="del_dtimes">
+		<type name="timestamp" length="0"/>
+		<comment><![CDATA[Deleted DateTimestamp : Date and Timestamp when the record is soft deleted with is_deleted=TRUE]]></comment>
+	</column>
+	<constraint name="pk_ftprd_id" type="pk-constr" table="master.foundational_trust_provider">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="foundational_trust_provider_h" alias="ftprdh">
+	<schema name="master"/>
+	<role name="sysadmin"/>
+	<comment><![CDATA[Foundational Trust Provider History : History of changes of any Foundational Trust Provider will be stored in history table to track any chnages for future validations.]]></comment>
+	<position x="260" y="4360"/>
+	<column name="id" not-null="true">
+		<type name="character varying" length="36"/>
+		<comment><![CDATA[Foundational Trust Provider ID: Unique ID of the trust provider, Trust provider id is generated by MOSIP system.]]></comment>
+	</column>
+	<column name="name" not-null="true">
+		<type name="character varying" length="128"/>
+		<comment><![CDATA[Foundational Trust Provider Name : Name of the trust provider, Those trust provider's certicate used by chip/device manufacturer.]]></comment>
+	</column>
+	<column name="address">
+		<type name="character varying" length="512"/>
+		<comment><![CDATA[Address : Postal address of the trust provider, This will have full address of the trust provider including postal code.]]></comment>
+	</column>
+	<column name="email">
+		<type name="character varying" length="256"/>
+		<comment><![CDATA[Email Address : Email address of the foundational trust providers]]></comment>
+	</column>
+	<column name="contact_number">
+		<type name="character varying" length="16"/>
+		<comment><![CDATA[Contact Number : Contact number of the foundational trust provider]]></comment>
+	</column>
+	<column name="certificate_alias">
+		<type name="character varying" length="36"/>
+		<comment><![CDATA[Certificate Alias : Its certificate alias which is stored in HSP and provided by MOSIP to a trust provider]]></comment>
+	</column>
+	<column name="is_active" not-null="true">
+		<type name="boolean" length="0"/>
+		<comment><![CDATA[IS_Active : Flag to mark whether the record/device is Active or In-active]]></comment>
+	</column>
+	<column name="cr_by" not-null="true">
+		<type name="character varying" length="256"/>
+		<comment><![CDATA[Created By : ID or name of the user who create / insert record]]></comment>
+	</column>
+	<column name="cr_dtimes" not-null="true">
+		<type name="timestamp" length="0"/>
+		<comment><![CDATA[Created DateTimestamp : Date and Timestamp when the record is created/inserted]]></comment>
+	</column>
+	<column name="upd_by">
+		<type name="character varying" length="256"/>
+		<comment><![CDATA[Updated By : ID or name of the user who update the record with new values]]></comment>
+	</column>
+	<column name="upd_dtimes">
+		<type name="timestamp" length="0"/>
+		<comment><![CDATA[Updated DateTimestamp : Date and Timestamp when any of the fields in the record is updated with new values.]]></comment>
+	</column>
+	<column name="is_deleted">
+		<type name="boolean" length="0"/>
+		<comment><![CDATA[IS_Deleted : Flag to mark whether the record is Soft deleted.]]></comment>
+	</column>
+	<column name="del_dtimes">
+		<type name="timestamp" length="0"/>
+		<comment><![CDATA[Deleted DateTimestamp : Date and Timestamp when the record is soft deleted with is_deleted=TRUE]]></comment>
+	</column>
+	<column name="eff_dtimes" not-null="true">
+		<type name="timestamp" length="0"/>
+		<comment><![CDATA[Effective Date Timestamp : This to track master record whenever there is an INSERT/UPDATE/DELETE ( soft delete ).  The current record is effective from this date-time.]]></comment>
+	</column>
+	<constraint name="pk_ftprdh_id" type="pk-constr" table="master.foundational_trust_provider_h">
+		<columns names="id,eff_dtimes" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="reg_device_type" alias="rdtyp">
+	<schema name="master"/>
+	<role name="sysadmin"/>
+	<comment><![CDATA[Device Type : Types of devices that are supported by the MOSIP system,  like  scanning, finger, face, iris etc]]></comment>
+	<position x="1140" y="4520"/>
+	<column name="code" not-null="true">
+		<type name="character varying" length="36"/>
+		<comment><![CDATA[Device Type Code: Types of devices used for registration processes, authentication...etc for ex., FNR, FACE, IRIS... etc]]></comment>
+	</column>
+	<column name="name" not-null="true">
+		<type name="character varying" length="64"/>
+		<comment><![CDATA[Device Name: Name of the device type]]></comment>
+	</column>
+	<column name="descr">
+		<type name="character varying" length="512"/>
+		<comment><![CDATA[Device description: Device sub type description]]></comment>
+	</column>
+	<column name="is_active" not-null="true">
+		<type name="boolean" length="0"/>
+		<comment><![CDATA[IS_Active : Flag to mark whether the record/device is Active or In-active]]></comment>
+	</column>
+	<column name="cr_by" not-null="true">
+		<type name="character varying" length="256"/>
+		<comment><![CDATA[Created By : ID or name of the user who create / insert record]]></comment>
+	</column>
+	<column name="cr_dtimes" not-null="true">
+		<type name="timestamp" length="0"/>
+		<comment><![CDATA[Created DateTimestamp : Date and Timestamp when the record is created/inserted]]></comment>
+	</column>
+	<column name="upd_by">
+		<type name="character varying" length="256"/>
+		<comment><![CDATA[Updated By : ID or name of the user who update the record with new values]]></comment>
+	</column>
+	<column name="upd_dtimes">
+		<type name="timestamp" length="0"/>
+		<comment><![CDATA[Updated DateTimestamp : Date and Timestamp when any of the fields in the record is updated with new values.]]></comment>
+	</column>
+	<column name="is_deleted">
+		<type name="boolean" length="0"/>
+		<comment><![CDATA[IS_Deleted : Flag to mark whether the record is Soft deleted.]]></comment>
+	</column>
+	<column name="del_dtimes">
+		<type name="timestamp" length="0"/>
+		<comment><![CDATA[Deleted DateTimestamp : Date and Timestamp when the record is soft deleted with is_deleted=TRUE]]></comment>
+	</column>
+	<constraint name="pk_rdtyp_code" type="pk-constr" table="master.reg_device_type">
+		<columns names="code" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="reg_device_sub_type" alias="rdstyp">
+	<schema name="master"/>
+	<role name="sysadmin"/>
+	<comment><![CDATA[Device Type : Sub types of devices that are supported by the MOSIP system,  like  Slab, Single, Touchless...etc]]></comment>
+	<position x="1160" y="4840"/>
+	<column name="code" not-null="true">
+		<type name="character varying" length="36"/>
+		<comment><![CDATA[Device Sub Type Code: Sub types of devices used for registration processes, authentication...etc for ex., SLB, SINGLE, FULLFACE... etc]]></comment>
+	</column>
+	<column name="dtyp_code" not-null="true">
+		<type name="character varying" length="36"/>
+		<comment><![CDATA[Device Type Code : Code of the device type where this sub type belongs to. refers to master.reg_device_type.code]]></comment>
+	</column>
+	<column name="name" not-null="true">
+		<type name="character varying" length="64"/>
+		<comment><![CDATA[Device Name: Name of the device sub type]]></comment>
+	</column>
+	<column name="descr">
+		<type name="character varying" length="512"/>
+		<comment><![CDATA[Device description: Device sub type description]]></comment>
+	</column>
+	<column name="is_active" not-null="true">
+		<type name="boolean" length="0"/>
+		<comment><![CDATA[IS_Active : Flag to mark whether the record/device is Active or In-active]]></comment>
+	</column>
+	<column name="cr_by" not-null="true">
+		<type name="character varying" length="256"/>
+		<comment><![CDATA[Created By : ID or name of the user who create / insert record]]></comment>
+	</column>
+	<column name="cr_dtimes" not-null="true">
+		<type name="timestamp" length="0"/>
+		<comment><![CDATA[Created DateTimestamp : Date and Timestamp when the record is created/inserted]]></comment>
+	</column>
+	<column name="upd_by">
+		<type name="character varying" length="256"/>
+		<comment><![CDATA[Updated By : ID or name of the user who update the record with new values]]></comment>
+	</column>
+	<column name="upd_dtimes">
+		<type name="timestamp" length="0"/>
+		<comment><![CDATA[Updated DateTimestamp : Date and Timestamp when any of the fields in the record is updated with new values.]]></comment>
+	</column>
+	<column name="is_deleted">
+		<type name="boolean" length="0"/>
+		<comment><![CDATA[IS_Deleted : Flag to mark whether the record is Soft deleted.]]></comment>
+	</column>
+	<column name="del_dtimes">
+		<type name="timestamp" length="0"/>
+		<comment><![CDATA[Deleted DateTimestamp : Date and Timestamp when the record is soft deleted with is_deleted=TRUE]]></comment>
+	</column>
+	<constraint name="pk_rdstyp_code" type="pk-constr" table="master.reg_device_sub_type">
+		<columns names="code" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="uk_rdstyp" type="uq-constr" table="master.reg_device_sub_type">
+		<columns names="dtyp_code,name" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="mosip_device_service" alias="mds">
+	<schema name="master"/>
+	<role name="sysadmin"/>
+	<comment><![CDATA[MOSIP Device Service : Mosip device cervice to have all the details about the device types, provider and software details]]></comment>
+	<position x="1600" y="4740"/>
+	<column name="id" not-null="true">
+		<type name="character varying" length="36"/>
+		<comment><![CDATA[ID: Unigue service ID, Service ID is geerated by the MOSIP system]]></comment>
+	</column>
+	<column name="sw_binary_hash" not-null="true">
+		<type name="bytea" length="36"/>
+		<comment><![CDATA[Software Binary Hash : Its is a software binary stored in MOSIP system for the devices]]></comment>
+	</column>
+	<column name="sw_version" not-null="true">
+		<type name="character varying" length="64"/>
+		<comment><![CDATA[Software Version : Version of the stored software]]></comment>
+	</column>
+	<column name="dprovider_id" not-null="true">
+		<type name="character varying" length="36"/>
+		<comment><![CDATA[Device Provider ID : Device provider ID, Referenced from master.device_provider.id]]></comment>
+	</column>
+	<column name="dtype_code" not-null="true">
+		<type name="character varying" length="36"/>
+		<comment><![CDATA[Device Type Code: Code of the device type, Referenced from master.reg_device_type.code]]></comment>
+	</column>
+	<column name="dstype_code" not-null="true">
+		<type name="character varying" length="36"/>
+		<comment><![CDATA[ Device Sub Type Code: Code of the device sub type, Referenced from master.reg_device_sub_type.code]]></comment>
+	</column>
+	<column name="make" not-null="true">
+		<type name="character varying" length="36"/>
+		<comment><![CDATA[Make: Make of the device]]></comment>
+	</column>
+	<column name="model" not-null="true">
+		<type name="character varying" length="36"/>
+		<comment><![CDATA[ Model: Model of the device]]></comment>
+	</column>
+	<column name="sw_cr_dtimes">
+		<type name="timestamp" length="0"/>
+		<comment><![CDATA[Software Created Date Time: Date and Time on which this software is created]]></comment>
+	</column>
+	<column name="sw_expiry_dtimes">
+		<type name="timestamp" length="0"/>
+		<comment><![CDATA[Software Expiry Date Time: Expiry date and time of the device software]]></comment>
+	</column>
+	<column name="is_active" not-null="true">
+		<type name="boolean" length="0"/>
+		<comment><![CDATA[IS_Active : Flag to mark whether the record/device is Active or In-active]]></comment>
+	</column>
+	<column name="cr_by" not-null="true">
+		<type name="character varying" length="256"/>
+		<comment><![CDATA[Created By : ID or name of the user who create / insert record]]></comment>
+	</column>
+	<column name="cr_dtimes" not-null="true">
+		<type name="timestamp" length="0"/>
+		<comment><![CDATA[Created DateTimestamp : Date and Timestamp when the record is created/inserted]]></comment>
+	</column>
+	<column name="upd_by">
+		<type name="character varying" length="256"/>
+		<comment><![CDATA[Updated By : ID or name of the user who update the record with new values]]></comment>
+	</column>
+	<column name="upd_dtimes">
+		<type name="timestamp" length="0"/>
+		<comment><![CDATA[Updated DateTimestamp : Date and Timestamp when any of the fields in the record is updated with new values.]]></comment>
+	</column>
+	<column name="is_deleted">
+		<type name="boolean" length="0"/>
+		<comment><![CDATA[IS_Deleted : Flag to mark whether the record is Soft deleted.]]></comment>
+	</column>
+	<column name="del_dtimes">
+		<type name="timestamp" length="0"/>
+		<comment><![CDATA[Deleted DateTimestamp : Date and Timestamp when the record is soft deleted with is_deleted=TRUE]]></comment>
+	</column>
+	<constraint name="pk_mds_id" type="pk-constr" table="master.mosip_device_service">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="uk_mds" type="uq-constr" table="master.mosip_device_service">
+		<columns names="sw_version,dprovider_id,dtype_code,dstype_code,make,model" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="mosip_device_service_h" alias="mdsh">
+	<schema name="master"/>
+	<role name="sysadmin"/>
+	<comment><![CDATA[MOSIP Device Service History : History of changes of any MOSIP device service will be stored in history table to track any chnages for future validations.]]></comment>
+	<position x="1780" y="4400"/>
+	<column name="id" not-null="true">
+		<type name="character varying" length="36"/>
+		<comment><![CDATA[ID: Unigue service ID, Service ID is geerated by the MOSIP system]]></comment>
+	</column>
+	<column name="sw_binary_hash" not-null="true">
+		<type name="bytea" length="36"/>
+		<comment><![CDATA[Software Binary Hash : Its is a software binary stored in MOSIP system for the devices]]></comment>
+	</column>
+	<column name="sw_version">
+		<type name="character varying" length="64"/>
+		<comment><![CDATA[Software Version : Version of the stored software]]></comment>
+	</column>
+	<column name="dprovider_id" not-null="true">
+		<type name="character varying" length="36"/>
+		<comment><![CDATA[Device Provider ID : Device provider ID, Referenced from master.device_provider.id]]></comment>
+	</column>
+	<column name="dtype_code" not-null="true">
+		<type name="character varying" length="36"/>
+		<comment><![CDATA[Device Type Code: Code of the device type, Referenced from master.reg_device_type.code]]></comment>
+	</column>
+	<column name="dstype_code" not-null="true">
+		<type name="character varying" length="36"/>
+		<comment><![CDATA[ Device Sub Type Code: Code of the device sub type, Referenced from master.reg_device_sub_type.code]]></comment>
+	</column>
+	<column name="make">
+		<type name="character varying" length="36"/>
+		<comment><![CDATA[Make: Make of the device]]></comment>
+	</column>
+	<column name="model">
+		<type name="character varying" length="36"/>
+		<comment><![CDATA[ Model: Model of the device]]></comment>
+	</column>
+	<column name="sw_cr_dtimes">
+		<type name="timestamp" length="0"/>
+		<comment><![CDATA[Software Created Date Time: Date and Time on which this software is created]]></comment>
+	</column>
+	<column name="sw_expiry_dtimes">
+		<type name="timestamp" length="0"/>
+		<comment><![CDATA[Software Expiry Date Time: Expiry date and time of the device software]]></comment>
+	</column>
+	<column name="is_active" not-null="true">
+		<type name="boolean" length="0"/>
+		<comment><![CDATA[IS_Active : Flag to mark whether the record/device is Active or In-active]]></comment>
+	</column>
+	<column name="cr_by" not-null="true">
+		<type name="character varying" length="256"/>
+		<comment><![CDATA[Created By : ID or name of the user who create / insert record]]></comment>
+	</column>
+	<column name="cr_dtimes" not-null="true">
+		<type name="timestamp" length="0"/>
+		<comment><![CDATA[Created DateTimestamp : Date and Timestamp when the record is created/inserted]]></comment>
+	</column>
+	<column name="upd_by">
+		<type name="character varying" length="256"/>
+		<comment><![CDATA[Updated By : ID or name of the user who update the record with new values]]></comment>
+	</column>
+	<column name="upd_dtimes">
+		<type name="timestamp" length="0"/>
+		<comment><![CDATA[Updated DateTimestamp : Date and Timestamp when any of the fields in the record is updated with new values.]]></comment>
+	</column>
+	<column name="is_deleted">
+		<type name="boolean" length="0"/>
+		<comment><![CDATA[IS_Deleted : Flag to mark whether the record is Soft deleted.]]></comment>
+	</column>
+	<column name="del_dtimes">
+		<type name="timestamp" length="0"/>
+		<comment><![CDATA[Deleted DateTimestamp : Date and Timestamp when the record is soft deleted with is_deleted=TRUE]]></comment>
+	</column>
+	<column name="eff_dtimes" not-null="true">
+		<type name="timestamp" length="0"/>
+		<comment><![CDATA[Effective Date Timestamp : This to track master record whenever there is an INSERT/UPDATE/DELETE ( soft delete ).  The current record is effective from this date-time.]]></comment>
+	</column>
+	<constraint name="pk_mdsh_id" type="pk-constr" table="master.mosip_device_service_h">
+		<columns names="id,eff_dtimes" ref-type="src-columns"/>
 	</constraint>
 </table>
 
@@ -4965,6 +5515,24 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<columns names="code,lang_code" ref-type="dst-columns"/>
 </constraint>
 
+<constraint name="fk_regdevm_devprd" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="master.device_provider" table="master.registered_device_master">
+	<columns names="provider_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="fk_regdevm_dtype" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="master.reg_device_type" table="master.registered_device_master">
+	<columns names="dtype_code" ref-type="src-columns"/>
+	<columns names="code" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="fk_regdevm_dstype" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="master.reg_device_sub_type" table="master.registered_device_master">
+	<columns names="dstype_code" ref-type="src-columns"/>
+	<columns names="code" ref-type="dst-columns"/>
+</constraint>
+
 <constraint name="fk_rwn_daycode" type="fk-constr" comparison-type="MATCH FULL"
 	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="master.daysofweek_list" table="master.reg_working_nonworking">
 	<columns names="day_code,lang_code" ref-type="src-columns"/>
@@ -4981,6 +5549,30 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="master.registration_center" table="master.reg_exceptional_holiday">
 	<columns names="regcntr_id,lang_code" ref-type="src-columns"/>
 	<columns names="id,lang_code" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="fk_rdstyp_dtype_code" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="master.reg_device_type" table="master.reg_device_sub_type">
+	<columns names="dtyp_code" ref-type="src-columns"/>
+	<columns names="code" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="fk_mds_devprd" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="master.device_provider" table="master.mosip_device_service">
+	<columns names="dprovider_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="fk_mds_dtype" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="master.reg_device_type" table="master.mosip_device_service">
+	<columns names="dtype_code" ref-type="src-columns"/>
+	<columns names="code" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="fk_mds_dstype" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="master.reg_device_sub_type" table="master.mosip_device_service">
+	<columns names="dstype_code" ref-type="src-columns"/>
+	<columns names="code" ref-type="dst-columns"/>
 </constraint>
 
 <relationship name="rel_app_authentication_method_app_detail" type="relfk"
@@ -5308,6 +5900,41 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <relationship name="rel_reg_exceptional_holiday_registration_center" type="relfk"
 	 src-table="master.reg_exceptional_holiday"
 	 dst-table="master.registration_center" reference-fk="fk_regeh_regcntr"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="rel_reg_device_sub_type_reg_device_type" type="relfk"
+	 src-table="master.reg_device_sub_type"
+	 dst-table="master.reg_device_type" reference-fk="fk_rdstyp_dtype_code"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="rel_registered_device_master_device_provider" type="relfk"
+	 src-table="master.registered_device_master"
+	 dst-table="master.device_provider" reference-fk="fk_regdevm_devprd"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="rel_registered_device_master_reg_device_type" type="relfk"
+	 src-table="master.registered_device_master"
+	 dst-table="master.reg_device_type" reference-fk="fk_regdevm_dtype"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="rel_registered_device_master_reg_device_sub_type" type="relfk"
+	 src-table="master.registered_device_master"
+	 dst-table="master.reg_device_sub_type" reference-fk="fk_regdevm_dstype"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="rel_mosip_device_service_device_provider" type="relfk"
+	 src-table="master.mosip_device_service"
+	 dst-table="master.device_provider" reference-fk="fk_mds_devprd"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="rel_mosip_device_service_reg_device_type" type="relfk"
+	 src-table="master.mosip_device_service"
+	 dst-table="master.reg_device_type" reference-fk="fk_mds_dtype"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="rel_mosip_device_service_reg_device_sub_type" type="relfk"
+	 src-table="master.mosip_device_service"
+	 dst-table="master.reg_device_sub_type" reference-fk="fk_mds_dstype"
 	 src-required="false" dst-required="false"/>
 
 <permission>
