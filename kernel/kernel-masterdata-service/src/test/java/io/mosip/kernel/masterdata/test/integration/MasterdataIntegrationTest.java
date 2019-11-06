@@ -112,6 +112,8 @@ import io.mosip.kernel.masterdata.entity.DeviceSpecification;
 import io.mosip.kernel.masterdata.entity.DeviceType;
 import io.mosip.kernel.masterdata.entity.DocumentCategory;
 import io.mosip.kernel.masterdata.entity.DocumentType;
+import io.mosip.kernel.masterdata.entity.FoundationalTrustProvider;
+import io.mosip.kernel.masterdata.entity.FoundationalTrustProviderHistory;
 import io.mosip.kernel.masterdata.entity.Gender;
 import io.mosip.kernel.masterdata.entity.Holiday;
 import io.mosip.kernel.masterdata.entity.IdType;
@@ -175,6 +177,7 @@ import io.mosip.kernel.masterdata.repository.DeviceTypeRepository;
 import io.mosip.kernel.masterdata.repository.DocumentCategoryRepository;
 import io.mosip.kernel.masterdata.repository.DocumentTypeRepository;
 import io.mosip.kernel.masterdata.repository.FoundationalTrustProviderRepository;
+import io.mosip.kernel.masterdata.repository.FoundationalTrustProviderRepositoryHistory;
 import io.mosip.kernel.masterdata.repository.GenderTypeRepository;
 import io.mosip.kernel.masterdata.repository.HolidayRepository;
 import io.mosip.kernel.masterdata.repository.IdTypeRepository;
@@ -487,7 +490,14 @@ public class MasterdataIntegrationTest {
 	@MockBean
 	private FoundationalTrustProviderRepository foundationalTrustProviderRepository;
 	
+	@MockBean
+	private FoundationalTrustProviderRepositoryHistory foundationalTrustProviderRepositoryHistory;
+	
 	private FoundationalTrustProviderDto foundationalTrustProviderDto;
+	
+	private FoundationalTrustProvider foundationalTrustUpdateProviderDto;
+	
+	private FoundationalTrustProviderHistory foundationalTrustProviderHistory;
 
 	@SuppressWarnings("static-access")
 	@Before
@@ -569,18 +579,44 @@ public class MasterdataIntegrationTest {
 		decommissionRegCenter();
 		
 		foundationProvider();
+		
+		newRegCenterSetup();
+	}
+	RegCenterPostReqDto regCenterPostReqDto = null;
+	private void newRegCenterSetup() {
+//		LocalTime centerStartTime = LocalTime.of(1, 10, 10, 30);
+//		LocalTime centerEndTime = LocalTime.of(1, 10, 10, 30);
+//		LocalTime lunchStartTime = LocalTime.of(1, 10, 10, 30);
+//		LocalTime lunchEndTime = LocalTime.of(1, 10, 10, 30);
+		LocalTime perKioskProcessTime = LocalTime.parse("09:00:00");
+		LocalTime centerStartTime = LocalTime.parse("09:00:00");
+		//LocalTime perKioskProcessTime = LocalTime.of(1, 10, 10, 30);
+		regCenterPostReqDto = new RegCenterPostReqDto();
+		regCenterPostReqDto.setName("TEST CENTER");
+		regCenterPostReqDto.setAddressLine1("Address Line 1");
+		regCenterPostReqDto.setAddressLine2("Address Line 2");
+		regCenterPostReqDto.setAddressLine3("Address Line 3");
+		regCenterPostReqDto.setCenterTypeCode("REG");
+		regCenterPostReqDto.setContactPerson("Test");
+		regCenterPostReqDto.setContactPhone("9999999999");
+		regCenterPostReqDto.setHolidayLocationCode("HLC01");
+		regCenterPostReqDto.setLangCode("eng");
+		regCenterPostReqDto.setLatitude("12.9646818");
+		regCenterPostReqDto.setLocationCode("10190");
+		regCenterPostReqDto.setLongitude("77.70168");
+		regCenterPostReqDto.setIsActive(true);
+		regCenterPostReqDto.setPerKioskProcessTime(perKioskProcessTime);
+		regCenterPostReqDto.setCenterStartTime(centerStartTime);
+		//regCenterPostReqDto.setCenterEndTime(centerEndTime);
+		//regCenterPostReqDto.setLunchStartTime(lunchStartTime);
+		//regCenterPostReqDto.setLunchEndTime(lunchEndTime);
+		regCenterPostReqDto.setTimeZone("UTC");
+		regCenterPostReqDto.setWorkingHours("9");
+		regCenterPostReqDto.setZoneCode("JRD");
+		
 	}
 
-	private void foundationProvider() {
-		foundationalTrustProviderDto = new FoundationalTrustProviderDto();
-		foundationalTrustProviderDto.setId("24233443444");
-		foundationalTrustProviderDto.setActive(true);
-		foundationalTrustProviderDto.setAddress("test address");
-		foundationalTrustProviderDto.setCertAlias("141d3962380139742ac9a1e4b23e0221");
-		foundationalTrustProviderDto.setContactNo("9876378945");
-		foundationalTrustProviderDto.setEmail("test@mosip.io");
-		foundationalTrustProviderDto.setName("Test Name");
-	}
+	
 
 	private void userDetailsHistorySetup() {
 		user = new UserDetailsHistory();
@@ -7908,6 +7944,23 @@ public class MasterdataIntegrationTest {
 				.andExpect(status().isInternalServerError());
 	}
 	
+	private void foundationProvider() {
+		foundationalTrustProviderDto = new FoundationalTrustProviderDto();
+		foundationalTrustProviderDto.setId("24233443444");
+		foundationalTrustProviderDto.setActive(true);
+		foundationalTrustProviderDto.setAddress("test address");
+		foundationalTrustProviderDto.setCertAlias("141d3962380139742ac9a1e4b23e0221");
+		foundationalTrustProviderDto.setContactNo("9876378945");
+		foundationalTrustProviderDto.setEmail("test@mosip.io");
+		foundationalTrustProviderDto.setName("Test Name");
+		
+		foundationalTrustUpdateProviderDto = new FoundationalTrustProvider();
+		foundationalTrustUpdateProviderDto.setId("24233443444");
+		
+		foundationalTrustProviderHistory = new FoundationalTrustProviderHistory();
+		foundationalTrustProviderHistory.setId("24233443444");
+	}
+	
 	@Test
 	@WithUserDetails("zonal-admin")
 	public void createFoundationalProviderTest() throws Exception {
@@ -7926,6 +7979,39 @@ public class MasterdataIntegrationTest {
 	@Test
 	@WithUserDetails("zonal-admin")
 	public void createFoundationalProviderExcepTest() throws Exception {
+		RequestWrapper<FoundationalTrustProviderDto> requestMSDDto = null;
+		requestMSDDto = new RequestWrapper<>();
+		requestMSDDto.setId("mosip.foundationalprovider.test");
+		requestMSDDto.setVersion("1.0.0");
+		requestMSDDto.setRequest(foundationalTrustProviderDto);
+
+		mdsJson = mapper.writeValueAsString(requestMSDDto);
+		when(foundationalTrustProviderRepository.findById(Mockito.any(), Mockito.any())).thenReturn(null);
+		mockMvc.perform(post("/foundationaltrustprovider").contentType(MediaType.APPLICATION_JSON).content(mdsJson))
+				.andExpect(status().isOk());
+	}
+	
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void updateFoundationalProviderTest() throws Exception {
+		RequestWrapper<FoundationalTrustProviderDto> requestMSDDto = null;
+		requestMSDDto = new RequestWrapper<>();
+		requestMSDDto.setId("mosip.foundationalprovider.test");
+		requestMSDDto.setVersion("1.0.0");
+		requestMSDDto.setRequest(foundationalTrustProviderDto);
+
+		mdsJson = mapper.writeValueAsString(requestMSDDto);
+		when(foundationalTrustProviderRepository.findById(Mockito.any(), Mockito.any())).thenReturn(foundationalTrustUpdateProviderDto);
+		when(foundationalTrustProviderRepository.update(Mockito.any())).thenReturn(foundationalTrustUpdateProviderDto);
+		when(foundationalTrustProviderRepositoryHistory.create(Mockito.any())).thenReturn(foundationalTrustProviderHistory);
+		when(foundationalTrustProviderRepository.findById(Mockito.any(), Mockito.any())).thenReturn(null);
+		mockMvc.perform(post("/foundationaltrustprovider").contentType(MediaType.APPLICATION_JSON).content(mdsJson))
+				.andExpect(status().isOk());
+	}
+	
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void updateFoundationalProviderExcepTest() throws Exception {
 		RequestWrapper<FoundationalTrustProviderDto> requestMSDDto = null;
 		requestMSDDto = new RequestWrapper<>();
 		requestMSDDto.setId("mosip.foundationalprovider.test");
@@ -8065,4 +8151,24 @@ public class MasterdataIntegrationTest {
 		mockMvc.perform(put("/deviceprovider").contentType(MediaType.APPLICATION_JSON).content(deviceProviderJson))
 				.andExpect(status().isOk());
 	}
+	
+	
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void createRegCenterTest() throws Exception {
+		RequestWrapper<RegCenterPostReqDto> requestMSDDto = null;
+		requestMSDDto = new RequestWrapper<>();
+		requestMSDDto.setId("mosip.match.regcentr.machineid");
+		requestMSDDto.setVersion("1.0.0");
+		requestMSDDto.setRequest(regCenterPostReqDto);
+
+		String regcenterJson = mapper.writeValueAsString(requestMSDDto);
+		when(registrationCenterRepository.findById(Mockito.any(), Mockito.any())).thenReturn(null);
+		when(registrationCenterRepository.create(Mockito.any())).thenReturn(registrationCenter);
+		when(repositoryCenterHistoryRepository.create(Mockito.any())).thenReturn(registrationCenterHistory);
+		mockMvc.perform(post("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(regcenterJson))
+				.andExpect(status().isOk());
+	}
+	
+	
 }
