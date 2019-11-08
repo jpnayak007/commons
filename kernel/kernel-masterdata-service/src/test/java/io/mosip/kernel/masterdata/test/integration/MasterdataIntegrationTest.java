@@ -7773,6 +7773,7 @@ public class MasterdataIntegrationTest {
 	// ---------------------------create MDS--------------------------------------
 
 	private MOSIPDeviceServiceDto mosipDeviceServiceDto = null;
+	private MOSIPDeviceServiceDto MDSDtoWithAllParams = null;
 	private MOSIPDeviceServiceHistory msdHistory = null;
 	private MOSIPDeviceService mosipDeviceService = null;
 	private RegistrationDeviceType regDeviceType = null;
@@ -7794,6 +7795,9 @@ public class MasterdataIntegrationTest {
 		mosipDeviceServiceDto.setDeviceProviderId("10003");
 		mosipDeviceServiceDto.setSwBinaryHash(binary);
 
+		MDSDtoWithAllParams = mosipDeviceServiceDto;
+		MDSDtoWithAllParams.setSwCreateDateTime(specificDate);
+		MDSDtoWithAllParams.setSwExpiryDateTime(specificDate);
 
 		mosipDeviceService = new MOSIPDeviceService();
 		mosipDeviceService.setId("10002");
@@ -7929,6 +7933,7 @@ public class MasterdataIntegrationTest {
 		requestMSDDto = new RequestWrapper<>();
 		requestMSDDto.setId("mosip.match.regcentr.machineid");
 		requestMSDDto.setVersion("1.0.0");
+		mosipDeviceServiceDto.setActive(true);
 		requestMSDDto.setRequest(mosipDeviceServiceDto);
 		mdsJson = mapper.writeValueAsString(requestMSDDto);
 		when(mosipDeviceServiceRepository.findById(Mockito.any(), Mockito.any())).thenReturn(null);
@@ -7961,6 +7966,81 @@ public class MasterdataIntegrationTest {
 		foundationalTrustProviderHistory.setId("24233443444");
 	}
 	
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void updateMOSIPDeviceServiceTest() throws Exception {
+		DeviceProvider deviceProvider = new DeviceProvider();
+		
+		RequestWrapper<MOSIPDeviceServiceDto> requestMSDDto = null;
+		requestMSDDto = new RequestWrapper<>();
+		requestMSDDto.setId("mosip.match.regcentr.machineid");
+		requestMSDDto.setVersion("1.0.0");
+		requestMSDDto.setRequest(MDSDtoWithAllParams);
+		mdsJson = mapper.writeValueAsString(requestMSDDto);
+		
+		when(deviceProviderRepository.findByIdAndIsDeletedFalseorIsDeletedIsNullAndIsActiveTrue(Mockito.any())).thenReturn(deviceProvider);
+		when(mosipDeviceServiceHistoryRepository.create(any(MOSIPDeviceServiceHistory.class))).thenReturn(null);
+		mockMvc.perform(put("/mosipdeviceservice").contentType(MediaType.APPLICATION_JSON).content(mdsJson))
+		.andExpect(status().isOk());
+	
+	}
+	
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void updateMDSMissingParameterExceptionTest() throws Exception {
+		DeviceProvider deviceProvider = new DeviceProvider();
+		
+		RequestWrapper<MOSIPDeviceServiceDto> requestMSDDto = null;
+		requestMSDDto = new RequestWrapper<>();
+		requestMSDDto.setId("mosip.match.regcentr.machineid");
+		requestMSDDto.setVersion("1.0.0");
+		MDSDtoWithAllParams.setSwVersion(null);
+		requestMSDDto.setRequest(MDSDtoWithAllParams);
+		mdsJson = mapper.writeValueAsString(requestMSDDto);
+		
+		when(deviceProviderRepository.findByIdAndIsDeletedFalseorIsDeletedIsNullAndIsActiveTrue(Mockito.any())).thenReturn(deviceProvider);
+		when(mosipDeviceServiceHistoryRepository.create(any(MOSIPDeviceServiceHistory.class))).thenReturn(null);
+		mockMvc.perform(put("/mosipdeviceservice").contentType(MediaType.APPLICATION_JSON).content(mdsJson))
+		.andExpect(status().isOk());
+	}
+	
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void deviceProviderNotFounfExceptionTest() throws Exception {
+		DeviceProvider deviceProvider = new DeviceProvider();
+		
+		RequestWrapper<MOSIPDeviceServiceDto> requestMSDDto = null;
+		requestMSDDto = new RequestWrapper<>();
+		requestMSDDto.setId("mosip.match.regcentr.machineid");
+		requestMSDDto.setVersion("1.0.0");
+		requestMSDDto.setRequest(MDSDtoWithAllParams);
+		mdsJson = mapper.writeValueAsString(requestMSDDto);
+		
+		when(deviceProviderRepository.findByIdAndIsDeletedFalseorIsDeletedIsNullAndIsActiveTrue(Mockito.any())).thenReturn(null);
+		when(mosipDeviceServiceHistoryRepository.create(any(MOSIPDeviceServiceHistory.class))).thenReturn(null);
+		mockMvc.perform(put("/mosipdeviceservice").contentType(MediaType.APPLICATION_JSON).content(mdsJson))
+		.andExpect(status().isOk());
+	}
+	
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void MSDdbUpdationErrorTest() throws Exception {
+		DeviceProvider deviceProvider = new DeviceProvider();
+		
+		RequestWrapper<MOSIPDeviceServiceDto> requestMSDDto = null;
+		requestMSDDto = new RequestWrapper<>();
+		requestMSDDto.setId("mosip.match.regcentr.machineid");
+		requestMSDDto.setVersion("1.0.0");
+		requestMSDDto.setRequest(MDSDtoWithAllParams);
+		mdsJson = mapper.writeValueAsString(requestMSDDto);
+		
+		when(deviceProviderRepository.findByIdAndIsDeletedFalseorIsDeletedIsNullAndIsActiveTrue(Mockito.any())).thenReturn(deviceProvider);
+		when(mosipDeviceServiceHistoryRepository.create(any(MOSIPDeviceServiceHistory.class))).thenThrow(DataAccessLayerException.class);
+		mockMvc.perform(put("/mosipdeviceservice").contentType(MediaType.APPLICATION_JSON).content(mdsJson))
+		.andExpect(status().isOk());
+	
+	}
+		
 	@Test
 	@WithUserDetails("zonal-admin")
 	public void createFoundationalProviderTest() throws Exception {
