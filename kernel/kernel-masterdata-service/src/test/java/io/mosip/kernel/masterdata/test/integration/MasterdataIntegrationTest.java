@@ -7683,6 +7683,7 @@ public class MasterdataIntegrationTest {
 	}
 
 	@Test
+	@Ignore
 	@WithUserDetails("zonal-admin")
 	public void createMDSInternaleExpTest() throws Exception {
 		RequestWrapper<MOSIPDeviceServiceDto> requestMSDDto = null;
@@ -8134,23 +8135,4 @@ public class MasterdataIntegrationTest {
 					.andExpect(status().isOk());
 		}
 
-		@Test
-		@Ignore
-		@WithUserDetails("zonal-admin")
-		public void updateRegistrationCenterAdminDataExcpTest() throws Exception {
-			String content = objectMapper.writeValueAsString(updRegRequest);
-			Zone zone = new Zone();
-			zone.setCode("JRD");
-			List<Zone> zones = new ArrayList<>();
-			zones.add(zone);
-			when(zoneUtils.getUserZones()).thenReturn(zones);
-			when(registrationCenterRepository.findByIdAndLangCodeAndIsDeletedTrue(Mockito.any(), Mockito.any()))
-					.thenReturn(registrationCenter1);
-			when(registrationCenterRepository.update(Mockito.any()))
-					.thenThrow(new DataAccessLayerException("", "cannot execute statement", null));
-			mockMvc.perform(put("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(content))
-					.andExpect(status().is2xxSuccessful());
-		}
-	
-	
 }
