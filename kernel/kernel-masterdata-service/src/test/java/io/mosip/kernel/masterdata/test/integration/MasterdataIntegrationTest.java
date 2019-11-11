@@ -5983,40 +5983,6 @@ public class MasterdataIntegrationTest {
 				.andExpect(status().is2xxSuccessful());
 	}
 
-	// ------ update the RegitrationCenter----------------------
-	@Test
-	@WithUserDetails("zonal-admin")
-	public void updateRegCenterAdminTest() throws Exception {
-		String content = objectMapper.writeValueAsString(updRegRequest);
-		Zone zone = new Zone();
-		zone.setCode("JRD");
-		List<Zone> zones = new ArrayList<>();
-		zones.add(zone);
-		when(zoneUtils.getUserZones()).thenReturn(zones);
-		when(registrationCenterRepository.findByIdAndLangCodeAndIsDeletedTrue(Mockito.any(), Mockito.any()))
-				.thenReturn(registrationCenter1);
-		when(registrationCenterRepository.update(Mockito.any())).thenReturn(registrationCenter1);
-		when(repositoryCenterHistoryRepository.create(Mockito.any())).thenReturn(registrationCenterHistory);
-		mockMvc.perform(put("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(content))
-				.andExpect(status().isOk());
-	}
-
-	@Test
-	@WithUserDetails("zonal-admin")
-	public void updateRegCenterEmptyAdminTest() throws Exception {
-		String content = objectMapper.writeValueAsString(updRegRequest);
-		List<RegistrationCenter> emptList = new ArrayList<>();
-		Zone zone = new Zone();
-		zone.setCode("JRD");
-		List<Zone> zones = new ArrayList<>();
-		zones.add(zone);
-		when(zoneUtils.getUserZones()).thenReturn(zones);
-		when(registrationCenterRepository.findByIdAndLangCodeAndIsDeletedTrue(Mockito.any(), Mockito.any()))
-				.thenReturn(null);
-		when(registrationCenterRepository.findByRegCenterIdAndIsDeletedFalseOrNull(Mockito.any())).thenReturn(emptList);
-		mockMvc.perform(put("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(content))
-				.andExpect(status().isOk());
-	}
 
 	// ------------------------------------------------RegistrationMachine Get
 	// ------------------------------------------------
