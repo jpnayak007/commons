@@ -588,8 +588,6 @@ public class MasterdataIntegrationTest {
 		foundationProvider();
 		
 		newRegCenterSetup();
-		
-		updateRegistrationCenterSetup1();
 	}
 	
 
@@ -5989,7 +5987,7 @@ public class MasterdataIntegrationTest {
 	@Test
 	@WithUserDetails("zonal-admin")
 	public void updateRegCenterAdminTest() throws Exception {
-		String content = objectMapper.writeValueAsString(requestPutDto);
+		String content = objectMapper.writeValueAsString(updRegRequest);
 		Zone zone = new Zone();
 		zone.setCode("JRD");
 		List<Zone> zones = new ArrayList<>();
@@ -6006,7 +6004,7 @@ public class MasterdataIntegrationTest {
 	@Test
 	@WithUserDetails("zonal-admin")
 	public void updateRegCenterEmptyAdminTest() throws Exception {
-		String content = objectMapper.writeValueAsString(requestPutDto);
+		String content = objectMapper.writeValueAsString(updRegRequest);
 		List<RegistrationCenter> emptList = new ArrayList<>();
 		Zone zone = new Zone();
 		zone.setCode("JRD");
@@ -7570,8 +7568,6 @@ public class MasterdataIntegrationTest {
 	private DeviceProvider deviceProvider = null;
 	private String mdsJson = null;
 
-	private MOSIPDeviceServiceDto MDSDtoWithAllParams;
-
 	private void MSDcreateSetUp() {
 
 		byte[] binary = { 1 };
@@ -7586,9 +7582,6 @@ public class MasterdataIntegrationTest {
 		mosipDeviceServiceDto.setDeviceProviderId("10003");
 		mosipDeviceServiceDto.setSwBinaryHash(binary);
 
-		MDSDtoWithAllParams = mosipDeviceServiceDto;
-		MDSDtoWithAllParams.setSwCreateDateTime(specificDate);
-		MDSDtoWithAllParams.setSwExpiryDateTime(specificDate);
 
 		mosipDeviceService = new MOSIPDeviceService();
 		mosipDeviceService.setId("10002");
@@ -7756,81 +7749,6 @@ public class MasterdataIntegrationTest {
 		foundationalTrustProviderHistory.setId("24233443444");
 	}
 	
-	@Test
-	@WithUserDetails("zonal-admin")
-	public void updateMOSIPDeviceServiceTest() throws Exception {
-		DeviceProvider deviceProvider = new DeviceProvider();
-		
-		RequestWrapper<MOSIPDeviceServiceDto> requestMSDDto = null;
-		requestMSDDto = new RequestWrapper<>();
-		requestMSDDto.setId("mosip.match.regcentr.machineid");
-		requestMSDDto.setVersion("1.0.0");
-		requestMSDDto.setRequest(MDSDtoWithAllParams);
-		mdsJson = mapper.writeValueAsString(requestMSDDto);
-		
-		when(deviceProviderRepository.findByIdAndIsDeletedFalseorIsDeletedIsNullAndIsActiveTrue(Mockito.any())).thenReturn(deviceProvider);
-		when(mosipDeviceServiceHistoryRepository.create(any(MOSIPDeviceServiceHistory.class))).thenReturn(null);
-		mockMvc.perform(put("/mosipdeviceservice").contentType(MediaType.APPLICATION_JSON).content(mdsJson))
-		.andExpect(status().isOk());
-	
-	}
-	
-	@Test
-	@WithUserDetails("zonal-admin")
-	public void updateMDSMissingParameterExceptionTest() throws Exception {
-		DeviceProvider deviceProvider = new DeviceProvider();
-		
-		RequestWrapper<MOSIPDeviceServiceDto> requestMSDDto = null;
-		requestMSDDto = new RequestWrapper<>();
-		requestMSDDto.setId("mosip.match.regcentr.machineid");
-		requestMSDDto.setVersion("1.0.0");
-		MDSDtoWithAllParams.setSwVersion(null);
-		requestMSDDto.setRequest(MDSDtoWithAllParams);
-		mdsJson = mapper.writeValueAsString(requestMSDDto);
-		
-		when(deviceProviderRepository.findByIdAndIsDeletedFalseorIsDeletedIsNullAndIsActiveTrue(Mockito.any())).thenReturn(deviceProvider);
-		when(mosipDeviceServiceHistoryRepository.create(any(MOSIPDeviceServiceHistory.class))).thenReturn(null);
-		mockMvc.perform(put("/mosipdeviceservice").contentType(MediaType.APPLICATION_JSON).content(mdsJson))
-		.andExpect(status().isOk());
-	}
-	
-	@Test
-	@WithUserDetails("zonal-admin")
-	public void deviceProviderNotFounfExceptionTest() throws Exception {
-		DeviceProvider deviceProvider = new DeviceProvider();
-		
-		RequestWrapper<MOSIPDeviceServiceDto> requestMSDDto = null;
-		requestMSDDto = new RequestWrapper<>();
-		requestMSDDto.setId("mosip.match.regcentr.machineid");
-		requestMSDDto.setVersion("1.0.0");
-		requestMSDDto.setRequest(MDSDtoWithAllParams);
-		mdsJson = mapper.writeValueAsString(requestMSDDto);
-		
-		when(deviceProviderRepository.findByIdAndIsDeletedFalseorIsDeletedIsNullAndIsActiveTrue(Mockito.any())).thenReturn(null);
-		when(mosipDeviceServiceHistoryRepository.create(any(MOSIPDeviceServiceHistory.class))).thenReturn(null);
-		mockMvc.perform(put("/mosipdeviceservice").contentType(MediaType.APPLICATION_JSON).content(mdsJson))
-		.andExpect(status().isOk());
-	}
-	
-	@Test
-	@WithUserDetails("zonal-admin")
-	public void MSDdbUpdationErrorTest() throws Exception {
-		DeviceProvider deviceProvider = new DeviceProvider();
-		
-		RequestWrapper<MOSIPDeviceServiceDto> requestMSDDto = null;
-		requestMSDDto = new RequestWrapper<>();
-		requestMSDDto.setId("mosip.match.regcentr.machineid");
-		requestMSDDto.setVersion("1.0.0");
-		requestMSDDto.setRequest(MDSDtoWithAllParams);
-		mdsJson = mapper.writeValueAsString(requestMSDDto);
-		
-		when(deviceProviderRepository.findByIdAndIsDeletedFalseorIsDeletedIsNullAndIsActiveTrue(Mockito.any())).thenReturn(deviceProvider);
-		when(mosipDeviceServiceHistoryRepository.create(any(MOSIPDeviceServiceHistory.class))).thenThrow(DataAccessLayerException.class);
-		mockMvc.perform(put("/mosipdeviceservice").contentType(MediaType.APPLICATION_JSON).content(mdsJson))
-		.andExpect(status().isOk());
-	
-	}
-		
 	@Test
 	@WithUserDetails("zonal-admin")
 	public void createFoundationalProviderTest() throws Exception {
@@ -8076,114 +7994,6 @@ public class MasterdataIntegrationTest {
 	}
 	
 	// update registartion Center
-		
-
-		private void updateRegistrationCenterSetup1() {
-			LocalTime centerStartTime = LocalTime.of(1, 10, 10, 30);
-			LocalTime centerEndTime = LocalTime.of(1, 10, 10, 30);
-			LocalTime lunchStartTime = LocalTime.of(1, 10, 10, 30);
-			LocalTime lunchEndTime = LocalTime.of(1, 10, 10, 30);
-			LocalTime perKioskProcessTime = LocalTime.of(1, 10, 10, 30);
-
-			requestPutDto = new RequestWrapper<RegCenterPutReqDto>();
-			//List<RegCenterPutReqDto> updRequestList = new ArrayList<>();
-			requestPutDto.setId("mosip.idtype.create");
-			requestPutDto.setVersion("1.0");
-			// 1st obj
-			RegCenterPutReqDto registrationCenterPutReqAdmDto1 = new RegCenterPutReqDto();
-			registrationCenterPutReqAdmDto1.setName("TEST CENTER");
-			registrationCenterPutReqAdmDto1.setAddressLine1("Address Line 1");
-			registrationCenterPutReqAdmDto1.setAddressLine2("Address Line 2");
-			registrationCenterPutReqAdmDto1.setAddressLine3("Address Line 3");
-			registrationCenterPutReqAdmDto1.setCenterTypeCode("REG");
-			registrationCenterPutReqAdmDto1.setContactPerson("Test");
-			registrationCenterPutReqAdmDto1.setContactPhone("9999999999");
-			registrationCenterPutReqAdmDto1.setHolidayLocationCode("HLC01");
-			registrationCenterPutReqAdmDto1.setId("676");
-			registrationCenterPutReqAdmDto1.setLangCode("eng");
-			registrationCenterPutReqAdmDto1.setLatitude("12.9646818");
-			registrationCenterPutReqAdmDto1.setLocationCode("10190");
-			registrationCenterPutReqAdmDto1.setLongitude("77.70168");
-			registrationCenterPutReqAdmDto1.setPerKioskProcessTime(perKioskProcessTime);
-			registrationCenterPutReqAdmDto1.setCenterStartTime(centerStartTime);
-			registrationCenterPutReqAdmDto1.setCenterEndTime(centerEndTime);
-			registrationCenterPutReqAdmDto1.setLunchStartTime(lunchStartTime);
-			registrationCenterPutReqAdmDto1.setLunchEndTime(lunchEndTime);
-			registrationCenterPutReqAdmDto1.setTimeZone("UTC");
-			registrationCenterPutReqAdmDto1.setWorkingHours("9");
-			registrationCenterPutReqAdmDto1.setIsActive(false);
-			registrationCenterPutReqAdmDto1.setZoneCode("JRD");
-			//updRequestList.add(registrationCenterPutReqAdmDto1);
-
-			requestPutDto.setRequest(registrationCenterPutReqAdmDto1);
-
-			// entity1
-			registrationCenter11 = new RegistrationCenter();
-			registrationCenter11.setName("TEST CENTER");
-			registrationCenter11.setAddressLine1("Address Line 1");
-			registrationCenter11.setAddressLine2("Address Line 2");
-			registrationCenter11.setAddressLine3("Address Line 3");
-			registrationCenter11.setCenterTypeCode("REG");
-			registrationCenter11.setContactPerson("Test");
-			registrationCenter11.setContactPhone("9999999999");
-			registrationCenter11.setHolidayLocationCode("HLC01");
-			registrationCenter11.setId("676");
-			registrationCenter11.setIsActive(false);
-			registrationCenter11.setLangCode("eng");
-			registrationCenter11.setLatitude("12.9646818");
-			registrationCenter11.setLocationCode("10190");
-			registrationCenter11.setLongitude("77.70168");
-			registrationCenter11.setPerKioskProcessTime(perKioskProcessTime);
-			registrationCenter11.setCenterStartTime(centerStartTime);
-			registrationCenter11.setCenterEndTime(centerEndTime);
-			registrationCenter11.setLunchStartTime(lunchStartTime);
-			registrationCenter11.setLunchEndTime(lunchEndTime);
-			registrationCenter11.setNumberOfKiosks((short) 0);
-			registrationCenter11.setTimeZone("UTC");
-			registrationCenter11.setWorkingHours("9");
-
-		}
-		/*@Test
-		@WithUserDetails("zonal-admin")
-		public void updateRegCenterNewCreateAdminTest() throws Exception {
-			String content = objectMapper.writeValueAsString(requestPutDto);
-			Zone zone = new Zone();
-			zone.setCode("JRD");
-			List<Zone> zones = new ArrayList<>();
-			zones.add(zone);
-			when(registrationCenterTypeRepository.findByCodeAndLangCodeAndIsDeletedFalseOrIsDeletedIsNull(Mockito.any(), Mockito.any())).thenReturn(regCenterType);
-			when(locationRepository.findLocationHierarchyByCodeAndLanguageCode(Mockito.any(), Mockito.any())).thenReturn(locationHierarchies);
-			when(zoneUtils.getUserZones()).thenReturn(zones);
-			when(registrationCenterRepository.findByIdAndLangCodeAndIsDeletedTrue(Mockito.any(), Mockito.any()))
-					.thenReturn(null);
-			// when(registrationCenterRepository.update(Mockito.any())).thenReturn(registrationCenter1);
-			when(registrationCenterRepository.findByRegCenterIdAndIsDeletedFalseOrNull(Mockito.any()))
-					.thenReturn(registrationCenterEntityList);
-			when(registrationCenterRepository.create(Mockito.any())).thenReturn(registrationCenter11);
-			when(repositoryCenterHistoryRepository.create(Mockito.any())).thenReturn(registrationCenterHistory);
-			mockMvc.perform(put("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(content))
-					.andExpect(status().isOk());
-		}*/
-
-		@Test
-		@Ignore
-		@WithUserDetails("zonal-admin")
-		public void updateRegistrationCenterAdminDataExcpTest() throws Exception {
-			String content = objectMapper.writeValueAsString(updRegRequest);
-			Zone zone = new Zone();
-			zone.setCode("JRD");
-			List<Zone> zones = new ArrayList<>();
-			zones.add(zone);
-			when(zoneUtils.getUserZones()).thenReturn(zones);
-			when(registrationCenterRepository.findByIdAndLangCodeAndIsDeletedTrue(Mockito.any(), Mockito.any()))
-					.thenReturn(registrationCenter1);
-			when(registrationCenterRepository.update(Mockito.any()))
-					.thenThrow(new DataAccessLayerException("", "cannot execute statement", null));
-			mockMvc.perform(put("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(content))
-					.andExpect(status().is2xxSuccessful());
-		}
-	
-	// update registartion Center
 		RegistarionCenterReqDto<RegCenterPutReqDto> updRegRequest = null;
 		RegistrationCenter registrationCenter11 = null;
 		RegistrationCenterHistory registrationCenterHistory1 = null;
@@ -8276,4 +8086,23 @@ public class MasterdataIntegrationTest {
 					.andExpect(status().isOk());
 		}
 
+		@Test
+		@Ignore
+		@WithUserDetails("zonal-admin")
+		public void updateRegistrationCenterAdminDataExcpTest() throws Exception {
+			String content = objectMapper.writeValueAsString(updRegRequest);
+			Zone zone = new Zone();
+			zone.setCode("JRD");
+			List<Zone> zones = new ArrayList<>();
+			zones.add(zone);
+			when(zoneUtils.getUserZones()).thenReturn(zones);
+			when(registrationCenterRepository.findByIdAndLangCodeAndIsDeletedTrue(Mockito.any(), Mockito.any()))
+					.thenReturn(registrationCenter1);
+			when(registrationCenterRepository.update(Mockito.any()))
+					.thenThrow(new DataAccessLayerException("", "cannot execute statement", null));
+			mockMvc.perform(put("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(content))
+					.andExpect(status().is2xxSuccessful());
+		}
+	
+	
 }
