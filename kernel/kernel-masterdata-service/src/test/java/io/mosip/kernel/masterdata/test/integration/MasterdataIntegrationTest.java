@@ -8142,7 +8142,7 @@ public class MasterdataIntegrationTest {
 		regCenterPostReqDto.setAddressLine2("Address Line 2");
 		regCenterPostReqDto.setAddressLine3("Address Line 3");
 		regCenterPostReqDto.setCenterTypeCode("REG");
-		regCenterPostReqDto.setContactPerson("test");
+		regCenterPostReqDto.setContactPerson("Test");
 		regCenterPostReqDto.setContactPhone("9999999999");
 		regCenterPostReqDto.setHolidayLocationCode("HLC01");
 		regCenterPostReqDto.setLangCode("eng");
@@ -8162,8 +8162,7 @@ public class MasterdataIntegrationTest {
 	}
 	
 	@Test
-	@Ignore
-	@WithUserDetails("global-admin")
+	@WithUserDetails("zonal-admin")
 	public void createRegCenterTest() throws Exception {
 		RequestWrapper<RegCenterPostReqDto> requestMSDDto = null;
 		requestMSDDto = new RequestWrapper<>();
@@ -8172,7 +8171,6 @@ public class MasterdataIntegrationTest {
 		requestMSDDto.setRequest(regCenterPostReqDto);
 
 		String regcenterJson = objectMapper.writeValueAsString(requestMSDDto);
-		System.out.println(regcenterJson);
 		when(registrationCenterTypeRepository.findByCodeAndLangCodeAndIsDeletedFalseOrIsDeletedIsNull(Mockito.any(), Mockito.any())).thenReturn(regCenterType);
 		when(locationRepository.findLocationHierarchyByCodeAndLanguageCode(Mockito.any(), Mockito.any())).thenReturn(locationHierarchies);
 		when(registrationCenterRepository.findById(Mockito.any(), Mockito.any())).thenReturn(null);
@@ -8181,6 +8179,117 @@ public class MasterdataIntegrationTest {
 		mockMvc.perform(post("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(regcenterJson))
 				.andExpect(status().isOk());
 	}
+	
+	// update registartion Center
+		RegistarionCenterReqDto<RegCenterPutReqDto> updRegRequest = null;
+		RegistrationCenter registrationCenter11 = null;
+		RegistrationCenterHistory registrationCenterHistory1 = null;
+		RequestWrapper<RegCenterPutReqDto> requestPutDto= null;
+
+		private void updateRegistrationCenterSetup() {
+			LocalTime centerStartTime = LocalTime.of(1, 10, 10, 30);
+			LocalTime centerEndTime = LocalTime.of(1, 10, 10, 30);
+			LocalTime lunchStartTime = LocalTime.of(1, 10, 10, 30);
+			LocalTime lunchEndTime = LocalTime.of(1, 10, 10, 30);
+			LocalTime perKioskProcessTime = LocalTime.of(1, 10, 10, 30);
+
+			requestPutDto = new RequestWrapper<RegCenterPutReqDto>();
+			//List<RegCenterPutReqDto> updRequestList = new ArrayList<>();
+			requestPutDto.setId("mosip.idtype.create");
+			requestPutDto.setVersion("1.0");
+			// 1st obj
+			RegCenterPutReqDto registrationCenterPutReqAdmDto1 = new RegCenterPutReqDto();
+			registrationCenterPutReqAdmDto1.setName("TEST CENTER");
+			registrationCenterPutReqAdmDto1.setAddressLine1("Address Line 1");
+			registrationCenterPutReqAdmDto1.setAddressLine2("Address Line 2");
+			registrationCenterPutReqAdmDto1.setAddressLine3("Address Line 3");
+			registrationCenterPutReqAdmDto1.setCenterTypeCode("REG");
+			registrationCenterPutReqAdmDto1.setContactPerson("Test");
+			registrationCenterPutReqAdmDto1.setContactPhone("9999999999");
+			registrationCenterPutReqAdmDto1.setHolidayLocationCode("HLC01");
+			registrationCenterPutReqAdmDto1.setId("676");
+			registrationCenterPutReqAdmDto1.setLangCode("eng");
+			registrationCenterPutReqAdmDto1.setLatitude("12.9646818");
+			registrationCenterPutReqAdmDto1.setLocationCode("10190");
+			registrationCenterPutReqAdmDto1.setLongitude("77.70168");
+			registrationCenterPutReqAdmDto1.setPerKioskProcessTime(perKioskProcessTime);
+			registrationCenterPutReqAdmDto1.setCenterStartTime(centerStartTime);
+			registrationCenterPutReqAdmDto1.setCenterEndTime(centerEndTime);
+			registrationCenterPutReqAdmDto1.setLunchStartTime(lunchStartTime);
+			registrationCenterPutReqAdmDto1.setLunchEndTime(lunchEndTime);
+			registrationCenterPutReqAdmDto1.setTimeZone("UTC");
+			registrationCenterPutReqAdmDto1.setWorkingHours("9");
+			registrationCenterPutReqAdmDto1.setIsActive(false);
+			registrationCenterPutReqAdmDto1.setZoneCode("JRD");
+			//updRequestList.add(registrationCenterPutReqAdmDto1);
+
+			requestPutDto.setRequest(registrationCenterPutReqAdmDto1);
+
+			// entity1
+			registrationCenter11 = new RegistrationCenter();
+			registrationCenter11.setName("TEST CENTER");
+			registrationCenter11.setAddressLine1("Address Line 1");
+			registrationCenter11.setAddressLine2("Address Line 2");
+			registrationCenter11.setAddressLine3("Address Line 3");
+			registrationCenter11.setCenterTypeCode("REG");
+			registrationCenter11.setContactPerson("Test");
+			registrationCenter11.setContactPhone("9999999999");
+			registrationCenter11.setHolidayLocationCode("HLC01");
+			registrationCenter11.setId("676");
+			registrationCenter11.setIsActive(false);
+			registrationCenter11.setLangCode("eng");
+			registrationCenter11.setLatitude("12.9646818");
+			registrationCenter11.setLocationCode("10190");
+			registrationCenter11.setLongitude("77.70168");
+			registrationCenter11.setPerKioskProcessTime(perKioskProcessTime);
+			registrationCenter11.setCenterStartTime(centerStartTime);
+			registrationCenter11.setCenterEndTime(centerEndTime);
+			registrationCenter11.setLunchStartTime(lunchStartTime);
+			registrationCenter11.setLunchEndTime(lunchEndTime);
+			registrationCenter11.setNumberOfKiosks((short) 0);
+			registrationCenter11.setTimeZone("UTC");
+			registrationCenter11.setWorkingHours("9");
+
+		}
+		@Test
+		@WithUserDetails("zonal-admin")
+		public void updateRegCenterNewCreateAdminTest() throws Exception {
+			String content = objectMapper.writeValueAsString(requestPutDto);
+			Zone zone = new Zone();
+			zone.setCode("JRD");
+			List<Zone> zones = new ArrayList<>();
+			zones.add(zone);
+			when(registrationCenterTypeRepository.findByCodeAndLangCodeAndIsDeletedFalseOrIsDeletedIsNull(Mockito.any(), Mockito.any())).thenReturn(regCenterType);
+			when(locationRepository.findLocationHierarchyByCodeAndLanguageCode(Mockito.any(), Mockito.any())).thenReturn(locationHierarchies);
+			when(zoneUtils.getUserZones()).thenReturn(zones);
+			when(registrationCenterRepository.findByIdAndLangCodeAndIsDeletedTrue(Mockito.any(), Mockito.any()))
+					.thenReturn(null);
+			// when(registrationCenterRepository.update(Mockito.any())).thenReturn(registrationCenter1);
+			when(registrationCenterRepository.findByRegCenterIdAndIsDeletedFalseOrNull(Mockito.any()))
+					.thenReturn(registrationCenterEntityList);
+			when(registrationCenterRepository.create(Mockito.any())).thenReturn(registrationCenter11);
+			when(repositoryCenterHistoryRepository.create(Mockito.any())).thenReturn(registrationCenterHistory);
+			mockMvc.perform(put("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(content))
+					.andExpect(status().isOk());
+		}
+
+		@Test
+		@Ignore
+		@WithUserDetails("zonal-admin")
+		public void updateRegistrationCenterAdminDataExcpTest() throws Exception {
+			String content = objectMapper.writeValueAsString(updRegRequest);
+			Zone zone = new Zone();
+			zone.setCode("JRD");
+			List<Zone> zones = new ArrayList<>();
+			zones.add(zone);
+			when(zoneUtils.getUserZones()).thenReturn(zones);
+			when(registrationCenterRepository.findByIdAndLangCodeAndIsDeletedTrue(Mockito.any(), Mockito.any()))
+					.thenReturn(registrationCenter1);
+			when(registrationCenterRepository.update(Mockito.any()))
+					.thenThrow(new DataAccessLayerException("", "cannot execute statement", null));
+			mockMvc.perform(put("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(content))
+					.andExpect(status().is2xxSuccessful());
+		}
 	
 	
 }
