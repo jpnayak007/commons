@@ -8067,8 +8067,9 @@ public class MasterdataIntegrationTest {
 
 		mdsJson = mapper.writeValueAsString(requestMSDDto);
 		when(foundationalTrustProviderRepository.findById(Mockito.any(), Mockito.any())).thenReturn(null);
+		when(foundationalTrustProviderRepository.create(Mockito.any())).thenThrow(DataAccessLayerException.class);
 		mockMvc.perform(post("/foundationaltrustprovider").contentType(MediaType.APPLICATION_JSON).content(mdsJson))
-				.andExpect(status().isOk());
+				.andExpect(status().isInternalServerError());
 	}
 	
 	@Test
