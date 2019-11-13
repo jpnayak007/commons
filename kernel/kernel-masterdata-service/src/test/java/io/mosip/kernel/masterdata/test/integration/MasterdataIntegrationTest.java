@@ -7935,7 +7935,7 @@ public class MasterdataIntegrationTest {
 		requestMSDDto.setVersion("1.0.0");
 		mosipDeviceServiceDto.setActive(true);
 		requestMSDDto.setRequest(mosipDeviceServiceDto);
-		mdsJson = mapper.writeValueAsString(requestMSDDto);
+		mdsJson = objectMapper.writeValueAsString(requestMSDDto);
 		when(mosipDeviceServiceRepository.findById(Mockito.any(), Mockito.any())).thenReturn(null);
 		when(registrationDeviceTypeRepository
 				.findByCodeAndIsDeletedFalseorIsDeletedIsNullAndIsActiveTrue(Mockito.any())).thenReturn(regDeviceType);
