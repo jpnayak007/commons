@@ -112,6 +112,8 @@ import io.mosip.kernel.masterdata.entity.DeviceSpecification;
 import io.mosip.kernel.masterdata.entity.DeviceType;
 import io.mosip.kernel.masterdata.entity.DocumentCategory;
 import io.mosip.kernel.masterdata.entity.DocumentType;
+import io.mosip.kernel.masterdata.entity.FoundationalTrustProvider;
+import io.mosip.kernel.masterdata.entity.FoundationalTrustProviderHistory;
 import io.mosip.kernel.masterdata.entity.Gender;
 import io.mosip.kernel.masterdata.entity.Holiday;
 import io.mosip.kernel.masterdata.entity.IdType;
@@ -175,6 +177,7 @@ import io.mosip.kernel.masterdata.repository.DeviceTypeRepository;
 import io.mosip.kernel.masterdata.repository.DocumentCategoryRepository;
 import io.mosip.kernel.masterdata.repository.DocumentTypeRepository;
 import io.mosip.kernel.masterdata.repository.FoundationalTrustProviderRepository;
+import io.mosip.kernel.masterdata.repository.FoundationalTrustProviderRepositoryHistory;
 import io.mosip.kernel.masterdata.repository.GenderTypeRepository;
 import io.mosip.kernel.masterdata.repository.HolidayRepository;
 import io.mosip.kernel.masterdata.repository.IdTypeRepository;
@@ -487,7 +490,14 @@ public class MasterdataIntegrationTest {
 	@MockBean
 	private FoundationalTrustProviderRepository foundationalTrustProviderRepository;
 	
+	@MockBean
+	private FoundationalTrustProviderRepositoryHistory foundationalTrustProviderRepositoryHistory;
+	
 	private FoundationalTrustProviderDto foundationalTrustProviderDto;
+	
+	private FoundationalTrustProvider foundationalTrustUpdateProviderDto;
+	
+	private FoundationalTrustProviderHistory foundationalTrustProviderHistory;
 
 	@SuppressWarnings("static-access")
 	@Before
@@ -606,16 +616,7 @@ public class MasterdataIntegrationTest {
 		
 	}
 
-	private void foundationProvider() {
-		foundationalTrustProviderDto = new FoundationalTrustProviderDto();
-		foundationalTrustProviderDto.setId("24233443444");
-		foundationalTrustProviderDto.setActive(true);
-		foundationalTrustProviderDto.setAddress("test address");
-		foundationalTrustProviderDto.setCertAlias("141d3962380139742ac9a1e4b23e0221");
-		foundationalTrustProviderDto.setContactNo("9876378945");
-		foundationalTrustProviderDto.setEmail("test@mosip.io");
-		foundationalTrustProviderDto.setName("Test Name");
-	}
+	
 
 	private void userDetailsHistorySetup() {
 		user = new UserDetailsHistory();
@@ -7772,6 +7773,7 @@ public class MasterdataIntegrationTest {
 	// ---------------------------create MDS--------------------------------------
 
 	private MOSIPDeviceServiceDto mosipDeviceServiceDto = null;
+	private MOSIPDeviceServiceDto MDSDtoWithAllParams = null;
 	private MOSIPDeviceServiceHistory msdHistory = null;
 	private MOSIPDeviceService mosipDeviceService = null;
 	private RegistrationDeviceType regDeviceType = null;
@@ -7793,6 +7795,9 @@ public class MasterdataIntegrationTest {
 		mosipDeviceServiceDto.setDeviceProviderId("10003");
 		mosipDeviceServiceDto.setSwBinaryHash(binary);
 
+		MDSDtoWithAllParams = mosipDeviceServiceDto;
+		MDSDtoWithAllParams.setSwCreateDateTime(specificDate);
+		MDSDtoWithAllParams.setSwExpiryDateTime(specificDate);
 
 		mosipDeviceService = new MOSIPDeviceService();
 		mosipDeviceService.setId("10002");
@@ -7928,8 +7933,9 @@ public class MasterdataIntegrationTest {
 		requestMSDDto = new RequestWrapper<>();
 		requestMSDDto.setId("mosip.match.regcentr.machineid");
 		requestMSDDto.setVersion("1.0.0");
+		mosipDeviceServiceDto.setActive(true);
 		requestMSDDto.setRequest(mosipDeviceServiceDto);
-		mdsJson = mapper.writeValueAsString(requestMSDDto);
+		mdsJson = objectMapper.writeValueAsString(requestMSDDto);
 		when(mosipDeviceServiceRepository.findById(Mockito.any(), Mockito.any())).thenReturn(null);
 		when(registrationDeviceTypeRepository
 				.findByCodeAndIsDeletedFalseorIsDeletedIsNullAndIsActiveTrue(Mockito.any())).thenReturn(regDeviceType);
@@ -7943,6 +7949,98 @@ public class MasterdataIntegrationTest {
 				.andExpect(status().isInternalServerError());
 	}
 	
+	private void foundationProvider() {
+		foundationalTrustProviderDto = new FoundationalTrustProviderDto();
+		foundationalTrustProviderDto.setId("24233443444");
+		foundationalTrustProviderDto.setActive(true);
+		foundationalTrustProviderDto.setAddress("test address");
+		foundationalTrustProviderDto.setCertAlias("141d3962380139742ac9a1e4b23e0221");
+		foundationalTrustProviderDto.setContactNo("9876378945");
+		foundationalTrustProviderDto.setEmail("test@mosip.io");
+		foundationalTrustProviderDto.setName("Test Name");
+		
+		foundationalTrustUpdateProviderDto = new FoundationalTrustProvider();
+		foundationalTrustUpdateProviderDto.setId("24233443444");
+		
+		foundationalTrustProviderHistory = new FoundationalTrustProviderHistory();
+		foundationalTrustProviderHistory.setId("24233443444");
+	}
+	
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void updateMOSIPDeviceServiceTest() throws Exception {
+		DeviceProvider deviceProvider = new DeviceProvider();
+		
+		RequestWrapper<MOSIPDeviceServiceDto> requestMSDDto = null;
+		requestMSDDto = new RequestWrapper<>();
+		requestMSDDto.setId("mosip.match.regcentr.machineid");
+		requestMSDDto.setVersion("1.0.0");
+		requestMSDDto.setRequest(MDSDtoWithAllParams);
+		mdsJson = mapper.writeValueAsString(requestMSDDto);
+		
+		when(deviceProviderRepository.findByIdAndIsDeletedFalseorIsDeletedIsNullAndIsActiveTrue(Mockito.any())).thenReturn(deviceProvider);
+		when(mosipDeviceServiceHistoryRepository.create(any(MOSIPDeviceServiceHistory.class))).thenReturn(null);
+		mockMvc.perform(put("/mosipdeviceservice").contentType(MediaType.APPLICATION_JSON).content(mdsJson))
+		.andExpect(status().isOk());
+	
+	}
+	
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void updateMDSMissingParameterExceptionTest() throws Exception {
+		DeviceProvider deviceProvider = new DeviceProvider();
+		
+		RequestWrapper<MOSIPDeviceServiceDto> requestMSDDto = null;
+		requestMSDDto = new RequestWrapper<>();
+		requestMSDDto.setId("mosip.match.regcentr.machineid");
+		requestMSDDto.setVersion("1.0.0");
+		MDSDtoWithAllParams.setSwVersion(null);
+		requestMSDDto.setRequest(MDSDtoWithAllParams);
+		mdsJson = mapper.writeValueAsString(requestMSDDto);
+		
+		when(deviceProviderRepository.findByIdAndIsDeletedFalseorIsDeletedIsNullAndIsActiveTrue(Mockito.any())).thenReturn(deviceProvider);
+		when(mosipDeviceServiceHistoryRepository.create(any(MOSIPDeviceServiceHistory.class))).thenReturn(null);
+		mockMvc.perform(put("/mosipdeviceservice").contentType(MediaType.APPLICATION_JSON).content(mdsJson))
+		.andExpect(status().isOk());
+	}
+	
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void deviceProviderNotFounfExceptionTest() throws Exception {
+		DeviceProvider deviceProvider = new DeviceProvider();
+		
+		RequestWrapper<MOSIPDeviceServiceDto> requestMSDDto = null;
+		requestMSDDto = new RequestWrapper<>();
+		requestMSDDto.setId("mosip.match.regcentr.machineid");
+		requestMSDDto.setVersion("1.0.0");
+		requestMSDDto.setRequest(MDSDtoWithAllParams);
+		mdsJson = mapper.writeValueAsString(requestMSDDto);
+		
+		when(deviceProviderRepository.findByIdAndIsDeletedFalseorIsDeletedIsNullAndIsActiveTrue(Mockito.any())).thenReturn(null);
+		when(mosipDeviceServiceHistoryRepository.create(any(MOSIPDeviceServiceHistory.class))).thenReturn(null);
+		mockMvc.perform(put("/mosipdeviceservice").contentType(MediaType.APPLICATION_JSON).content(mdsJson))
+		.andExpect(status().isOk());
+	}
+	
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void MSDdbUpdationErrorTest() throws Exception {
+		DeviceProvider deviceProvider = new DeviceProvider();
+		
+		RequestWrapper<MOSIPDeviceServiceDto> requestMSDDto = null;
+		requestMSDDto = new RequestWrapper<>();
+		requestMSDDto.setId("mosip.match.regcentr.machineid");
+		requestMSDDto.setVersion("1.0.0");
+		requestMSDDto.setRequest(MDSDtoWithAllParams);
+		mdsJson = mapper.writeValueAsString(requestMSDDto);
+		
+		when(deviceProviderRepository.findByIdAndIsDeletedFalseorIsDeletedIsNullAndIsActiveTrue(Mockito.any())).thenReturn(deviceProvider);
+		when(mosipDeviceServiceHistoryRepository.create(any(MOSIPDeviceServiceHistory.class))).thenThrow(DataAccessLayerException.class);
+		mockMvc.perform(put("/mosipdeviceservice").contentType(MediaType.APPLICATION_JSON).content(mdsJson))
+		.andExpect(status().isOk());
+	
+	}
+		
 	@Test
 	@WithUserDetails("zonal-admin")
 	public void createFoundationalProviderTest() throws Exception {
@@ -7961,6 +8059,40 @@ public class MasterdataIntegrationTest {
 	@Test
 	@WithUserDetails("zonal-admin")
 	public void createFoundationalProviderExcepTest() throws Exception {
+		RequestWrapper<FoundationalTrustProviderDto> requestMSDDto = null;
+		requestMSDDto = new RequestWrapper<>();
+		requestMSDDto.setId("mosip.foundationalprovider.test");
+		requestMSDDto.setVersion("1.0.0");
+		requestMSDDto.setRequest(foundationalTrustProviderDto);
+
+		mdsJson = mapper.writeValueAsString(requestMSDDto);
+		when(foundationalTrustProviderRepository.findById(Mockito.any(), Mockito.any())).thenReturn(null);
+		when(foundationalTrustProviderRepository.create(Mockito.any())).thenThrow(DataAccessLayerException.class);
+		mockMvc.perform(post("/foundationaltrustprovider").contentType(MediaType.APPLICATION_JSON).content(mdsJson))
+				.andExpect(status().isInternalServerError());
+	}
+	
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void updateFoundationalProviderTest() throws Exception {
+		RequestWrapper<FoundationalTrustProviderDto> requestMSDDto = null;
+		requestMSDDto = new RequestWrapper<>();
+		requestMSDDto.setId("mosip.foundationalprovider.test");
+		requestMSDDto.setVersion("1.0.0");
+		requestMSDDto.setRequest(foundationalTrustProviderDto);
+
+		mdsJson = mapper.writeValueAsString(requestMSDDto);
+		when(foundationalTrustProviderRepository.findById(Mockito.any(), Mockito.any())).thenReturn(foundationalTrustUpdateProviderDto);
+		when(foundationalTrustProviderRepository.update(Mockito.any())).thenReturn(foundationalTrustUpdateProviderDto);
+		when(foundationalTrustProviderRepositoryHistory.create(Mockito.any())).thenReturn(foundationalTrustProviderHistory);
+		when(foundationalTrustProviderRepository.findById(Mockito.any(), Mockito.any())).thenReturn(null);
+		mockMvc.perform(post("/foundationaltrustprovider").contentType(MediaType.APPLICATION_JSON).content(mdsJson))
+				.andExpect(status().isOk());
+	}
+	
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void updateFoundationalProviderExcepTest() throws Exception {
 		RequestWrapper<FoundationalTrustProviderDto> requestMSDDto = null;
 		requestMSDDto = new RequestWrapper<>();
 		requestMSDDto.setId("mosip.foundationalprovider.test");
