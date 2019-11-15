@@ -8294,11 +8294,11 @@ public class MasterdataIntegrationTest {
 		
 		
 		DigitalIdDto digitalIdDto = new DigitalIdDto();
-		digitalIdDto.setProviderId("1111");
-		digitalIdDto.setProviderName("INTEL");
+		digitalIdDto.setDpId("1111");
+		digitalIdDto.setDp("INTEL");
 		digitalIdDto.setMake("make-updated");
 		digitalIdDto.setModel("model-updated");
-		digitalIdDto.setSerialNumber("BS563Q2230890");
+		digitalIdDto.setSerialNo("BS563Q2230890");
 		digitalIdDto.setType("face");
 		registeredDeviceDto.setDigitalIdDto(digitalIdDto);
 		
