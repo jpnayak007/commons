@@ -170,6 +170,7 @@ import io.mosip.kernel.masterdata.entity.id.RegistrationCenterMachineUserHistory
 import io.mosip.kernel.masterdata.entity.id.RegistrationCenterMachineUserID;
 import io.mosip.kernel.masterdata.entity.id.RegistrationCenterUserID;
 import io.mosip.kernel.masterdata.exception.DataNotFoundException;
+import io.mosip.kernel.masterdata.exception.MasterDataServiceException;
 import io.mosip.kernel.masterdata.exception.RequestException;
 import io.mosip.kernel.masterdata.repository.ApplicantValidDocumentRepository;
 import io.mosip.kernel.masterdata.repository.BiometricAttributeRepository;
@@ -8004,7 +8005,6 @@ public class MasterdataIntegrationTest {
 		LocalTime centerEndTime = LocalTime.of(1, 10, 10, 30);
 		LocalTime lunchStartTime = LocalTime.of(1, 10, 10, 30);
 		LocalTime lunchEndTime = LocalTime.of(1, 10, 10, 30);
-		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
 		LocalTime perKioskProcessTime = LocalTime.parse("09:00:00");
 		//LocalTime perKioskProcessTime = LocalTime.of(1, 10, 10, 30);
 		regCenterPostReqDto = new RegCenterPostReqDto();
@@ -8047,6 +8047,78 @@ public class MasterdataIntegrationTest {
 		when(registrationCenterRepository.findById(Mockito.any(), Mockito.any())).thenReturn(null);
 		when(registrationCenterRepository.create(Mockito.any())).thenReturn(registrationCenter);
 		when(repositoryCenterHistoryRepository.create(Mockito.any())).thenReturn(registrationCenterHistory);
+		mockMvc.perform(post("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(regcenterJson))
+				.andExpect(status().isOk());
+	}
+	
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void createRegCenterExpTest() throws Exception {
+		RequestWrapper<RegCenterPostReqDto> requestMSDDto = null;
+		requestMSDDto = new RequestWrapper<>();
+		requestMSDDto.setId("mosip.match.regcentr.machineid");
+		requestMSDDto.setVersion("1.0.0");
+		requestMSDDto.setRequest(regCenterPostReqDto);
+
+		String regcenterJson = objectMapper.writeValueAsString(requestMSDDto);
+		when(registrationCenterTypeRepository.findByCodeAndLangCodeAndIsDeletedFalseOrIsDeletedIsNull(Mockito.any(), Mockito.any())).thenReturn(regCenterType);
+		when(locationRepository.findLocationHierarchyByCodeAndLanguageCode(Mockito.any(), Mockito.any())).thenReturn(locationHierarchies);
+		when(registrationCenterRepository.findById(Mockito.any(), Mockito.any())).thenReturn(null);
+		when(registrationCenterRepository.create(Mockito.any())).thenReturn(registrationCenter);
+		when(repositoryCenterHistoryRepository.create(Mockito.any())).thenReturn(registrationCenterHistory);
+		when(registrationCenterRepository.create(Mockito.any())).thenThrow(DataAccessLayerException.class);
+		mockMvc.perform(post("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(regcenterJson))
+				.andExpect(status().isOk());
+	}
+	
+	@WithUserDetails("zonal-admin")
+	@Test
+	public void createRegCenterTypeExpTest() throws Exception {
+		RequestWrapper<RegCenterPostReqDto> requestMSDDto = null;
+		requestMSDDto = new RequestWrapper<>();
+		requestMSDDto.setId("mosip.match.regcentr.machineid");
+		requestMSDDto.setVersion("1.0.0");
+		requestMSDDto.setRequest(regCenterPostReqDto);
+
+		String regcenterJson = objectMapper.writeValueAsString(requestMSDDto);
+		when(registrationCenterTypeRepository.findByCodeAndLangCodeAndIsDeletedFalseOrIsDeletedIsNull(Mockito.any(), Mockito.any())).thenReturn(null);
+		mockMvc.perform(post("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(regcenterJson))
+				.andExpect(status().is5xxServerError());
+	}
+	
+	
+	@WithUserDetails("zonal-admin")
+	@Test
+	public void createRegCenterLocationExpTest() throws Exception {
+		RequestWrapper<RegCenterPostReqDto> requestMSDDto = null;
+		requestMSDDto = new RequestWrapper<>();
+		requestMSDDto.setId("mosip.match.regcentr.machineid");
+		requestMSDDto.setVersion("1.0.0");
+		requestMSDDto.setRequest(regCenterPostReqDto);
+
+		String regcenterJson = objectMapper.writeValueAsString(requestMSDDto);
+		when(locationRepository.findLocationHierarchyByCodeAndLanguageCode(Mockito.any(), Mockito.any())).thenReturn(null);
+		mockMvc.perform(post("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(regcenterJson))
+				.andExpect(status().is5xxServerError());
+	}
+	
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void createRegCenterValidationExpTest() throws Exception {
+		RequestWrapper<RegCenterPostReqDto> requestMSDDto = null;
+		//regCenterPostReqDto.setCenterEndTime(centerEndTime);
+		requestMSDDto = new RequestWrapper<>();
+		requestMSDDto.setId("mosip.match.regcentr.machineid");
+		requestMSDDto.setVersion("1.0.0");
+		requestMSDDto.setRequest(regCenterPostReqDto);
+
+		String regcenterJson = objectMapper.writeValueAsString(requestMSDDto);
+		when(registrationCenterTypeRepository.findByCodeAndLangCodeAndIsDeletedFalseOrIsDeletedIsNull(Mockito.any(), Mockito.any())).thenReturn(regCenterType);
+		when(locationRepository.findLocationHierarchyByCodeAndLanguageCode(Mockito.any(), Mockito.any())).thenReturn(locationHierarchies);
+		when(registrationCenterRepository.findById(Mockito.any(), Mockito.any())).thenReturn(null);
+		when(registrationCenterRepository.create(Mockito.any())).thenReturn(registrationCenter);
+		when(repositoryCenterHistoryRepository.create(Mockito.any())).thenReturn(registrationCenterHistory);
+		when(registrationCenterRepository.create(Mockito.any())).thenThrow(DataAccessLayerException.class);
 		mockMvc.perform(post("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(regcenterJson))
 				.andExpect(status().isOk());
 	}
