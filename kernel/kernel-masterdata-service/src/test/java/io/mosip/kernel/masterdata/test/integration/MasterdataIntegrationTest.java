@@ -70,6 +70,7 @@ import io.mosip.kernel.masterdata.dto.BiometricAttributeDto;
 import io.mosip.kernel.masterdata.dto.BlacklistedWordsDto;
 import io.mosip.kernel.masterdata.dto.DeviceDto;
 import io.mosip.kernel.masterdata.dto.DeviceProviderDto;
+import io.mosip.kernel.masterdata.dto.DevicePutReqDto;
 import io.mosip.kernel.masterdata.dto.DeviceSpecificationDto;
 import io.mosip.kernel.masterdata.dto.DeviceTypeDto;
 import io.mosip.kernel.masterdata.dto.DigitalIdDto;
@@ -1029,8 +1030,21 @@ public class MasterdataIntegrationTest {
 	List<Object[]> objectList;
 	DeviceHistory deviceHistory;
 	Page<Device> pageDeviceEntity;
+	DevicePutReqDto devicePutDto = null;
+	List<Zone> zonesDevice;
 
 	private void deviceSetup() {
+		
+		devicePutDto = new DevicePutReqDto();		
+		devicePutDto.setDeviceSpecId("123");
+		devicePutDto.setId("1");
+		devicePutDto.setIpAddress("asd");
+		devicePutDto.setIsActive(true);
+		devicePutDto.setLangCode("eng");
+		devicePutDto.setMacAddress("asd");
+		devicePutDto.setName("asd");
+		devicePutDto.setSerialNum("asd");
+		devicePutDto.setZoneCode("MOR");
 
 		LocalDateTime specificDate = LocalDateTime.of(2018, Month.JANUARY, 1, 10, 10, 30);
 		Timestamp validDateTime = Timestamp.valueOf(specificDate);
@@ -1054,6 +1068,7 @@ public class MasterdataIntegrationTest {
 		device.setIpAddress("127.0.0.10");
 		device.setSerialNum("234");
 		device.setDeviceSpecId("234");
+		device.setZoneCode("MOR");
 		device.setValidityDateTime(specificDate);
 		deviceList.add(device);
 
@@ -1073,6 +1088,10 @@ public class MasterdataIntegrationTest {
 		objectList.add(objects);
 
 		deviceHistory = new DeviceHistory();
+		
+		zonesDevice = new ArrayList<>();
+		Zone zone = new Zone("MOR", "eng", "Berkane", (short) 0, "Province", "MOR", " ");
+		zonesDevice.add(zone);
 
 	}
 
@@ -8412,5 +8431,86 @@ public class MasterdataIntegrationTest {
 		mockMvc.perform(post("/registereddevices").contentType(MediaType.APPLICATION_JSON).content(regcenterJson))
 		.andExpect(status().isInternalServerError());
 	}
+	
+	//-------------------------update Device-------------------------
+	
+	
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void updateDeviceSuccessTest1() throws Exception {
+		RequestWrapper<DevicePutReqDto> requestDto = new RequestWrapper<>();
+		requestDto.setId("mosip.device.update");
+		requestDto.setVersion("1.0.0");
+		requestDto.setRequest(devicePutDto);
+		String content = mapper.writeValueAsString(requestDto);
 
+		Mockito.when(deviceRepository.findByIdAndLangCodeAndIsDeletedFalseOrIsDeletedIsNullNoIsActive(Mockito.anyString(),
+				Mockito.anyString())).thenReturn(device);
+		when(zoneUtils.getUserZones()).thenReturn(zonesDevice);
+		when(masterdataCreationUtil.updateMasterData(Device.class, devicePutDto)).thenReturn(devicePutDto);
+		Mockito.when(deviceRepository.update(Mockito.any())).thenReturn(device);
+		when(deviceHistoryRepository.create(Mockito.any())).thenReturn(deviceHistory);
+		mockMvc.perform(put("/devices").contentType(MediaType.APPLICATION_JSON).content(content))
+		.andExpect(status().isOk());
+	}
+	
+
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void updateDeviceValidateZoneTest() throws Exception {
+		RequestWrapper<DevicePutReqDto> requestDto = new RequestWrapper<>();
+		requestDto.setId("mosip.device.update");
+		requestDto.setVersion("1.0.0");
+		requestDto.setRequest(devicePutDto);
+		String content = mapper.writeValueAsString(requestDto);
+		List<Zone> zonesDev = new ArrayList<>();
+
+		
+		when(zoneUtils.getUserZones()).thenReturn(zonesDev);
+		Mockito.when(deviceRepository.findByIdAndLangCodeAndIsDeletedFalseOrIsDeletedIsNullNoIsActive(Mockito.anyString(),
+				Mockito.anyString())).thenReturn(device);
+		mockMvc.perform(put("/devices").contentType(MediaType.APPLICATION_JSON).content(content))
+		.andExpect(status().isOk());
+	}
+	
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void updateDeviceDataAccessExcp() throws Exception {
+		RequestWrapper<DevicePutReqDto> requestDto = new RequestWrapper<>();
+		requestDto.setId("mosip.device.update");
+		requestDto.setVersion("1.0.0");
+		requestDto.setRequest(devicePutDto);
+		String content = mapper.writeValueAsString(requestDto);
+
+		Mockito.when(deviceRepository.findByIdAndLangCodeAndIsDeletedFalseOrIsDeletedIsNullNoIsActive(Mockito.anyString(),
+				Mockito.anyString())).thenReturn(device);
+		when(zoneUtils.getUserZones()).thenReturn(zonesDevice);
+		when(masterdataCreationUtil.updateMasterData(Device.class, devicePutDto)).thenReturn(devicePutDto);
+		Mockito.when(deviceRepository.update(Mockito.any())).thenThrow(new DataAccessLayerException("", "cannot insert", null));
+		mockMvc.perform(put("/devices").contentType(MediaType.APPLICATION_JSON).content(content))
+		.andExpect(status().isInternalServerError());
+	}
+	
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void updateDeviceSecodarySuccessTest() throws Exception {
+		RequestWrapper<DevicePutReqDto> requestDto = new RequestWrapper<>();
+		requestDto.setId("mosip.device.update");
+		requestDto.setVersion("1.0.0");
+		devicePutDto.setLangCode("ara");
+		requestDto.setRequest(devicePutDto);
+		String content = mapper.writeValueAsString(requestDto);
+
+		Mockito.when(deviceRepository.findByIdAndLangCodeAndIsDeletedFalseOrIsDeletedIsNullNoIsActive(Mockito.anyString(),
+				Mockito.anyString())).thenReturn(null);
+		when(zoneUtils.getUserZones()).thenReturn(zonesDevice);
+		when(masterdataCreationUtil.updateMasterData(Device.class, devicePutDto)).thenReturn(devicePutDto);
+		Mockito.when(deviceRepository.create(Mockito.any())).thenReturn(device);
+		when(deviceHistoryRepository.create(Mockito.any())).thenReturn(deviceHistory);
+		mockMvc.perform(put("/devices").contentType(MediaType.APPLICATION_JSON).content(content))
+		.andExpect(status().isOk());
+	}
+	
+	
+	
 }
