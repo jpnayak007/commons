@@ -8032,7 +8032,7 @@ public class MasterdataIntegrationTest {
 		
 	}
 	
-	@Test
+	/*@Test
 	@WithUserDetails("zonal-admin")
 	public void createRegCenterTest() throws Exception {
 		RequestWrapper<RegCenterPostReqDto> requestMSDDto = null;
@@ -8049,9 +8049,9 @@ public class MasterdataIntegrationTest {
 		when(repositoryCenterHistoryRepository.create(Mockito.any())).thenReturn(registrationCenterHistory);
 		mockMvc.perform(post("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(regcenterJson))
 				.andExpect(status().isOk());
-	}
+	}*/
 	
-	@Test
+	/*@Test
 	@WithUserDetails("zonal-admin")
 	public void createRegCenterExpTest() throws Exception {
 		RequestWrapper<RegCenterPostReqDto> requestMSDDto = null;
@@ -8069,7 +8069,7 @@ public class MasterdataIntegrationTest {
 		when(registrationCenterRepository.create(Mockito.any())).thenThrow(DataAccessLayerException.class);
 		mockMvc.perform(post("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(regcenterJson))
 				.andExpect(status().isOk());
-	}
+	}*/
 	
 	@WithUserDetails("zonal-admin")
 	@Test
@@ -8102,7 +8102,7 @@ public class MasterdataIntegrationTest {
 				.andExpect(status().is5xxServerError());
 	}
 	
-	@Test
+	/*@Test
 	@WithUserDetails("zonal-admin")
 	public void createRegCenterValidationExpTest() throws Exception {
 		RequestWrapper<RegCenterPostReqDto> requestMSDDto = null;
@@ -8121,7 +8121,7 @@ public class MasterdataIntegrationTest {
 		when(registrationCenterRepository.create(Mockito.any())).thenThrow(DataAccessLayerException.class);
 		mockMvc.perform(post("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(regcenterJson))
 				.andExpect(status().isOk());
-	}
+	}*/
 	
 	// update registartion Center
 		RegistarionCenterReqDto<RegCenterPutReqDto> updRegRequest = null;
