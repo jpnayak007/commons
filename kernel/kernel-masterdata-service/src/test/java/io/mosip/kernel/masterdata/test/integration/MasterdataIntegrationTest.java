@@ -73,7 +73,6 @@ import io.mosip.kernel.masterdata.dto.DeviceProviderDto;
 import io.mosip.kernel.masterdata.dto.DevicePutReqDto;
 import io.mosip.kernel.masterdata.dto.DeviceSpecificationDto;
 import io.mosip.kernel.masterdata.dto.DeviceTypeDto;
-import io.mosip.kernel.masterdata.dto.DigitalIdDeviceRegisterDto;
 import io.mosip.kernel.masterdata.dto.DigitalIdDto;
 import io.mosip.kernel.masterdata.dto.DocumentCategoryDto;
 import io.mosip.kernel.masterdata.dto.DocumentTypeDto;
@@ -8187,7 +8186,7 @@ public class MasterdataIntegrationTest {
 		registeredDeviceDto.setDeviceProviderSignature("sign");
 		
 		
-		DigitalIdDeviceRegisterDto digitalIdDto = new DigitalIdDeviceRegisterDto();
+		DigitalIdDto digitalIdDto = new DigitalIdDto();
 		digitalIdDto.setDpId("1111");
 		digitalIdDto.setDp("INTEL");
 		digitalIdDto.setMake("make-updated");
