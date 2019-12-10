@@ -3838,7 +3838,6 @@ public class MasterdataIntegrationTest {
 
 	// ---------------------------------------------
 
-	@Ignore
 	@Test
 	@WithUserDetails("zonal-admin")
 	public void createDeviceTest() throws Exception {
@@ -3855,7 +3854,6 @@ public class MasterdataIntegrationTest {
 				.andExpect(status().isOk());
 	}
 
-	@Ignore
 	@Test
 	@WithUserDetails("zonal-admin")
 	public void createDeviceExceptionTest() throws Exception {
