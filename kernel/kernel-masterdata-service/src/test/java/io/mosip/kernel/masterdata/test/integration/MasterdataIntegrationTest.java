@@ -7,12 +7,16 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+ 
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -225,6 +229,7 @@ import io.mosip.kernel.masterdata.repository.UserDetailsHistoryRepository;
 import io.mosip.kernel.masterdata.repository.ValidDocumentRepository;
 import io.mosip.kernel.masterdata.repository.ZoneUserRepository;
 import io.mosip.kernel.masterdata.test.TestBootApplication;
+import io.mosip.kernel.masterdata.utils.AuditUtil;
 import io.mosip.kernel.masterdata.utils.MapperUtils;
 import io.mosip.kernel.masterdata.utils.MasterdataCreationUtil;
 import io.mosip.kernel.masterdata.utils.RegistrationCenterValidator;
@@ -261,6 +266,10 @@ public class MasterdataIntegrationTest {
 
 	@MockBean
 	ZoneUtils zoneUtils;
+	
+	@MockBean 
+	AuditUtil aditUtil;
+
 
 	@MockBean
 	ZoneUserRepository zoneUserRepository;
@@ -598,6 +607,8 @@ public class MasterdataIntegrationTest {
 		newRegCenterSetup();
 		
 		setUpRegisteredDevice();
+		
+		doNothing().when(aditUtil).auditRequest(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()); 
 	}
 	
 
@@ -3750,8 +3761,7 @@ public class MasterdataIntegrationTest {
 		requestDto.setVersion("1.0.0");
 		requestDto.setRequest(machineTypeDto);
 
-		String machineTypeJson = mapper.writeValueAsString(requestDto);
-
+		String machineTypeJson = mapper.writeValueAsString(requestDto); 
 		when(machineTypeRepository.create(Mockito.any())).thenReturn(machineType);
 		mockMvc.perform(post("/machinetypes").contentType(MediaType.APPLICATION_JSON).content(machineTypeJson))
 				.andExpect(status().isOk());
