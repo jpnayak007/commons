@@ -8448,28 +8448,28 @@ public class MasterdataIntegrationTest {
 		//------------get Holidaylist for the given langauge code and level---
 		@Test
 		@WithUserDetails("zonal-admin")
-		public void getAllHolidayByLangCodeSuccessTest() throws Exception {
-			List<Holiday> holidayList = new ArrayList<>();
-			Holiday holiday = new Holiday();
-			holiday.setHolidayId(1000);
-			holidayList.add(holiday);
-			when(holidayRepository.findHoildayByLocationCodeAndLangCode(Mockito.anyInt(),Mockito.anyString())).thenReturn(holidayList);
-			mockMvc.perform(get("/holidays/level/eng")).andExpect(status().isOk());
+		public void getLocationCodeByLangCodeSuccessTest() throws Exception {
+			Set<Location> locations = new HashSet<>();
+			Location location = new Location();
+			location.setCode("1000");
+			locations.add(location);
+			when(locationRepository.findLocationByLangCodeLevel(Mockito.anyString(),Mockito.anyShort())).thenReturn(locations);
+			mockMvc.perform(get("/locations/level/eng")).andExpect(status().isOk());
 		}
 
 		@Test
 		@WithUserDetails("zonal-admin")
-		public void getAllHolidayByLangCodeNullResponseTest() throws Exception {
-			when(holidayRepository.findHoildayByLocationCodeAndLangCode(Mockito.anyInt(),Mockito.anyString())).thenReturn(null);
-			mockMvc.perform(get("/holidays/level/eng")).andExpect(status().isOk());
+		public void getLocationCodeByLangCodeNullResponseTest() throws Exception {
+			when(locationRepository.findLocationByLangCodeLevel(Mockito.anyString(), Mockito.anyShort())).thenReturn(null);
+			mockMvc.perform(get("/locations/level/eng")).andExpect(status().isOk());
 		}
 
 		@Test
 		@WithUserDetails("zonal-admin")
-		public void getAllHolidayByLangCodeFetchExceptionTest() throws Exception {
-			when(holidayRepository.findHoildayByLocationCodeAndLangCode(Mockito.anyInt(),Mockito.anyString()))
+		public void getLocationCodeByLangCodeFetchExceptionTest() throws Exception {
+			when(locationRepository.findLocationByLangCodeLevel(Mockito.anyString(),Mockito.anyShort()))
 					.thenThrow(DataRetrievalFailureException.class);
-			mockMvc.perform(get("/holidays/level/eng")).andExpect(status().isInternalServerError());
+			mockMvc.perform(get("/locations/level/eng")).andExpect(status().isInternalServerError());
 		}
 	
 	
