@@ -8444,6 +8444,33 @@ public class MasterdataIntegrationTest {
 			mockMvc.perform(put("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(content))
 					.andExpect(status().is2xxSuccessful());
 		}
+		
+		//------------get Holidaylist for the given langauge code and level---
+		@Test
+		@WithUserDetails("zonal-admin")
+		public void getAllHolidayByLangCodeSuccessTest() throws Exception {
+			List<Holiday> holidayList = new ArrayList<>();
+			Holiday holiday = new Holiday();
+			holiday.setHolidayId(1000);
+			holidayList.add(holiday);
+			when(holidayRepository.findHoildayByLocationCodeAndLangCode(Mockito.anyInt(),Mockito.anyString())).thenReturn(holidayList);
+			mockMvc.perform(get("/holidays/level/eng")).andExpect(status().isOk());
+		}
+
+		@Test
+		@WithUserDetails("zonal-admin")
+		public void getAllHolidayByLangCodeNullResponseTest() throws Exception {
+			when(holidayRepository.findHoildayByLocationCodeAndLangCode(Mockito.anyInt(),Mockito.anyString())).thenReturn(null);
+			mockMvc.perform(get("/holidays/level/eng")).andExpect(status().isOk());
+		}
+
+		@Test
+		@WithUserDetails("zonal-admin")
+		public void getAllHolidayByLangCodeFetchExceptionTest() throws Exception {
+			when(holidayRepository.findHoildayByLocationCodeAndLangCode(Mockito.anyInt(),Mockito.anyString()))
+					.thenThrow(DataRetrievalFailureException.class);
+			mockMvc.perform(get("/holidays/level/eng")).andExpect(status().isInternalServerError());
+		}
 	
 	
 }
