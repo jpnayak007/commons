@@ -8173,16 +8173,15 @@ public class MasterdataIntegrationTest {
 		registeredDeviceDto.setDeviceId("10001");
 		registeredDeviceDto.setStatusCode("Registered");
 		
-		registeredDeviceDto.setDeviceTypeCode("Face");
-		registeredDeviceDto.setDeviceSTypeCode("Slab");
+	
 		registeredDeviceDto.setStatusCode("registered");
 		registeredDeviceDto.setDeviceSubId("1234");
 		registeredDeviceDto.setPurpose("REGISTRATION");
 		registeredDeviceDto.setFirmware("firmware");
 		registeredDeviceDto.setCertificationLevel("L0");
 		registeredDeviceDto.setFoundationalTPId("foundationalTPId");
-		registeredDeviceDto.setFoundationalTrustSignature("foundationalTrustSignature");
-		registeredDeviceDto.setDeviceProviderSignature("sign");
+		/*registeredDeviceDto.setFoundationalTrustSignature("foundationalTrustSignature");
+		registeredDeviceDto.setDeviceProviderSignature("sign");*/
 		
 		
 		DigitalIdDeviceRegisterDto digitalIdDto = new DigitalIdDeviceRegisterDto();
@@ -8191,7 +8190,9 @@ public class MasterdataIntegrationTest {
 		digitalIdDto.setMake("make-updated");
 		digitalIdDto.setModel("model-updated");
 		digitalIdDto.setSerialNo("BS563Q2230890");
-		digitalIdDto.setType("face");
+		digitalIdDto.setDeviceTypeCode("Face");
+		digitalIdDto.setDeviceSTypeCode("Slab");
+		//digitalIdDto.setType("face");
 		registeredDeviceDto.setDigitalIdDto(digitalIdDto);
 		
 		registeredDevice = new RegisteredDevice();
