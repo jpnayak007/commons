@@ -8445,6 +8445,33 @@ public class MasterdataIntegrationTest {
 			mockMvc.perform(put("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(content))
 					.andExpect(status().is2xxSuccessful());
 		}
+		
+		//------------get Holidaylist for the given langauge code and level---
+		@Test
+		@WithUserDetails("zonal-admin")
+		public void getLocationCodeByLangCodeSuccessTest() throws Exception {
+			Set<Location> locations = new HashSet<>();
+			Location location = new Location();
+			location.setCode("1000");
+			locations.add(location);
+			when(locationRepository.findLocationByLangCodeLevel(Mockito.anyString(),Mockito.anyShort())).thenReturn(locations);
+			mockMvc.perform(get("/locations/level/eng")).andExpect(status().isOk());
+		}
+
+		@Test
+		@WithUserDetails("zonal-admin")
+		public void getLocationCodeByLangCodeNullResponseTest() throws Exception {
+			when(locationRepository.findLocationByLangCodeLevel(Mockito.anyString(), Mockito.anyShort())).thenReturn(null);
+			mockMvc.perform(get("/locations/level/eng")).andExpect(status().isOk());
+		}
+
+		@Test
+		@WithUserDetails("zonal-admin")
+		public void getLocationCodeByLangCodeFetchExceptionTest() throws Exception {
+			when(locationRepository.findLocationByLangCodeLevel(Mockito.anyString(),Mockito.anyShort()))
+					.thenThrow(DataRetrievalFailureException.class);
+			mockMvc.perform(get("/locations/level/eng")).andExpect(status().isInternalServerError());
+		}
 	
 	
 }
