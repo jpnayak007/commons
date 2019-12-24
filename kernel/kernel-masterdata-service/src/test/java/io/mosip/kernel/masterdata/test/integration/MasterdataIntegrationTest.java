@@ -7566,7 +7566,7 @@ public class MasterdataIntegrationTest {
 		byte[] binary = { 1 };
 		specificDate = LocalDateTime.now(ZoneId.of("UTC"));
 		mosipDeviceServiceDto = new MOSIPDeviceServiceDto();
-		mosipDeviceServiceDto.setId("10002");
+		/*mosipDeviceServiceDto.setId("10002");*/
 		mosipDeviceServiceDto.setSwVersion("0.1v");
 		mosipDeviceServiceDto.setMake("make");
 		mosipDeviceServiceDto.setModel("model");
