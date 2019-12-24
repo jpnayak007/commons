@@ -7574,6 +7574,7 @@ public class MasterdataIntegrationTest {
 		mosipDeviceServiceDto.setRegDeviceTypeCode("10003");
 		mosipDeviceServiceDto.setDeviceProviderId("10003");
 		mosipDeviceServiceDto.setSwBinaryHash(binary);
+		mosipDeviceServiceDto.setIsActive(true);
 
 
 		mosipDeviceService = new MOSIPDeviceService();
@@ -7616,7 +7617,6 @@ public class MasterdataIntegrationTest {
 		requestMSDDto.setRequest(mosipDeviceServiceDto);
 
 		mdsJson = mapper.writeValueAsString(requestMSDDto);
-		when(mosipDeviceServiceRepository.findById(Mockito.any(), Mockito.any())).thenReturn(null);
 		when(registrationDeviceTypeRepository
 				.findByCodeAndIsDeletedFalseorIsDeletedIsNullAndIsActiveTrue(Mockito.any())).thenReturn(regDeviceType);
 		when(registrationDeviceSubTypeRepository
@@ -7640,7 +7640,7 @@ public class MasterdataIntegrationTest {
 		requestMSDDto.setRequest(mosipDeviceServiceDto);
 
 		mdsJson = mapper.writeValueAsString(requestMSDDto);
-		when(mosipDeviceServiceRepository.findById(Mockito.any(), Mockito.any())).thenReturn(null);
+		//when(mosipDeviceServiceRepository.findById(Mockito.any(), Mockito.any())).thenReturn(null);
 		when(registrationDeviceTypeRepository
 				.findByCodeAndIsDeletedFalseorIsDeletedIsNullAndIsActiveTrue(Mockito.any())).thenReturn(null);
 		mockMvc.perform(post("/mosipdeviceservice").contentType(MediaType.APPLICATION_JSON).content(mdsJson))
@@ -7657,7 +7657,6 @@ public class MasterdataIntegrationTest {
 		requestMSDDto.setRequest(mosipDeviceServiceDto);
 
 		mdsJson = mapper.writeValueAsString(requestMSDDto);
-		when(mosipDeviceServiceRepository.findById(Mockito.any(), Mockito.any())).thenReturn(null);
 		when(registrationDeviceTypeRepository
 				.findByCodeAndIsDeletedFalseorIsDeletedIsNullAndIsActiveTrue(Mockito.any())).thenReturn(regDeviceType);
 		when(registrationDeviceSubTypeRepository
@@ -7676,7 +7675,6 @@ public class MasterdataIntegrationTest {
 		requestMSDDto.setRequest(mosipDeviceServiceDto);
 
 		mdsJson = mapper.writeValueAsString(requestMSDDto);
-		when(mosipDeviceServiceRepository.findById(Mockito.any(), Mockito.any())).thenReturn(null);
 		when(registrationDeviceTypeRepository
 				.findByCodeAndIsDeletedFalseorIsDeletedIsNullAndIsActiveTrue(Mockito.any())).thenReturn(regDeviceType);
 		when(registrationDeviceSubTypeRepository
@@ -7688,20 +7686,6 @@ public class MasterdataIntegrationTest {
 				.andExpect(status().isOk());
 	}
 
-	@Test
-	@WithUserDetails("zonal-admin")
-	public void createMSDExistPKTest() throws Exception {
-		RequestWrapper<MOSIPDeviceServiceDto> requestMSDDto = null;
-		requestMSDDto = new RequestWrapper<>();
-		requestMSDDto.setId("mosip.match.regcentr.machineid");
-		requestMSDDto.setVersion("1.0.0");
-		requestMSDDto.setRequest(mosipDeviceServiceDto);
-
-		mdsJson = mapper.writeValueAsString(requestMSDDto);
-		when(mosipDeviceServiceRepository.findById(Mockito.any(), Mockito.any())).thenReturn(mosipDeviceService);
-		mockMvc.perform(post("/mosipdeviceservice").contentType(MediaType.APPLICATION_JSON).content(mdsJson))
-				.andExpect(status().isOk());
-	}
 
 	@Test
 	@WithUserDetails("zonal-admin")
@@ -7712,7 +7696,6 @@ public class MasterdataIntegrationTest {
 		requestMSDDto.setVersion("1.0.0");
 		requestMSDDto.setRequest(mosipDeviceServiceDto);
 		mdsJson = objectMapper.writeValueAsString(requestMSDDto);
-		when(mosipDeviceServiceRepository.findById(Mockito.any(), Mockito.any())).thenReturn(null);
 		when(registrationDeviceTypeRepository
 				.findByCodeAndIsDeletedFalseorIsDeletedIsNullAndIsActiveTrue(Mockito.any())).thenReturn(regDeviceType);
 		when(registrationDeviceSubTypeRepository
