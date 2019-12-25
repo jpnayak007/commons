@@ -6393,8 +6393,9 @@ public class MasterdataIntegrationTest {
 		when(registrationCenterRepository.findByRegIdAndLangCode(Mockito.anyString(), Mockito.anyString()))
 				.thenReturn(registrationCenters);
 		registrationCenters.get(0).setZoneCode("TZT");
-		when(deviceRepository.findByIdAndLangCode(Mockito.anyString(), Mockito.anyString())).thenReturn(device);
 		device.setZoneCode("NTH");
+		when(deviceRepository.findByIdAndLangCode(Mockito.anyString(), Mockito.anyString())).thenReturn(device);
+		
 
 		mockMvc.perform(MockMvcRequestBuilders.get("/registrationcenterdevice/map/10001/10001"))
 				.andExpect(MockMvcResultMatchers.status().isInternalServerError());
