@@ -244,6 +244,7 @@ import io.mosip.kernel.masterdata.utils.ZoneUtils;
  * @author Megha Tanga
  * @author Srinivasan
  * @author Neha Sinha
+ * @author Ramadurai Pandian
  * @since 1.0.0
  */
 @SpringBootTest(classes = TestBootApplication.class)
@@ -1132,8 +1133,8 @@ public class MasterdataIntegrationTest {
 	private void documentTypeSetUp() {
 		type = new DocumentType();
 		type.setCode("DT001");
-		documentTypes = new ArrayList<>();
-		documentTypes.add(type);
+		//documentTypes = new ArrayList<>();
+		//documentTypes.add(type);
 	}
 
 	private void registrationCenterTypeSetUp() {
@@ -3841,18 +3842,18 @@ public class MasterdataIntegrationTest {
 
 	@Test
 	@WithUserDetails("zonal-admin")
-	public void createDeviceTest() throws Exception {
+	public void createDeviceSuccessTest() throws Exception {
 		RequestWrapper<DeviceDto> requestDto = new RequestWrapper<>();
 		requestDto.setId("mosip.device.create");
 		requestDto.setVersion("1.0.0");
 		requestDto.setRequest(deviceDto);
 		String content = mapper.writeValueAsString(requestDto);
-
+		when(masterdataCreationUtil.createMasterData(Device.class, deviceDto)).thenReturn(deviceDto);
 		Mockito.when(deviceRepository.create(Mockito.any())).thenReturn(device);
-		Mockito.when(deviceHistoryRepository.create(Mockito.any())).thenReturn(deviceHistory);
+		when(deviceHistoryRepository.create(Mockito.any())).thenReturn(deviceHistory);
 		mockMvc.perform(
 				MockMvcRequestBuilders.post("/devices").contentType(MediaType.APPLICATION_JSON).content(content))
-				.andExpect(status().isOk());
+				.andExpect(status().is2xxSuccessful());
 	}
 
 	@Test
@@ -3863,12 +3864,28 @@ public class MasterdataIntegrationTest {
 		requestDto.setVersion("1.0.0");
 		requestDto.setRequest(deviceDto);
 		String content = mapper.writeValueAsString(requestDto);
-
+		when(masterdataCreationUtil.createMasterData(Device.class, deviceDto)).thenReturn(deviceDto);
 		Mockito.when(deviceRepository.create(Mockito.any()))
 				.thenThrow(new DataAccessLayerException("", "cannot insert", null));
 		mockMvc.perform(
 				MockMvcRequestBuilders.post("/devices").contentType(MediaType.APPLICATION_JSON).content(content))
 				.andExpect(status().is2xxSuccessful());
+	}
+	
+	@Test
+	@WithUserDetails("zonal-admin")
+	public void createDeviceIllegalExceptionTest() throws Exception {
+		RequestWrapper<DeviceDto> requestDto = new RequestWrapper<>();
+		requestDto.setId("mosip.device.create");
+		requestDto.setVersion("1.0.0");
+		requestDto.setRequest(deviceDto);
+		String content = mapper.writeValueAsString(requestDto);
+		when(masterdataCreationUtil.createMasterData(Device.class, deviceDto)).thenReturn(deviceDto);
+		Mockito.when(deviceRepository.create(Mockito.any()))
+				.thenThrow(new IllegalArgumentException());
+		mockMvc.perform(
+				MockMvcRequestBuilders.post("/devices").contentType(MediaType.APPLICATION_JSON).content(content))
+				.andExpect(status().is5xxServerError());
 	}
 
 	@Test
@@ -4195,7 +4212,7 @@ public class MasterdataIntegrationTest {
 		documentTypeDto.setName("POI");
 		requestDto.setRequest(documentTypeDto);
 		String contentJson = mapper.writeValueAsString(requestDto);
-
+		when(masterdataCreationUtil.createMasterData(DocumentType.class, documentTypeDto)).thenReturn(documentTypeDto);
 		when(documentTypeRepository.create(Mockito.any())).thenReturn(type);
 		mockMvc.perform(post("/documenttypes").contentType(MediaType.APPLICATION_JSON).content(contentJson))
 				.andExpect(status().isOk());
@@ -4215,6 +4232,7 @@ public class MasterdataIntegrationTest {
 		documentTypeDto.setName("POI");
 		requestDto.setRequest(documentTypeDto);
 		String contentJson = mapper.writeValueAsString(requestDto);
+		when(masterdataCreationUtil.createMasterData(DocumentType.class, documentTypeDto)).thenReturn(documentTypeDto);
 		when(documentTypeRepository.create(Mockito.any()))
 				.thenThrow(new DataAccessLayerException("", "cannot execute statement", null));
 		mockMvc.perform(post("/documenttypes").contentType(MediaType.APPLICATION_JSON).content(contentJson))
@@ -4235,6 +4253,7 @@ public class MasterdataIntegrationTest {
 		documentTypeDto.setName("POI");
 		requestDto.setRequest(documentTypeDto);
 		String contentJson = mapper.writeValueAsString(requestDto);
+		when(masterdataCreationUtil.createMasterData(DocumentType.class, documentTypeDto)).thenReturn(documentTypeDto);
 		mockMvc.perform(post("/documenttypes").contentType(MediaType.APPLICATION_JSON).content(contentJson))
 				.andExpect(status().isOk());
 	}
@@ -4254,6 +4273,7 @@ public class MasterdataIntegrationTest {
 		requestDto.setRequest(documentTypeDto);
 		String contentJson = mapper.writeValueAsString(requestDto);
 		when(documentTypeRepository.findByCodeAndLangCode(Mockito.any(), Mockito.any())).thenReturn(type);
+		when(masterdataCreationUtil.updateMasterData(DocumentType.class, documentTypeDto)).thenReturn(documentTypeDto);
 		when(documentTypeRepository.update(Mockito.any())).thenReturn(type);
 		mockMvc.perform(put("/documenttypes").contentType(MediaType.APPLICATION_JSON).content(contentJson))
 				.andExpect(status().isOk());
@@ -4274,6 +4294,7 @@ public class MasterdataIntegrationTest {
 		documentTypeDto.setName("POI");
 		requestDto.setRequest(documentTypeDto);
 		String contentJson = mapper.writeValueAsString(requestDto);
+		when(masterdataCreationUtil.updateMasterData(DocumentType.class, documentTypeDto)).thenReturn(documentTypeDto);
 		when(documentTypeRepository.update(Mockito.any())).thenReturn(type);
 		mockMvc.perform(put("/documenttypes").contentType(MediaType.APPLICATION_JSON).content(contentJson))
 				.andExpect(status().isOk());
@@ -4294,13 +4315,14 @@ public class MasterdataIntegrationTest {
 		documentTypeDto.setName("POI");
 		requestDto.setRequest(documentTypeDto);
 		String contentJson = mapper.writeValueAsString(requestDto);
+		when(masterdataCreationUtil.updateMasterData(DocumentType.class, documentTypeDto)).thenReturn(documentTypeDto);
 		when(documentTypeRepository.findByCodeAndLangCode(Mockito.any(), Mockito.any())).thenReturn(null);
 		mockMvc.perform(put("/documenttypes").contentType(MediaType.APPLICATION_JSON).content(contentJson))
 				.andExpect(status().isOk());
 	}
 
 	@Test
-	@WithUserDetails("zonal-admin")
+	@WithUserDetails("global-admin")
 	public void updateDocumentTypeDatabaseConnectionExceptionTest() throws Exception {
 		RequestWrapper<DocumentTypeDto> requestDto = new RequestWrapper<>();
 		requestDto.setId("mosip.idtype.create");
@@ -4314,6 +4336,7 @@ public class MasterdataIntegrationTest {
 		requestDto.setRequest(documentTypeDto);
 		String contentJson = mapper.writeValueAsString(requestDto);
 		when(documentTypeRepository.findByCodeAndLangCode(Mockito.any(), Mockito.any())).thenReturn(type);
+		when(masterdataCreationUtil.updateMasterData(DocumentType.class, documentTypeDto)).thenReturn(documentTypeDto);
 		when(documentTypeRepository.update(Mockito.any()))
 				.thenThrow(new DataAccessLayerException("", "cannot execute statement", null));
 		mockMvc.perform(put("/documenttypes").contentType(MediaType.APPLICATION_JSON).content(contentJson))
@@ -6107,6 +6130,15 @@ public class MasterdataIntegrationTest {
 	@Test
 	@WithUserDetails("zonal-admin")
 	public void getAllDocumetTypeByLangCode() throws Exception {
+		DocumentType documentType = new DocumentType();
+		documentType.setCode("RNC");
+		documentType.setName("Rental contract");
+		documentType.setDescription("Rental Agreement of address");
+		documentType.setLangCode("eng");
+		documentType.setIsActive(true);
+
+		List<DocumentType> documentTypes = new ArrayList<>();
+		documentTypes.add(documentType);
 		when(documentTypeRepository.findAllByLangCodeAndIsDeletedFalseOrIsDeletedIsNull(Mockito.anyString()))
 				.thenReturn(documentTypes);
 		mockMvc.perform(MockMvcRequestBuilders.get("/documenttypes/{langcode}", "eng"))
