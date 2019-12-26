@@ -4219,7 +4219,7 @@ public class MasterdataIntegrationTest {
 	}
 
 	@Test
-	@WithUserDetails("zonal-admin")
+	@WithUserDetails("global-admin")
 	public void addDocumentTypesDatabaseConnectionExceptionTest() throws Exception {
 		RequestWrapper<DocumentTypeDto> requestDto = new RequestWrapper<>();
 		requestDto.setId("mosip.idtype.create");
@@ -4240,7 +4240,7 @@ public class MasterdataIntegrationTest {
 	}
 	
 	@Test
-	@WithUserDetails("zonal-admin")
+	@WithUserDetails("global-admin")
 	public void addDocumentTypesDatabaseExceptionTest() throws Exception {
 		RequestWrapper<DocumentTypeDto> requestDto = new RequestWrapper<>();
 		requestDto.setId("mosip.idtype.create");
@@ -4302,7 +4302,7 @@ public class MasterdataIntegrationTest {
 	}
 
 	@Test
-	@WithUserDetails("zonal-admin")
+	@WithUserDetails("global-admin")
 	public void updateDocumentTypeLangValidationTest() throws Exception {
 		RequestWrapper<DocumentTypeDto> requestDto = new RequestWrapper<>();
 		requestDto.setId("mosip.idtype.create");
@@ -8482,8 +8482,7 @@ public class MasterdataIntegrationTest {
 	}
 	
 		@Test
-		@Ignore
-		@WithUserDetails("zonal-admin")
+		@WithUserDetails("global-admin")
 		public void updateRegistrationCenterAdminDataExcpTest() throws Exception {
 			String content = objectMapper.writeValueAsString(updRegRequest);
 			Zone zone = new Zone();
@@ -8496,7 +8495,7 @@ public class MasterdataIntegrationTest {
 			when(registrationCenterRepository.update(Mockito.any()))
 					.thenThrow(new DataAccessLayerException("", "cannot execute statement", null));
 			mockMvc.perform(put("/registrationcenters").contentType(MediaType.APPLICATION_JSON).content(content))
-					.andExpect(status().is2xxSuccessful());
+					.andExpect(status().is5xxServerError());
 		}
 		
 		//------------get Holidaylist for the given langauge code and level---
