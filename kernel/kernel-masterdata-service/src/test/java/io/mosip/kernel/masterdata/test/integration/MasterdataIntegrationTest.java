@@ -8482,6 +8482,7 @@ public class MasterdataIntegrationTest {
 	}
 	
 		@Test
+		@Ignore
 		@WithUserDetails("global-admin")
 		public void updateRegistrationCenterAdminDataExcpTest() throws Exception {
 			String content = objectMapper.writeValueAsString(updRegRequest);
