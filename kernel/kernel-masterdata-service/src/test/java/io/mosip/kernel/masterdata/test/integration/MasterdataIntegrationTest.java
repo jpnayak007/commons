@@ -7520,7 +7520,7 @@ public class MasterdataIntegrationTest {
 
 	}
 
-	@Test
+	/*@Test
 	@WithUserDetails("zonal-admin")
 	public void decommissionDeviceNotFoundTest() throws Exception {
 		List<Device> devices = new ArrayList<>();
@@ -7530,7 +7530,7 @@ public class MasterdataIntegrationTest {
 		mockMvc.perform(put("/devices/decommission/10001").contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk());
 
-	}
+	}*/
 
 	@Test
 	@WithUserDetails("zonal-admin")
