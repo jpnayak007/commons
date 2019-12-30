@@ -3895,7 +3895,7 @@ public class MasterdataIntegrationTest {
 				.thenThrow(new IllegalArgumentException());
 		mockMvc.perform(
 				MockMvcRequestBuilders.post("/devices").contentType(MediaType.APPLICATION_JSON).content(content))
-				.andExpect(status().is2xxSuccessful());
+				.andExpect(status().isInternalServerError());
 	}
 
 	@Test
