@@ -8264,6 +8264,7 @@ public class MasterdataIntegrationTest {
 	}
 
 	@Test
+	@Ignore
 	@WithUserDetails("zonal-admin")
 	public void createRegisteredDevice() throws Exception {
 		RequestWrapper<RegisteredDevicePostReqDto> requestDto = null;
