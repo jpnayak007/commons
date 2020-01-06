@@ -1,4 +1,6 @@
-# mosip-platform
+<a href="https://lgtm.com/projects/g/mosip/commons/alerts/"><img alt="Total alerts" src="https://img.shields.io/lgtm/alerts/g/mosip/commons.svg?logo=lgtm&logoWidth=18"/></a>
+
+# mosip-commons
 This repository contains the source code of the Modular Open Source Identity Platform. To know more about MOSIP, its architecture, external integrations, releases, etc., please check the [Platform Documentation](https://github.com/mosip/mosip-docs/wiki)
 
 ### Introduction
