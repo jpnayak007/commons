@@ -1,7 +1,7 @@
 # MOSIP Contributors list 
 # Template used "Name;email;Organization;Role;Major areas of contributions and support"
 #
-# ACTIVE Contributors
+# ACTIVE Contributors in no particular order
 #
 Shrikant Karwa;shri@mosip.io;MOSIP;;Product Management, country engagemnet,centers of excellence
 Arunkumar Gurumurthy;arun@mosip.io;MOSIP;Project Manager;Project Managemnet
@@ -23,8 +23,33 @@ Niyati Swamy,niyati.swami@gmail.com,Technoforte;Tester,Acceptance Testing
 Channakeshava Puttaswamy;Channakeshava.p@zoho.com;Technoforte;Automation Tester;Acceptance Test Rig
 Hemant C Vadher;hemant.vadher@google.com;Technoforte;Tester;Acceptance Testing
 Yogesh Pathak;Yogesh@technoforte.co.in;Technoforte;Test Lead;Acceptance Testing
+Shrikant Karwa;shri@mosip.io;MOSIP;;Product Management; country engagemnet;centers of excellence
+Sampath Mukundan;Sampath.Mukundan@mindtree.com;Mindtree;Project Manager;MOSIP releases and project management
+Reeba Thomas ;Reeba.Thomas@mindtree.com;Mindtree;Project Manager;Release and project management
+Amandeep Khanuja ;Amandeep.Khanuja@mindtree.com;Mindtree;Business Analyst;Requirements
+Rounak Nayak ;Rounak.Nayak@mindtree.com;Mindtree;Business Analyst;Requirements
+John David Panneerselvam ;John.Panneerselvam@mindtree.com;Mindtree;Senior Architect;Architecture and Design
+Sneha Bhurke ;Sneha.Bhurke@mindtree.com;Mindtree;Test Manager;Testing
+Monobikash Das ;Monobikash.Das@mindtree.com;Mindtree;Lead;Registration Processor
+Urvil Joshi;Urvil.Joshi2@mindtree.com;Mindtree;Contributor;Kernel services
+Loganathan Sekar ;Loganathan.Sekar@mindtree.com;Mindtree;Contributor;Registration services
+Ramadurai Saravana Pandian ;Ramadurai.Pandian@mindtree.com;Mindtree;Contributor;Kernel services
+Rajath Kotebailu Raghuchandra ;Rajath.Raghuchandra@mindtree.com;Mindtree;Contributor;Pre Registration
+Balamurugan Ramamoorthy ;Balamurugan.Ramamoorthy2@mindtree.com;Mindtree;Contributor;Registration services
+Saumya Saumya ;Saumya.Saumya2@mindtree.com;Mindtree;Contributor;Infrastructure
+Tarun Chawla ;Tarun.Chawla2@mindtree.com;Mindtree;Contributor;Infrastructure
+Manoj SP;Manoj.SP@mindtree.com;Mindtree;Contributor;registration processor
+Tabish Khan;tabish.Khan2@mindtree.com;Mindtree;Contributor;Test Automation
+RaviKant;Ravi.Kant2@mindtree.com;Mindtree;Contributor;Identity Authentication
+Vignesh Vijayakumar;Vignesh.Vijayakumar@mindtree.com;Mindtree;Contributor;Testing
+Rajath Raghuchandra;Rajath.Raghuchandra@mindtree.com;Mindtree;Contributor;Testing
+Sravan Kalla;sravan.kalla@mindtree.com;Mindtree;Contributor;Testing
+Ragavendran Venkatesan;Ragavendran.Venkatesan@mindtree.com;Mindtree;Contributor;Testing
+Anand Babaleshwar;Anand.Babaleshwar@mindtree.com;Mindtree;Contributor;Test Automation
+Gaurav Shravan;Gaurav.Sharan@mindtree.com;Mindtree;Contributor;Test Automation
+Resham Chugani;resham.chugani@mindtree.com;Mindtree;Business Analyst Lead;Functional Requirements
 #
-# Supporters
+# Supporters (in no particular order)
 #
 Sanjay Jain;snjyjn@gmail.com;iSpirt;Technology Lead;Technology Leadership
 Prof. Rajagopalan;raj@iiitb.ac.in;IIITB;Development Lead;MOSIP Development Lead
@@ -32,7 +57,7 @@ Prof. Thangaraju;b.thangaraju@iiitb.ac.in;IIITB;Reviewer;Technology Committee
 Prof. Chandrashekaran Ramanathan;rc@iiitb.ac.in;IIITB;Reviewer;Technology Committee 
 Satish Mohan;mohan.satish@gmail.com;Red Hat;Independent Reviewer;Technology Committee
 #
-# INACTIVE Members 
+# INACTIVE Members (in no particular order)
 # 
 
 
