@@ -331,18 +331,31 @@ public class RegistrationCenterDeviceServiceImpl implements RegistrationCenterDe
 			}
 		}
 
-		if (!isMachineMappedToUserZone || !isRegCenterMappedToUserZone) {
+		if (!isRegCenterMappedToUserZone ) {
 			auditUtil.auditRequest(
 					String.format(MasterDataConstant.FAILURE_MAP, RegistrationCenterDevice.class.getCanonicalName()),
 					MasterDataConstant.AUDIT_SYSTEM,
 					String.format(MasterDataConstant.FAILURE_DESC,
-							RegistrationCenterDeviceErrorCode.REGISTRATION_CENTER_DEVICE_ZONE_INVALID.getErrorCode(),
-							RegistrationCenterDeviceErrorCode.REGISTRATION_CENTER_DEVICE_ZONE_INVALID
+							RegistrationCenterDeviceErrorCode.INVALIDE_CENTER_ZONE.getErrorCode(),
+							RegistrationCenterDeviceErrorCode.INVALIDE_CENTER_ZONE
 									.getErrorMessage()),
 					"ADM-731");
 			throw new RequestException(
-					RegistrationCenterDeviceErrorCode.REGISTRATION_CENTER_DEVICE_ZONE_INVALID.getErrorCode(),
-					RegistrationCenterDeviceErrorCode.REGISTRATION_CENTER_DEVICE_ZONE_INVALID.getErrorMessage());
+					RegistrationCenterDeviceErrorCode.INVALIDE_CENTER_ZONE.getErrorCode(),
+					RegistrationCenterDeviceErrorCode.INVALIDE_CENTER_ZONE.getErrorMessage());
+		}
+		if (!isMachineMappedToUserZone) {
+			auditUtil.auditRequest(
+					String.format(MasterDataConstant.FAILURE_MAP, RegistrationCenterDevice.class.getCanonicalName()),
+					MasterDataConstant.AUDIT_SYSTEM,
+					String.format(MasterDataConstant.FAILURE_DESC,
+							RegistrationCenterDeviceErrorCode.INVALIDE_DEVICE_ZONE.getErrorCode(),
+							RegistrationCenterDeviceErrorCode.INVALIDE_DEVICE_ZONE
+									.getErrorMessage()),
+					"ADM-731");
+			throw new RequestException(
+					RegistrationCenterDeviceErrorCode.INVALIDE_DEVICE_ZONE.getErrorCode(),
+					RegistrationCenterDeviceErrorCode.INVALIDE_DEVICE_ZONE.getErrorMessage());
 		}
 		Objects.requireNonNull(registrationCenterZone, "registrationCenterZone is empty");
 		String hierarchyPath = registrationCenterZone.getHierarchyPath();
@@ -549,8 +562,8 @@ public class RegistrationCenterDeviceServiceImpl implements RegistrationCenterDe
 					.findByRegIdAndLangCode(regCenterId, langCode);
 			if (registrationCenters.isEmpty()) {
 				throw new RequestException(
-						RegistrationCenterDeviceErrorCode.DEVICE_REGISTRATION_CENTER_NOT_FOUND_EXCEPTION.getErrorCode(),
-						RegistrationCenterDeviceErrorCode.DEVICE_REGISTRATION_CENTER_NOT_FOUND_EXCEPTION
+						RegistrationCenterDeviceErrorCode.REGISTRATION_CENTER_NOT_FOUND_EXCEPTION.getErrorCode(),
+						RegistrationCenterDeviceErrorCode.REGISTRATION_CENTER_NOT_FOUND_EXCEPTION
 								.getErrorMessage());
 			}
 
