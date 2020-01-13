@@ -290,10 +290,11 @@ public class LocationServiceImpl implements LocationService {
 	@Transactional
 	public LocationPutResponseDto updateLocationDetails(LocationDto locationDto) {
 		LocationPutResponseDto postLocationCodeResponseDto = new LocationPutResponseDto();
-		List<Location> parentLocList = locationRepository
-				.findLocationHierarchyByCodeAndLanguageCode(locationDto.getParentLocCode(), locationDto.getLangCode());
+		
 		
 		try {
+			List<Location> parentLocList = locationRepository
+					.findLocationHierarchyByCodeAndLanguageCode(locationDto.getParentLocCode(), locationDto.getLangCode());
 			if(CollectionUtils.isEmpty(parentLocList)) {
 				throw new MasterDataServiceException(LocationErrorCode.PARENT_LOC_NOT_FOUND.getErrorCode(),
 						LocationErrorCode.PARENT_LOC_NOT_FOUND.getErrorMessage());
