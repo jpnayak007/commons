@@ -41,7 +41,6 @@ public class LocationDto {
 	private String hierarchyName;
 	
 	@Size(min = 1, max = 32)
-	@NotBlank
 	private String parentLocCode;
 
 	@ValidLangCode(message = "Language Code is Invalid")
